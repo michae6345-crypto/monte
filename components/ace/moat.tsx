@@ -12,6 +12,8 @@ import { money, useAce } from "./store";
 
 const ROWS: [string, string, string, string][] = [
   ["Best card at the register", "yes", "yes", "no"],
+  ["Useful with one card, or with a balance", "yes", "not advertised", "sells a new card"],
+  ["Finds double charges and price rises", "yes", "not advertised", "no"],
   ["Counts interest on a carried balance", "yes", "not advertised", "no"],
   ["Values perks at what you actually use", "yes", "lists perks", "lists perks"],
   ["Ranks cards on your own year of spending", "yes", "not advertised", "on a profile"],
@@ -19,11 +21,13 @@ const ROWS: [string, string, string, string][] = [
   ["Paid by card referrals", "no", "unknown", "yes"],
 ];
 
-const NOTES = [
-  "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card.",
-  "45% of cardholders carried a balance last year (Fed SHED, May 2026). For them, interest outweighs any reward, so a points-only ranking points the wrong way.",
-  "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Purchases and every purchase there is replayed.",
+// each note hangs on the row it explains
+const NOTES: [string, string][] = [
+  ["Best card at the register", "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Purchases and every purchase there is replayed."],
+  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Fed SHED, May 2026). For them, interest outweighs any reward, so a points-only ranking points the wrong way."],
+  ["Paid by card referrals", "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card."],
 ];
+const noteOf = (row: string) => NOTES.findIndex(([r]) => r === row);
 
 export function MoatSection() {
   const { brand: b } = useBrand();
@@ -32,7 +36,7 @@ export function MoatSection() {
       id="moat"
       index="08"
       kicker={`Why ${b.name}`}
-      title={<>Uno picks the card. {b.name} also counts the fees and the interest.</>}
+      title={<>Uno picks the card. {b.name} plays every dollar.</>}
       readout={<>compared on what each one advertises, Oct 2026</>}
     >
       <div className="overflow-x-auto m-panel">
@@ -46,12 +50,12 @@ export function MoatSection() {
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((row, i) => (
+            {ROWS.map((row) => (
               <tr key={row[0]} className="border-b border-ace-line/70 last:border-b-0">
                 {row.map((c, k) => (
                   <td key={k} className={`px-5 py-3 ${k === 0 ? "text-ace-ink" : k === 1 ? "mono font-medium text-ace-ink" : "mono text-ace-dim"}`}>
                     {c}
-                    {k === 0 && i < NOTES.length ? <sup className="mono ml-1 text-[10px] text-ace-dim">{i + 1}</sup> : null}
+                    {k === 0 && noteOf(row[0]) >= 0 ? <sup className="mono ml-1 text-[10px] text-ace-dim">{noteOf(row[0]) + 1}</sup> : null}
                   </td>
                 ))}
               </tr>
@@ -60,7 +64,7 @@ export function MoatSection() {
         </table>
       </div>
       <ol className="mt-5 grid gap-3 text-[13px] leading-relaxed text-ace-dim md:grid-cols-3">
-        {NOTES.map((n, i) => (
+        {NOTES.map(([, n], i) => (
           <li key={i} className="flex gap-2">
             <span className="mono text-ace-ink">{i + 1}</span>
             <span>{n}</span>

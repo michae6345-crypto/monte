@@ -27,19 +27,18 @@ export function Chapter({
   lede?: ReactNode;
   tabs: Tab[];
 }) {
-  const [k, setK] = useState(0);
+  const [key, setKey] = useState(tabs[0].key);
   // presenter mode can open a specific tab
   useEffect(() => {
     const on = (e: Event) => {
       const d = (e as CustomEvent<{ chapter: string; tab: string }>).detail;
       if (d?.chapter !== id) return;
-      const i = tabs.findIndex((t) => t.key === d.tab);
-      if (i >= 0) setK(i);
+      if (tabs.some((t) => t.key === d.tab)) setKey(d.tab);
     };
     window.addEventListener("monte:tab", on);
     return () => window.removeEventListener("monte:tab", on);
   }, [id, tabs]);
-  const cur = tabs[Math.min(k, tabs.length - 1)];
+  const cur = tabs.find((t) => t.key === key) ?? tabs[0];
 
   return (
     <section id={id} className="relative scroll-mt-16 py-20 md:py-28">
@@ -65,9 +64,9 @@ export function Chapter({
               <button
                 key={t.key}
                 role="tab"
-                aria-selected={i === k}
-                onClick={() => setK(i)}
-                className={`btn btn-sm ${i === k ? "btn-primary" : "btn-ghost"}`}
+                aria-selected={t.key === cur.key}
+                onClick={() => setKey(t.key)}
+                className={`btn btn-sm ${t.key === cur.key ? "btn-primary" : "btn-ghost"}`}
               >
                 <span className="m-num text-[11px] opacity-60">{String(i + 1).padStart(2, "0")}</span> {t.label}
               </button>

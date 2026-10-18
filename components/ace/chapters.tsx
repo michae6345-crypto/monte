@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Chapter } from "./chapter";
+import { useAce } from "./store";
 
 type S = Record<
   "money" | "wrapped" | "receipt" | "replay" | "history" | "odd" | "tap" | "card" | "payoff" | "keep" | "apply" | "next" | "how" | "real" | "moat" | "chart" | "leaks",
@@ -11,6 +12,7 @@ type S = Record<
 /** Monte for anyone with money moving through a bank: six things it does, card routing one of
  *  them. Each chapter is one headline with its views as tabs. */
 export function Chapters({ sections: s }: { sections: S }) {
+  const one = useAce().wallet.length === 1;
   return (
     <>
       <Chapter
@@ -55,8 +57,12 @@ export function Chapters({ sections: s }: { sections: S }) {
         }
         tabs={[
           { key: "replay", label: "Replay", node: s.replay },
-          { key: "tap", label: "Tap", node: s.tap },
-          { key: "card", label: "The Monte Card", node: s.card },
+          ...(one
+            ? []
+            : [
+                { key: "tap", label: "Tap", node: s.tap },
+                { key: "card", label: "The Monte Card", node: s.card },
+              ]),
           { key: "purchases", label: "Every purchase", node: s.history },
         ]}
       />

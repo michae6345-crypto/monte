@@ -14,18 +14,20 @@ import { money } from "./store";
 import { Lockup } from "@/components/brand";
 
 const MINE = JORDAN.wallet.map((h) => h.cardId);
-// Jordan's first, then the market in the order it's dealt. Phones skip the last three.
+// Jordan's first, then the market in the order it's dealt: a student card, a secured card and
+// a no-fee flat card beside the premium ones, because Monte is for every budget. Phones skip
+// the last three.
 const DECK = [
   ...MINE,
+  "discover_it_student_cash_back",
   "amex_platinum",
+  "capital_one_platinum_secured",
+  "wells_fargo_active_cash",
   "chase_sapphire_preferred",
-  "capital_one_venture_x",
   "citi_double_cash",
-  "discover_it_cash_back",
-  "bilt_obsidian",
-  "wells_fargo_autograph",
+  "capital_one_venture_x",
 ];
-const PHONE_SKIP = new Set(["discover_it_cash_back", "bilt_obsidian", "wells_fargo_autograph"]);
+const PHONE_SKIP = new Set(["chase_sapphire_preferred", "citi_double_cash", "capital_one_venture_x"]);
 const STEP = 1000 / 60;
 
 /** Next frame, with a timer fallback for tabs that never paint (background, some projectors). */
@@ -434,7 +436,7 @@ export function DropHero() {
             style={{ opacity: allDealt ? 0 : 1, pointerEvents: allDealt ? "none" : undefined }}
             tabIndex={allDealt ? -1 : 0}
           >
-            scroll to deal the rest of the market <span aria-hidden className="m-deal-arrow">↓</span>
+            scroll: every card, every budget <span aria-hidden className="m-deal-arrow">↓</span>
           </button>
         </div>
       </div>

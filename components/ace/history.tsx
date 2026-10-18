@@ -59,17 +59,34 @@ export function HistorySection() {
       index="03"
       kicker="Every purchase, judged"
       title={
-        <>
-          <Bracketed>{rows.filter((x) => x.used !== x.best).length}</Bracketed> of {rows.length} purchases
-          <span className="m-second block">went on the wrong card.</span>
-        </>
+        wallet.length === 1 ? (
+          <>
+            <Bracketed>{rows.length}</Bracketed> purchases,
+            <span className="m-second block">every one on the {shortName(wallet[0].cardId)}.</span>
+          </>
+        ) : (
+          <>
+            <Bracketed>{rows.filter((x) => x.used !== x.best).length}</Bracketed> of {rows.length} purchases
+            <span className="m-second block">went on the wrong card.</span>
+          </>
+        )
       }
       readout={
-        <>
-          <R tone="loss">{rows.filter((x) => x.used !== x.best).length}</R> of <R>{rows.length}</R> not on {b.name}&apos;s pick · <R tone="loss">{money(r.leftOnTable)}</R> left on the table
-        </>
+        wallet.length === 1 ? (
+          <>
+            <R>{rows.length}</R> purchases · <R tone="gain">{money(r.rewards, { cents: true })}</R> earned
+          </>
+        ) : (
+          <>
+            <R tone="loss">{rows.filter((x) => x.used !== x.best).length}</R> of <R>{rows.length}</R> not on {b.name}&apos;s pick · <R tone="loss">{money(r.leftOnTable)}</R> left on the table
+          </>
+        )
       }
-      lede={`Every purchase you made, the card you paid with, and the card ${b.name} would have picked, with what the difference cost you. Search it, or click a merchant to see every visit.`}
+      lede={
+        wallet.length === 1
+          ? "Every purchase, what it earned and the rule behind it. Search it, or click a merchant to see every visit. If a store is in the wrong category, fix it here."
+          : `Every purchase you made, the card you paid with, and the card ${b.name} would have picked, with what the difference cost you. Search it, or click a merchant to see every visit.`
+      }
     >
       <div className="m-panel p-5 md:p-6">
         <div className="mb-5 flex flex-wrap items-center gap-3">

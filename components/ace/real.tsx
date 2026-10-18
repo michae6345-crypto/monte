@@ -15,7 +15,7 @@ export function RealSection() {
       tone: "text-ace-ink",
       items: [
         ["Card terms", `${CARDS.length} cards: earn rates, caps, rotations, credits, fees, APRs, each with the issuer page and the date checked (17 Oct 2026).`],
-        ["The engine", "Routing, caps, the receipt, keep or cancel and the next card are arithmetic on those terms. Same input, same output."],
+        ["The engine", "Routing, caps, the receipt, leaks, odd charges, the payoff plan, keep or cancel and the next card are arithmetic on those terms. Same input, same output."],
         ["Monte Carlo", "1,000 seeded years per wallet, from your own months. The odds are counts, not a model's opinion."],
         ["Your statement", "A Chase, Amex or Capital One CSV is parsed in your browser. Nothing is uploaded."],
       ],
