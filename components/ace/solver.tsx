@@ -12,7 +12,7 @@ import { Sampler } from "@/components/brand";
 import { money } from "./store";
 import { shortName } from "./card-art";
 
-export type Strategy = { id: string; label: string; short: string; wallet: Holding[]; policy: "actual" | "best" };
+export type Strategy = { id: string; label: string; short: string; wallet: Holding[]; policy: "actual" | "best"; paidOff?: boolean };
 
 const YEARS = 1000;
 
@@ -52,7 +52,7 @@ function computeRuns(strategies: Strategy[], txns: Txn[], seed = 42): Run[] {
       const fixed = s.wallet.reduce((a, h) => a + creditsUsed(h) - card(h.cardId).annual_fee - interestFor(h), 0);
       finals = years!.map((y) => simulate(s.wallet, y, "actual").total + fixed);
     } else {
-      finals = Array.from(monteCarloSamples(s.wallet, txns, { years: YEARS, seed }).options[0].net);
+      finals = Array.from(monteCarloSamples(s.wallet, txns, { years: YEARS, seed, assumePaidOff: s.paidOff }).options[0].net);
     }
     const sorted = [...finals].sort((a, b) => a - b);
     return { ...s, finals, p5: sorted[50], p50: sorted[500], p95: sorted[949] };
@@ -363,7 +363,6 @@ function niceStep(raw: number) {
 
 export function jordanStrategies(wallet: Holding[], name: string): Strategy[] {
   const carried = wallet.filter((h) => h.balance && h.balance > 0);
-  const cleared = wallet.map((h) => ({ ...h, balance: 0 }));
   const out: Strategy[] = [
     { id: "habit", short: `${name}'s habits`, label: `Every purchase on the card ${name} actually reached for.`, wallet, policy: "actual" },
     {
@@ -379,8 +378,9 @@ export function jordanStrategies(wallet: Holding[], name: string): Strategy[] {
       id: "cleared",
       short: `+ clear the ${shortName(carried[0].cardId)}`,
       label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" below.)`,
-      wallet: cleared,
+      wallet,
       policy: "best",
+      paidOff: true,
     });
   return out;
 }
