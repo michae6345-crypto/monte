@@ -6,17 +6,19 @@ import { useMemo, useState } from "react";
 import { marginalValue, whatIf, interestFor, pointValue } from "@/lib/engine";
 import { CARDS, card, creditPerYear, openToNewApplicants } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
-import { Num } from "./num";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
+import { FanChart, useMonteCarlo } from "./odds";
 
 export function KeepSection() {
   const { wallet, txns, valuation } = useAce();
+  const mc = useMonteCarlo();
   const rows = useMemo(
     () => wallet.map((h) => ({ h, m: marginalValue(wallet, txns, h.cardId), interest: interestFor(h) })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [wallet, txns, valuation],
   );
+  const span = Math.max(60, ...rows.flatMap(({ m, interest }) => [m.fee + interest, m.rewardsAdded + m.credits]));
 
   return (
     <Section
@@ -26,74 +28,90 @@ export function KeepSection() {
       title={<>Is each card earning its spot?</>}
       readout={
         <>
-          <R tone="loss">{money(rows.reduce((a, x) => a + x.m.fee, 0))}</R> in fees a year · <R>{rows.length}</R> cards
+          <R tone="loss">{money(rows.reduce((a, x) => a + x.m.fee, 0))}</R> in fees a year · <R>{rows.length}</R> cards · {mc.years.toLocaleString()} years simulated
         </>
       }
-      lede="A card is worth what it adds over the next-best card you already carry, plus the perks you actually use, minus its fee. Not the number on the brochure."
+      lede="A card is worth what it adds over the next-best card you already carry, plus the perks you actually use, minus its fee. Then Monte replays next year a thousand times with and without it."
     >
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="overflow-hidden rounded-lg border border-ace-line">
+        <div className="mono hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.4fr)] gap-6 border-b border-ace-line px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-ace-dim md:grid">
+          <span>Card</span>
+          <span>What it adds vs what it costs, per year</span>
+          <span>Verdict</span>
+        </div>
         {rows.map(({ h, m, interest }, i) => {
+          const value = m.rewardsAdded + m.credits;
+          const cost = m.fee + interest;
+          const drop = mc.options.find((o) => o.id === `drop:${h.cardId}`);
+          const issuer = card(h.cardId).issuer.replace("American Express", "Amex");
           const verdict =
             interest > 0
-              ? { label: "Pay it down", tone: "loss", why: `Carrying a balance costs ${money(interest)} a year, more than any card earns.` }
+              ? { label: "Pay it down", tone: "loss", why: `The balance costs ${money(interest)} a year in interest, more than any card in the wallet earns. Clear it before anything else.` }
               : m.net >= 25
                 ? { label: "Keep", tone: "gain", why: `Adds ${money(m.rewardsAdded)} over your other cards${m.credits ? ` plus ${money(m.credits)} of perks you use` : ""}.` }
                 : m.fee > 0
-                  ? { label: "Downgrade", tone: "loss", why: `The ${money(m.fee)} fee buys ${money(m.rewardsAdded + m.credits)} of value for you. Ask for a retention offer or switch to a no-fee card from ${card(h.cardId).issuer.replace("American Express", "Amex")}, which keeps your credit history.` }
+                  ? { label: "Downgrade", tone: "loss", why: `The ${money(m.fee)} fee buys ${money(value)} of value for you. Ask for a retention offer, or move to a no-fee ${issuer} card and keep the credit history.` }
                   : { label: "Keep, quietly", tone: "dim", why: "No fee, so it costs nothing to keep open, and it helps your credit age. Your other cards out-earn it." };
-          const tilt = Math.max(-14, Math.min(14, (m.net / Math.max(60, m.fee || 60)) * 10));
           return (
             <motion.div
               key={h.cardId}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-lg border border-ace-line bg-ace-panel/70 p-6"
+              transition={{ delay: i * 0.08 }}
+              className="grid gap-4 border-b border-ace-line px-5 py-5 last:border-b-0 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.4fr)] md:items-center md:gap-6"
             >
-              <div className="flex items-center gap-4">
-                <CardArt id={h.cardId} size="sm" className="w-20" />
-                <div>
-                  <div className="font-medium">{shortName(h.cardId)}</div>
-                  <div className="mono text-[11px] uppercase tracking-wider text-ace-dim">{m.fee ? `${money(m.fee)} a year` : "no annual fee"}</div>
+              <div className="flex items-center gap-3">
+                <CardArt id={h.cardId} size="sm" className="w-16 shrink-0" />
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{shortName(h.cardId)}</div>
+                  <div className="mono text-[11px] text-ace-dim">
+                    {m.fee ? `${money(m.fee)} fee` : "no annual fee"}
+                    {interest > 0 ? ` · ${money(h.balance ?? 0)} at ${h.apr}%` : ""}
+                  </div>
                 </div>
               </div>
-              {/* the scale */}
-              <div className="relative mx-auto mt-8 h-24 w-full max-w-[260px]">
-                <div className="absolute bottom-0 left-1/2 h-14 w-1 -translate-x-1/2 rounded bg-ace-line" />
-                <div className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded bg-ace-line" />
-                <motion.div
-                  className="absolute left-0 right-0 top-6 flex items-start justify-between"
-                  initial={{ rotate: 0 }}
-                  whileInView={{ rotate: tilt }}
-                  viewport={{ once: true }}
-                  transition={{ type: "spring", stiffness: 40, damping: 7, delay: 0.3 + i * 0.1 }}
-                >
-                  <div className="absolute left-0 right-0 top-0 h-0.5 bg-ace-ink/40" />
-                  <div className="mono -mt-7 text-center text-xs text-ace-loss">
-                    fee
-                    <div className="text-sm">{money(m.fee)}</div>
-                  </div>
-                  <div className="mono -mt-7 text-center text-xs text-ace-gain">
-                    value
-                    <div className="text-sm">{money(m.rewardsAdded + m.credits)}</div>
-                  </div>
-                </motion.div>
+              <div className="mono space-y-1.5 text-[11px]">
+                <Bar label="adds" v={value} span={span} tone="gain" />
+                <Bar label={interest > 0 ? "fee + interest" : "fee"} v={cost} span={span} tone="loss" />
               </div>
-              <div className="mt-4 flex items-baseline justify-between border-t border-ace-line pt-4">
-                <span
-                  className={`text-lg font-semibold ${verdict.tone === "gain" ? "text-ace-gain" : verdict.tone === "loss" ? "text-ace-loss" : "text-ace-ink"}`}
-                >
-                  {verdict.label}
-                </span>
-                <Num value={interest > 0 ? -interest : m.net} sign className="mono text-ace-dim" />
+              <div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className={`text-lg font-semibold ${verdict.tone === "gain" ? "text-ace-gain" : verdict.tone === "loss" ? "text-ace-loss" : "text-ace-ink"}`}>
+                    {verdict.label}
+                  </span>
+                  <span className={`mono text-sm tnum ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })}/yr</span>
+                </div>
+                <p className="mt-1 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
+                {drop && (
+                  <p className="mono mt-2 text-[11px] text-ace-dim">
+                    Cancelling it comes out ahead in <span className="text-ace-ink">{Math.round(drop.winShare * 100)}%</span> of {mc.years.toLocaleString()} simulated years.
+                  </p>
+                )}
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
             </motion.div>
           );
         })}
       </div>
     </Section>
+  );
+}
+
+function Bar({ label, v, span, tone }: { label: string; v: number; span: number; tone: "gain" | "loss" }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-24 shrink-0 text-ace-dim">{label}</span>
+      <div className="h-2.5 min-w-0 flex-1 bg-ace-line/60">
+        <motion.div
+          className={`h-full ${tone === "gain" ? "bg-ace-gain" : "bg-ace-loss"}`}
+          initial={{ width: 0 }}
+          whileInView={{ width: `${Math.min(100, (v / span) * 100)}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </div>
+      <span className="w-14 shrink-0 text-right tnum text-ace-ink">{money(v)}</span>
+    </div>
   );
 }
 
@@ -105,6 +123,8 @@ export function ForYouSection() {
   const { brand: b } = useBrand();
   const [perks, setPerks] = useState<0 | 0.5 | 1>(0);
   const [horizon, setHorizon] = useState<"year" | "first">("year");
+  const mc = useMonteCarlo();
+  const odds = new Map(mc.options.map((o) => [o.id.replace(/^add:/, ""), o.winShare]));
 
   const spend = useMemo(() => {
     const m: Record<string, number> = {};
@@ -284,7 +304,9 @@ export function ForYouSection() {
                   </div>
                   <span className="text-right">
                     <span className={`mono block text-sm ${x.score >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.score, { sign: true })}</span>
-                    <span className="mono block text-[10px] text-ace-dim">{horizon === "first" ? "first year" : "per year"}</span>
+                    <span className="mono block text-[10px] text-ace-dim">
+                      {odds.has(x.id) ? `wins ${Math.round(odds.get(x.id)! * 100)}% of yrs` : horizon === "first" ? "first year" : "per year"}
+                    </span>
                   </span>
                   <button
                     onClick={() => addCard(x.id)}
@@ -319,6 +341,18 @@ export function ForYouSection() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-10 rounded-lg border border-ace-line p-5 md:p-6">
+        <div className="mono mb-1 flex flex-wrap items-baseline justify-between gap-2 text-[11px] uppercase tracking-[0.18em] text-ace-dim">
+          <span>Next year, played {mc.years.toLocaleString()} times</span>
+          <span className="normal-case tracking-normal">cumulative net · your wallet dashed · with the new card in the accent</span>
+        </div>
+        <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ace-dim">
+          Each simulated year redraws {persona.name}&apos;s months and lets each category drift up or down, the way real spending does. A card
+          with no fee can only help. A card with a fee has to earn it, and the odds say how often it does.
+        </p>
+        <FanChart mc={mc} />
       </div>
     </Section>
   );
