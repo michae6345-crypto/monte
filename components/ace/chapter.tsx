@@ -63,12 +63,26 @@ export function Chapter({
           {intro && <div className="mt-6">{intro}</div>}
         </motion.div>
         {tabs.length > 1 && (
-          <div className="mb-10 flex flex-wrap gap-2" role="tablist" aria-label={kicker}>
+          <div
+            className="mb-10 flex flex-wrap gap-2"
+            role="tablist"
+            aria-label={kicker}
+            onKeyDown={(e) => {
+              if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+              const k = tabs.findIndex((t) => t.key === cur.key);
+              const next = tabs[(k + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+              setKey(next.key);
+              document.getElementById(`${id}-tab-${next.key}`)?.focus();
+            }}
+          >
             {tabs.map((t, i) => (
               <button
                 key={t.key}
+                id={`${id}-tab-${t.key}`}
                 role="tab"
                 aria-selected={t.key === cur.key}
+                aria-controls={`${id}-panel`}
+                tabIndex={t.key === cur.key ? 0 : -1}
                 onClick={() => setKey(t.key)}
                 className={`btn btn-sm ${t.key === cur.key ? "btn-primary" : "btn-ghost"}`}
               >
@@ -78,11 +92,13 @@ export function Chapter({
           </div>
         )}
         <motion.div
+          id={`${id}-panel`}
+          role="tabpanel"
+          aria-labelledby={tabs.length > 1 ? `${id}-tab-${cur.key}` : undefined}
           key={cur.key}
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          role="tabpanel"
         >
           <Bare.Provider value={true}>{cur.node}</Bare.Provider>
         </motion.div>

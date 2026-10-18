@@ -190,7 +190,7 @@ export function HistorySection() {
                 {one ? (
                   <span className="mono text-right">{money(x.got, { cents: true })}</span>
                 ) : x.miss > 0.005 ? (
-                  <span className="text-right text-ace-loss"><Trace lines={[provenanceFor(x.hb, x.t), provenanceFor(x.ha, x.t)]}><Bracketed state="rest">{money(-x.miss, { sign: true, cents: true })}</Bracketed></Trace></span>
+                  <span className="text-right text-ace-loss"><Trace lines={[provenanceFor(x.hb, x.t), provenanceFor(x.ha, x.t)]}><Bracketed state="resolved">{money(-x.miss, { sign: true, cents: true })}</Bracketed></Trace></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (
                   <span className="text-right text-[11px] leading-tight text-ace-dim" title="This card carries a balance, so new purchases on it accrue interest from day one.">
                     avoids interest

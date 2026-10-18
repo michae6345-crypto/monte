@@ -36,7 +36,7 @@ export function Stage({ vh = 240, children, className }: { vh?: number; children
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 640px)");
+    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 640px) and (prefers-reduced-motion: no-preference)");
     const on = () => {
       if (!mq.matches) {
         setPin(false);

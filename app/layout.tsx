@@ -6,6 +6,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ace-eta-beryl.vercel.app"),
   title: "Monte: every dollar, played right",
   icons: { icon: "/brand/favicon.svg" },
   description:
