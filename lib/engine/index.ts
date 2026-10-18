@@ -66,10 +66,23 @@ function periodKey(date: string, p: Period): string {
   }
 }
 
-/** Rules on one card with the same cap amount and period share one pool
- *  (Citi Custom Cash's single $500, BofA's combined $2,500). */
-function capPool(c: CatalogCard, r: EarnRule): string {
-  return `${c.id}|${r.cap!.amount}|${r.cap!.period}`;
+/** Cards whose capped rules share ONE pool under the issuer's terms (Citi Custom Cash's
+ *  single $500 a cycle, BofA Customized Cash's combined $2,500 a quarter). Every other
+ *  capped rule gets its own pool even when the amounts match: Blue Cash Everyday's three
+ *  3% categories each have their own $6,000 calendar-year cap (see its notes in
+ *  data/cards.json). */
+const SHARED_CAP_CARDS = new Set(["citi_custom_cash", "bofa_customized_cash_rewards"]);
+
+/** Stable id of the cap pool a rule draws from, without the period. Exported so the LP
+ *  and the Monte Carlo rule tables key caps exactly the way evaluate() does. */
+export function capPool(c: CatalogCard, r: EarnRule): string {
+  if (SHARED_CAP_CARDS.has(c.id)) return `${c.id}|${r.cap!.amount}|${r.cap!.period}`;
+  return `${c.id}|${r.category}|${(r.merchants ?? []).join(",")}|${r.cap!.amount}|${r.cap!.period}`;
+}
+
+/** The cap pool of a card's rotating-category bonus. */
+export function rotatingPool(c: CatalogCard): string {
+  return `${c.id}|rotating`;
 }
 
 // BofA Customized Cash: which categories make up each 3% choice option.
@@ -167,7 +180,7 @@ export function earnOptions(c: CatalogCard, t: Txn, choice: Set<string> | null):
     const r = c.rotating!;
     add(
       r.multiplier,
-      r.cap ? { amount: r.cap, period: r.cap_period ?? "quarter", pool: `${c.id}|rotating` } : null,
+      r.cap ? { amount: r.cap, period: r.cap_period ?? "quarter", pool: rotatingPool(c) } : null,
       r.after_cap_multiplier ?? c.base_multiplier,
       `${r.multiplier}x Q4 rotating ${t.category}`,
     );
