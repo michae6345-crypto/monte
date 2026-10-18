@@ -260,3 +260,18 @@ body.ace {
     font-size: 14px;
   }
 }
+
+/* Adrian, 18 Oct: no grey text. Secondary copy is near-ink; a headline's second voice is ink in
+   a lighter weight instead of slate; labels and hand notes are ink. */
+:root {
+  --ace-dim: #2c2f36;
+}
+.ace .m-second {
+  color: var(--m-ink);
+  font-weight: 300;
+}
+.ace .m-label,
+.ace .m-note,
+.ace .m-tag {
+  color: var(--m-ink);
+}
