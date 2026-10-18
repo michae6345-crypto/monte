@@ -9,8 +9,12 @@ import { CARDS, card, openToNewApplicants } from "@/lib/engine/catalog";
 import { Bracketed } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
 import { money, nameOf, useAce, v } from "./store";
+import { cached } from "./adds";
 
 export function bestSecondCard(wallet: ReturnType<typeof useAce>["wallet"], txns: ReturnType<typeof useAce>["txns"]) {
+  return cached(txns, `second|${JSON.stringify(wallet)}`, () => secondCard(wallet, txns));
+}
+function secondCard(wallet: ReturnType<typeof useAce>["wallet"], txns: ReturnType<typeof useAce>["txns"]) {
   return CARDS.filter((c) => openToNewApplicants(c) && !wallet.some((h) => h.cardId === c.id) && !/secured/i.test(c.id))
     .map((c) => ({ id: c.id, w: whatIf(wallet, txns, c.id) }))
     .filter((x): x is { id: string; w: NonNullable<ReturnType<typeof whatIf>> } => !!x.w)

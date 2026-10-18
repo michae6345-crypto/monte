@@ -12,7 +12,7 @@ import { CardArt, shortName } from "./card-art";
 import { Section } from "./section";
 import { Stage } from "./stage";
 import { money, nameOf, useAce, v } from "./store";
-import { addMedians, addShortlist } from "./adds";
+import { addMedians, addShortlist, cached } from "./adds";
 
 type Debt = { cardId: string; balance: number; apr: number };
 type Path = { months: number; interest: number; series: number[]; paid: number[] };
@@ -106,7 +106,7 @@ export function PayoffSection() {
   // the engine's projection of the paid-off wallet (explicitly hypothetical)
   const proj = useMemo(() => {
     if (!debts.length) return null;
-    const now = monteCarlo(wallet, txns, { years: 1000, seed: 42 });
+    const now = cached(txns, `mc|${JSON.stringify(wallet)}`, () => monteCarlo(wallet, txns, { years: 1000, seed: 42 }));
     // the same shortlist and run as What to apply for, so the first card matches its list
     const { mc: after } = addMedians(wallet, txns, addShortlist(wallet, txns).slice(0, 5).map((x) => x.c.id));
     if (!after.hypothetical) return null;

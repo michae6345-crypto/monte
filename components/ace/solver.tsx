@@ -44,15 +44,25 @@ type Run = Strategy & { finals: number[]; p5: number; p50: number; p95: number }
 
 /** The engine's Monte Carlo (lib/engine/montecarlo.ts): every strategy is scored on the same
  *  1,000 resampled years (same seed, same months), so moving between strategies is paired.
- *  "Monte's routing" is the engine's best play; "habits" replays the card Jordan actually
- *  used on each purchase through simulate(), on the engine's own resampled years. */
-function computeRuns(strategies: Strategy[], txns: Txn[], seed = 42): Run[] {
+ *  "Monte's routing" is the engine's best play; "habits" replays the card the person actually
+ *  used on each purchase through simulate(), on the engine's own resampled years.
+ *  Done in slices that yield between them, so switching person never freezes the page. */
+async function computeRuns(strategies: Strategy[], txns: Txn[], alive: () => boolean, seed = 42): Promise<Run[] | null> {
+  const pause = () => new Promise<void>((r) => window.setTimeout(r, 0));
   const years = strategies.some((s) => s.policy === "actual") ? resampledYears(txns, YEARS, seed) : null;
-  return strategies.map((s) => {
+  const out: Run[] = [];
+  for (const s of strategies) {
+    await pause();
+    if (!alive()) return null;
     let finals: number[];
     if (s.policy === "actual") {
       const fixed = s.wallet.reduce((a, h) => a + creditsUsed(h) - card(h.cardId).annual_fee - interestFor(h), 0);
-      finals = years!.map((y) => simulate(s.wallet, y, "actual").total + fixed);
+      finals = [];
+      for (let i = 0; i < years!.length; i += 40) {
+        for (const y of years!.slice(i, i + 40)) finals.push(simulate(s.wallet, y, "actual").total + fixed);
+        await pause();
+        if (!alive()) return null;
+      }
     } else {
       finals = Array.from(monteCarloSamples(s.wallet, txns, { years: YEARS, seed, assumePaidOff: s.paidOff }).options[0].net);
     }
@@ -64,16 +74,25 @@ function computeRuns(strategies: Strategy[], txns: Txn[], seed = 42): Run[] {
       const hi = Math.min(sorted.length - 1, lo + 1);
       return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
     };
-    return { ...s, finals, p5: q(0.05), p50: q(0.5), p95: q(0.95) };
-  });
+    out.push({ ...s, finals, p5: q(0.05), p50: q(0.5), p95: q(0.95) });
+  }
+  return out;
 }
 
-/** Runs after first paint (about half a second of work), so the page never waits on it. */
+/** Runs after first paint, in slices, so the page never waits on it. */
 export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
   const [runs, setRuns] = useState<Run[] | null>(null);
   useEffect(() => {
-    const id = window.setTimeout(() => setRuns(computeRuns(strategies, txns)), 60);
-    return () => clearTimeout(id);
+    let alive = true;
+    const id = window.setTimeout(() => {
+      computeRuns(strategies, txns, () => alive).then((r) => {
+        if (alive && r) setRuns(r);
+      });
+    }, 60);
+    return () => {
+      alive = false;
+      clearTimeout(id);
+    };
   }, [strategies, txns]);
   return runs;
 }
