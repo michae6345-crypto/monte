@@ -184,7 +184,7 @@ export function DropHero() {
 
     // ---- painting ----
     const paint = () => {
-      const placed: { x: number; y: number; w: number }[] = [];
+      const placed: { x: number; y: number; w: number; h: number }[] = [];
       bodies.forEach((bd, i) => {
         const el = els.current[i];
         if (!el) return;
@@ -205,14 +205,24 @@ export function DropHero() {
         }
         else if (shown[i] && bd.speed > 6) shown[i] = false;
         // above the card's top edge, kept on screen and clear of the other tags
-        const w = tg.offsetWidth || 220;
+        const w = (tg.firstElementChild as HTMLElement | null)?.getBoundingClientRect().width || tg.offsetWidth || 220;
         const top = bd.position.y - Math.abs(Math.sin(bd.angle)) * (CW / 2) - Math.abs(Math.cos(bd.angle)) * (CH / 2) - 10;
         const x = Math.max(8 + w / 2, Math.min(W - 8 - w / 2, bd.position.x));
+        // measured on the tag itself: the wrapper's height misses the inline tag's padding
+        const h = (tg.firstElementChild as HTMLElement | null)?.getBoundingClientRect().height || 48;
         // never above the bottom of the headline block, so a tag can't cover the buttons
-        const floor = copy.current ? copy.current.getBoundingClientRect().bottom - st.getBoundingClientRect().top + 18 + (tg.offsetHeight || 30) : CH * 0.25;
+        const floor = copy.current ? copy.current.getBoundingClientRect().bottom - st.getBoundingClientRect().top + 18 + h : CH * 0.25;
         let y = Math.max(floor, top);
-        for (const p of placed) if (Math.abs(p.x - x) < (p.w + w) / 2 + 6 && Math.abs(p.y - y) < 30) y = p.y + 34;
-        placed.push({ x, y, w });
+        // tags hang from y (bottom edge): push below any tag it would touch, re-checking after each push
+        for (let moved = true, n = 0; moved && n <= placed.length; n++) {
+          moved = false;
+          for (const p of placed)
+            if (Math.abs(p.x - x) < (p.w + w) / 2 + 14 && Math.abs(y - p.y) < Math.max(h, p.h) + 4) {
+              y = p.y + Math.max(h, p.h) + 8;
+              moved = true;
+            }
+        }
+        placed.push({ x, y, w, h });
         tg.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%)`;
         tg.style.opacity = shown[i] ? "1" : "0";
       });
