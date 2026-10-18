@@ -9,7 +9,11 @@
 
 <p align="center"><b>Every card played right, and what your cards really cost you.</b></p>
 
-**[Live site](https://ace-eta-beryl.vercel.app)** · **[Demo video](https://youtu.be/Tn4YrpoLjh8)** · [Devpost](https://devpost.com/software/monte-calygj)
+<p align="center">
+  <a href="https://ace-eta-beryl.vercel.app">Live site</a> ·
+  <a href="https://youtu.be/Tn4YrpoLjh8">Demo video</a> ·
+  <a href="https://devpost.com/software/monte-calygj">Devpost</a>
+</p>
 
 ![Monte: rewards $553, interest $735](docs/img/monte.png)
 
