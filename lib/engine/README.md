@@ -7,3 +7,4 @@ number comes from a rule in `data/cards.json` and the purchases it applied to.
 |---|---|
 | `index.ts` | `simulate`, `receipt`, `tap`, `marginalValue`, `whatIf`: earn rules, caps, shared pools, rotations, credits, interest |
 | `catalog.ts` | Types for `data/cards.json` and `card(id)` lookup |
+| `insights.ts` | Spending by category and merchant, recurring charges |
