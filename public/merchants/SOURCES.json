@@ -567,12 +567,144 @@
     "fetched": "2026-10-18",
     "file": "zion-market.webp"
   },
+  "chipotle": {
+    "name": "Chipotle",
+    "site": "https://www.chipotle.com/",
+    "logo": "https://www.chipotle.com/etc.clientlibs/cmgaemacs/clientlibs/clientlib-base/resources/apple-touch-icon-180x180.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "chipotle.webp"
+  },
+  "cricket-wireless": {
+    "name": "Cricket Wireless",
+    "site": "https://www.cricketwireless.com/",
+    "logo": "https://www.cricketwireless.com/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "cricket-wireless.webp"
+  },
+  "dollar-tree": {
+    "name": "Dollar Tree",
+    "site": "https://www.dollartree.com/",
+    "logo": "https://www.dollartree.com/file/v8569639453284500459/general/Dollar-Tree-Icon-RGB-SM.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "dollar-tree.png"
+  },
+  "el-pollo-loco": {
+    "name": "El Pollo Loco",
+    "site": "https://www.elpolloloco.com/",
+    "logo": "https://www.elpolloloco.com/content/img/svgs/loco-logo.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "el-pollo-loco.svg"
+  },
+  "food-4-less": {
+    "name": "Food 4 Less",
+    "site": "https://www.food4less.com/",
+    "logo": "https://www.food4less.com/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "food-4-less.png"
+  },
+  "jack-in-the-box": {
+    "name": "Jack in the Box",
+    "site": "https://www.jackinthebox.com/",
+    "logo": "https://www.jackinthebox.com/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "jack-in-the-box.webp"
+  },
+  "mint-mobile": {
+    "name": "Mint Mobile",
+    "site": "https://www.mintmobile.com/",
+    "logo": "https://cdn.mintmobile.com/wp-content/themes/mintmobile/images/favicon/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "mint-mobile.webp"
+  },
+  "northgate-market": {
+    "name": "Northgate Market",
+    "site": "https://www.northgatemarket.com/",
+    "logo": "https://northgatemarket.com/wp-content/uploads/2024/11/cropped-sombrero-180x180.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "northgate-market.webp"
+  },
+  "panda-express": {
+    "name": "Panda Express",
+    "site": "https://www.pandaexpress.com/",
+    "logo": "https://www.pandaexpress.com/themes/custom/panda/favicon/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "panda-express.webp"
+  },
+  "raising-cane-s": {
+    "name": "Raising Cane's",
+    "site": "https://www.raisingcanes.com/",
+    "logo": "https://www.raisingcanes.com/icons/icon-512x512.png?v=367b828a9dbd90607a0775015de63dc4",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "raising-cane-s.webp"
+  },
+  "starbucks": {
+    "name": "Starbucks",
+    "site": "https://www.starbucks.com/",
+    "logo": "https://www.starbucks.com/pwa-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "starbucks.webp"
+  },
+  "steam": {
+    "name": "Steam",
+    "site": "https://store.steampowered.com/",
+    "logo": "https://store.steampowered.com/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "steam.webp"
+  },
+  "superior-grocers": {
+    "name": "Superior Grocers",
+    "site": "https://www.superiorgrocers.com/",
+    "logo": "https://superiorgrocers.com/wp-content/themes/superior_18/_icons/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "superior-grocers.webp"
+  },
+  "u-haul": {
+    "name": "U-Haul",
+    "site": "https://www.uhaul.com/",
+    "logo": "https://cdnep-uhaul-uhaulcom-global-p-001-f2eeewccehcfg9c9.z01.azurefd.net/uhaulcom/cdn/UhaulComMvc/_Favicons/U-Haul-Favicon-180x180.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "u-haul.webp"
+  },
+  "uniqlo": {
+    "name": "Uniqlo",
+    "site": "https://www.uniqlo.com/us/en/",
+    "logo": "https://asset.uniqlo.com/logotypes/uniqlo_roman_180.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "uniqlo.webp"
+  },
   "missing": [
     {
       "slug": "bcd-tofu-house",
       "name": "BCD Tofu House",
       "site": "https://bcdtofu.com/",
       "reason": "site (GoDaddy builder) has a text-only logo; its icons are GoDaddy's generic placeholder house"
+    },
+    {
+      "slug": "smart-final",
+      "name": "Smart & Final",
+      "site": "https://www.smartandfinal.com/",
+      "reason": "every asset on its site (favicons, header SVG) is the long \"Smart&Final\" wordmark, unreadable at 26px"
+    },
+    {
+      "slug": "usc-bookstore",
+      "name": "USC Bookstore",
+      "site": "https://www.uscbookstore.com/",
+      "reason": "only a 16px favicon and a long \"USC Bookstores\" wordmark; its apple-touch-icon is the store platform's generic icon"
     }
   ]
 }
