@@ -67,33 +67,33 @@ export function PersonaAvatar({ id, size = 56 }: { id: string; size?: number }) 
         )}
         {id === "maya" && (
           <>
-            <rect width="64" height="64" fill="#ffe9dc" />
+            <rect width="64" height="64" fill="#eef0ff" />
             {/* a paper plane: she travels for work */}
-            <path d="M47 11 L58 7 L52 17 L50.5 13.5 Z" fill="#ffffff" stroke="#c2412d" strokeWidth="0.9" strokeLinejoin="round" className="m-plane" />
-            <Body x={32} y={47} w={38} color="#1f7a4d" />
-            <path d="M24 49 Q32 55 40 49" fill="none" stroke="#f2c14e" strokeWidth="3.2" strokeLinecap="round" />
+            <path d="M47 11 L58 7 L52 17 L50.5 13.5 Z" fill="#ffffff" stroke="#2f45ff" strokeWidth="0.9" strokeLinejoin="round" className="m-plane" />
+            <Body x={32} y={47} w={38} color="#0e0f12" />
+            <path d="M24 49 Q32 55 40 49" fill="none" stroke="#8c9bff" strokeWidth="3.2" strokeLinecap="round" />
             <Head x={32} y={31} r={12.5} skin="#f1c7a3" hair="#5a2d1a" kind="bun" glasses />
           </>
         )}
         {id === "parks" && (
           <>
-            <rect width="64" height="64" fill="#e6f4ea" />
-            <Body x={20} y={44} w={22} color="#c2412d" />
+            <rect width="64" height="64" fill="#e3e8ff" />
+            <Body x={20} y={44} w={22} color="#0e0f12" />
             <Body x={44} y={44} w={22} color="#2f45ff" />
             <Head x={20} y={31} r={8.5} skin="#e8b98f" hair="#111111" kind="short" />
             <Head x={44} y={31} r={8.5} skin="#e8b98f" hair="#1b1b1b" kind="long" />
-            <Body x={26} y={54} w={14} color="#f2c14e" />
-            <Body x={39} y={54} w={14} color="#1f7a4d" />
+            <Body x={26} y={54} w={14} color="#8c9bff" />
+            <Body x={39} y={54} w={14} color="#2f45ff" />
             <Head x={26} y={47} r={6} skin="#eec39b" hair="#141414" kind="kid2" />
             <Head x={39} y={47} r={6} skin="#eec39b" hair="#141414" kind="bun" />
           </>
         )}
         {id === "sam" && (
           <>
-            <rect width="64" height="64" fill="#fff4d6" />
+            <rect width="64" height="64" fill="#eef0ff" />
             <Body x={32} y={47} w={38} color="#0e0f12" />
             {/* backpack straps: a student */}
-            <path d="M23 49 L22 60 M41 49 L42 60" stroke="#f2c14e" strokeWidth="3" strokeLinecap="round" />
+            <path d="M23 49 L22 60 M41 49 L42 60" stroke="#8c9bff" strokeWidth="3" strokeLinecap="round" />
             <Head x={32} y={31} r={12.5} skin="#8d5a3b" hair="#1a120c" kind="kid2" />
           </>
         )}
@@ -102,7 +102,7 @@ export function PersonaAvatar({ id, size = 56 }: { id: string; size?: number }) 
             <rect width="64" height="64" fill="#e3f1fb" />
             {/* a sparkle: she runs a cleaning business */}
             <path d="M51 9 L52.6 13.4 L57 15 L52.6 16.6 L51 21 L49.4 16.6 L45 15 L49.4 13.4 Z" fill="#2f45ff" className="m-plane" />
-            <Body x={32} y={47} w={38} color="#c2412d" />
+            <Body x={32} y={47} w={38} color="#2f45ff" />
             <path d="M26 50 L26 60 L38 60 L38 50" fill="#ffffff" opacity="0.9" />
             <Head x={32} y={31} r={12.5} skin="#d9a27a" hair="#2b1a12" kind="long" />
           </>
