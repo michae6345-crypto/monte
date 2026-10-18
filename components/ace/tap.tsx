@@ -73,7 +73,7 @@ export function TapSection() {
       lede="Pick a store. Monte ranks your cards for that purchase, counting caps already used, this quarter's categories, perks about to expire, and any card carrying a balance."
     >
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto_1fr]">
-        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-1">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
           {SPOTS.map((s, k) => (
             <button
               key={s.merchant}

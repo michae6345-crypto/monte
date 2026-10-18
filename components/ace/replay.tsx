@@ -157,7 +157,7 @@ export function ReplaySection() {
           <p className="text-ace-dim">
             {mode === "best" ? (
               <>
-                <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. {b.name}
+                <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. {b.name}{" "}
                 respects every cap and quarter{wallet.some((h) => h.balance) ? ", and never routes new spending to a card carrying a balance: those purchases start charging interest the day you make them" : ""}.
               </>
             ) : (

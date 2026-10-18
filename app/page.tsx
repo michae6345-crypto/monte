@@ -11,6 +11,7 @@ import { ForYouSection, KeepSection } from "@/components/ace/keep";
 import { Footer, HowSection, MoatSection } from "@/components/ace/moat";
 import { RealSection } from "@/components/ace/real";
 import { WrappedSection } from "@/components/ace/wrapped";
+import { MonteCardSection } from "@/components/ace/monte-card-section";
 import { Presenter } from "@/components/ace/presenter";
 
 export default function Home() {
@@ -26,6 +27,7 @@ export default function Home() {
             <HistorySection />
             <ReplaySection />
             <TapSection />
+            <MonteCardSection />
             <KeepSection />
             <ForYouSection />
             <WrappedSection />
