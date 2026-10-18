@@ -11,8 +11,10 @@ import { monteCarloSamples, resampledYears } from "@/lib/engine/montecarlo";
 import { Sampler } from "@/components/brand";
 import { money } from "./store";
 import { shortName } from "./card-art";
+import { bestSecondCard } from "./one-card";
 
-export type Strategy = { id: string; label: string; short: string; wallet: Holding[]; policy: "actual" | "best"; paidOff?: boolean };
+/** adds: a card that is not in the wallet today (the one-card case: what a second card would do) */
+export type Strategy = { id: string; label: string; short: string; wallet: Holding[]; policy: "actual" | "best"; paidOff?: boolean; adds?: string };
 
 const YEARS = 1000;
 
@@ -374,10 +376,25 @@ function niceStep(raw: number) {
   return (m < 1.5 ? 1 : m < 3.5 ? 2.5 : m < 7.5 ? 5 : 10) * p;
 }
 
-export function jordanStrategies(wallet: Holding[], name: string): Strategy[] {
+export function jordanStrategies(wallet: Holding[], name: string, txns: Txn[] = []): Strategy[] {
   const carried = wallet.filter((h) => h.balance && h.balance > 0);
+  const habit: Strategy = { id: "habit", short: `${name}'s habits`, label: `Every purchase on the card ${name} actually reached for.`, wallet, policy: "actual" };
+  // one card and nothing carried: routing changes nothing, so the next move is a second card
+  const second = wallet.length === 1 && !carried.length ? bestSecondCard(wallet, txns) : undefined;
+  if (second)
+    return [
+      habit,
+      {
+        id: "second",
+        short: `+ a ${shortName(second.id)}`,
+        label: `The same spending with a ${shortName(second.id)} beside the ${shortName(wallet[0].cardId)}, each purchase on whichever pays more. Both paid in full.`,
+        wallet: [...wallet, { cardId: second.id }],
+        policy: "best",
+        adds: second.id,
+      },
+    ];
   const out: Strategy[] = [
-    { id: "habit", short: `${name}'s habits`, label: `Every purchase on the card ${name} actually reached for.`, wallet, policy: "actual" },
+    habit,
     {
       id: "routed",
       short: "Monte's routing",

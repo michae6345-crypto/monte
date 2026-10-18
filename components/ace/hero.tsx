@@ -45,12 +45,15 @@ export function NextYear() {
   const { brand: b } = useBrand();
   const { wallet, txns, persona } = useAce();
   const name = persona.id === "you" ? "You" : persona.name;
-  const they = persona.id === "you" ? "you" : persona.id === "parks" ? "they" : persona.id === "maya" || persona.id === "rosa" ? "she" : "he";
-  const strategies = useMemo(() => jordanStrategies(wallet, name), [wallet, name]);
+  const they = persona.id === "you" ? "you" : persona.id === "parks" || persona.id === "sam" ? "they" : persona.id === "maya" || persona.id === "rosa" ? "she" : "he";
+  const strategies = useMemo(() => jordanStrategies(wallet, name, txns), [wallet, name, txns]);
   const carried = wallet.find((h) => (h.balance ?? 0) > 0);
+  const adds = strategies.find((x) => x.adds)?.adds;
   const words = [
     { h: `As ${they} ${they === "you" || they === "they" ? "play" : "plays"} today.`, d: `Every purchase on the card ${name === "You" ? "you" : name} actually reached for.${carried ? " The balance charges interest all year." : ""}` },
-    { h: `Every purchase on ${b.name}'s pick.`, d: `Same cards, same spending, each purchase routed to the card that pays most${carried ? ", never the one with a balance" : ""}.` },
+    adds
+      ? { h: `With a ${shortName(adds)} beside it.`, d: `Same spending, each purchase on whichever of the two pays more. Both paid in full.` }
+      : { h: `Every purchase on ${b.name}'s pick.`, d: `Same cards, same spending, each purchase routed to the card that pays most${carried ? ", never the one with a balance" : ""}.` },
     ...(carried
       ? [{ h: "And the balance paid off.", d: `The same routing once the ${shortName(carried.cardId)} is clear: no interest, and it can earn again.` }]
       : []),
@@ -65,13 +68,13 @@ export function NextYear() {
           return (
             <div className="mx-auto w-full max-w-6xl px-5 py-6">
               <div className="mb-5">
-                <StageSteps steps={["today", `${b.name}'s routing`, ...(carried ? ["paid off"] : [])]} p={p} />
+                <StageSteps steps={["today", adds ? "a second card" : `${b.name}'s routing`, ...(carried ? ["paid off"] : [])]} p={p} />
               </div>
               <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div>
                   <p className="m-label mb-6">§05 · next year ×1000</p>
                   <h2 className="text-4xl md:text-[3.2rem]">
-                    Same cards. Same spending.
+                    {adds ? "One card. Same spending." : "Same cards. Same spending."}
                     <span className="m-second block">A thousand next years.</span>
                   </h2>
                   <div className="mt-6 min-h-[6rem]">

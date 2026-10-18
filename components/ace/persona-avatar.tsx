@@ -1,6 +1,6 @@
 "use client";
 
-/** Illustrated avatars for the three sample households. Drawn, not photos: they're made up.
+/** Illustrated avatars for the sample households. Drawn, not photos: they're made up.
  *  Eyes blink on their own; the parent wiggles the avatar on hover (.m-ava). */
 
 type Face = { x: number; y: number; r: number; skin: string; hair: string; kind: "short" | "bun" | "long" | "kid" | "kid2"; glasses?: boolean };
@@ -88,6 +88,25 @@ export function PersonaAvatar({ id, size = 56 }: { id: string; size?: number }) 
             <Head x={39} y={47} r={6} skin="#eec39b" hair="#141414" kind="bun" />
           </>
         )}
+        {id === "sam" && (
+          <>
+            <rect width="64" height="64" fill="#fff4d6" />
+            <Body x={32} y={47} w={38} color="#0e0f12" />
+            {/* backpack straps: a student */}
+            <path d="M23 49 L22 60 M41 49 L42 60" stroke="#f2c14e" strokeWidth="3" strokeLinecap="round" />
+            <Head x={32} y={31} r={12.5} skin="#8d5a3b" hair="#1a120c" kind="kid2" />
+          </>
+        )}
+        {id === "rosa" && (
+          <>
+            <rect width="64" height="64" fill="#e3f1fb" />
+            {/* a sparkle: she runs a cleaning business */}
+            <path d="M51 9 L52.6 13.4 L57 15 L52.6 16.6 L51 21 L49.4 16.6 L45 15 L49.4 13.4 Z" fill="#2f45ff" className="m-plane" />
+            <Body x={32} y={47} w={38} color="#c2412d" />
+            <path d="M26 50 L26 60 L38 60 L38 50" fill="#ffffff" opacity="0.9" />
+            <Head x={32} y={31} r={12.5} skin="#d9a27a" hair="#2b1a12" kind="long" />
+          </>
+        )}
       </g>
     </svg>
   );
@@ -98,4 +117,6 @@ export const PERSONA_LINE: Record<string, string> = {
   jordan: "three cards, no idea which one to use",
   maya: "I want the points to pay for flights",
   parks: "one card for all four of us",
+  sam: "one card. is that enough?",
+  rosa: "some months are great, some aren't",
 };

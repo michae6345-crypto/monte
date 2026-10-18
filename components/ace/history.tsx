@@ -104,12 +104,14 @@ export function HistorySection() {
               {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} re-counted · reset
             </button>
           )}
-          <button
-            onClick={() => setOnlyMiss((v) => !v)}
-            className={`btn btn-sm ${onlyMiss ? "btn-primary" : "btn-ghost"}`}
-          >
-            Only the misses
-          </button>
+          {wallet.length > 1 && (
+            <button
+              onClick={() => setOnlyMiss((v) => !v)}
+              className={`btn btn-sm ${onlyMiss ? "btn-primary" : "btn-ghost"}`}
+            >
+              Only the misses
+            </button>
+          )}
           {merchant && (
             <button onClick={() => setMerchant(null)} className="btn btn-primary btn-sm">
               {merchant} ✕

@@ -6,7 +6,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAce } from "./store";
 
-type Step = { id: string; title: string; cue: string; tap?: string; tab?: string; target?: string };
+// persona: whose year the step shows (Jordan unless it says otherwise)
+type Step = { id: string; title: string; cue: string; tap?: string; tab?: string; target?: string; persona?: string };
 
 const STEPS: Step[] = [
   { id: "top", title: "Hook", cue: "Every dollar, played right. For anyone with money moving through a bank, not just card collectors." },
@@ -17,6 +18,8 @@ const STEPS: Step[] = [
   { id: "spend", tab: "tap", target: "tap-view", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
   { id: "plan", tab: "payoff", target: "payoff-view", title: "Plan the next move", cue: "$250 a month clears it in 13 months, not 12 years. Then +$521 a year." },
   { id: "next", title: "Next year ×1000", cue: "1,000 simulated years: today, played right, paid off." },
+  { id: "spend", tab: "replay", target: "replay-view", persona: "sam", title: "Only one card", cue: "Sam, 19, one student card. Nothing to re-route, so Monte asks the next question: a Savor beside it adds $131 a year." },
+  { id: "leaks", tab: "leaks", target: "leaks-list", persona: "rosa", title: "Income that swings", cue: "Rosa's busiest month is 10× her slowest. Her $1,900 balance costs $546 a year, more than her cards earn." },
   { id: "how", tab: "trace", target: "how-view", title: "How it works", cue: "One purchase traced: merchant code, rule, cents, source. No model does the math." },
   { id: "how", tab: "real", target: "real-view", title: "Real vs simulated", cue: "Card terms and engine are real. Jordan is synthetic. Plaid is sandbox." },
 ];
@@ -31,11 +34,12 @@ export function Presenter() {
   // the pitch always runs on the canonical numbers: no leftover store corrections
   const { overrides, resetOverrides, persona, setPersona } = useAce();
   const dirty = Object.keys(overrides).length > 0;
+  const [i, setI] = useState(0);
+  const want = STEPS[i].persona ?? "jordan";
   useEffect(() => {
     if (on && dirty) resetOverrides();
-    if (on && persona.id !== "jordan") setPersona("jordan");
-  }, [on, dirty, resetOverrides, persona.id, setPersona]);
-  const [i, setI] = useState(0);
+    if (on && persona.id !== want) setPersona(want);
+  }, [on, dirty, resetOverrides, persona.id, setPersona, want]);
   const [t0, setT0] = useState<number | null>(null);
   const [now, setNow] = useState(0);
 

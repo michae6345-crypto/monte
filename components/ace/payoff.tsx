@@ -99,7 +99,7 @@ export function PayoffSection() {
     return (
       <Section id="payoff" index="06½" kicker="Pay this first" title={<>Nothing to pay down.</>}>
         <div className="m-panel p-8 text-lg">
-          {who} {who === "You" ? "pay" : "pays"} every card in full, so there is no interest to stop. The next move is in Keep or cancel and What to apply
+          {who} {who === "You" ? "pay" : "pays"} {wallet.length === 1 ? "the card" : "every card"} in full, so there is no interest to stop. The next move is in Keep or cancel and What to apply
           for.
         </div>
       </Section>
