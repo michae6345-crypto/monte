@@ -115,6 +115,10 @@ ranks. Nothing is timed: Next, space or the arrow keys move each step on.
 No app can choose the card inside Apple Pay or Google Wallet; only the person can. The
 workaround, one Monte card that charges your best card behind the scenes, breaks in four places:
 
+1. **The bonus disappears.** Rewards follow the store's category code. If Monte paid Trader
+   Joe's (5411) and then charged your Amex Gold, Amex would see a charge from Monte, not a
+   grocery store, and pay 1× instead of 4×.
+
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
