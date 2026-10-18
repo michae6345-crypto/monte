@@ -110,6 +110,11 @@ ranks. Nothing is timed: Next, space or the arrow keys move each step on.
 **Real:** the ranking, the cap counts, the balance block and the reward on every card.
 **Simulated:** the reader, the phone and the NFC. It runs in the browser.
 
+### Why there is no real Monte card
+
+No app can choose the card inside Apple Pay or Google Wallet; only the person can. The
+workaround, one Monte card that charges your best card behind the scenes, breaks in four places:
+
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
