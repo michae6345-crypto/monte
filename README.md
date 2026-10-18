@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/brand/monte-mark-dark.svg">
+    <img src="public/brand/monte-mark.svg" alt="Monte" width="48">
+  </picture>
+</p>
+
 # Monte
 
 **Every card played right, and what your cards really cost you.**
