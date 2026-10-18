@@ -414,10 +414,10 @@ export function DropHero() {
             </span>
           </h1>
           <div className="pointer-events-auto mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#solver" className="btn btn-primary">
+            <a href="#money" className="btn btn-primary">
               See it work <span aria-hidden>→</span>
             </a>
-            <a href="#tap" className="btn btn-ghost">
+            <a href="#register" className="btn btn-ghost">
               Try a tap
             </a>
           </div>

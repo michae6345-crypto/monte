@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
+import { useBare } from "./chapter";
 
 /** A section opens like a solver printout: a ruled header line with the section's number
  *  and name on the left and a live readout of real numbers on the right. */
@@ -22,6 +23,14 @@ export function Section({
   readout?: ReactNode;
   children: ReactNode;
 }) {
+  const bare = useBare();
+  if (bare)
+    return (
+      <div id={id} className="scroll-mt-24">
+        <h3 className="mb-8 max-w-3xl text-3xl md:text-[2.4rem]">{title}</h3>
+        {children}
+      </div>
+    );
   return (
     <section id={id} className="relative scroll-mt-16 py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-5">
