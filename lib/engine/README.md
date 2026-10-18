@@ -13,5 +13,9 @@ number comes from a rule in `data/cards.json` and the purchases it applied to.
 | `provenance.ts` | Traces any dollar to its rule, arithmetic, source URL and checked date |
 | `statement.ts` | Parses a bank or card statement CSV in the browser; nothing is uploaded |
 
+`tap(wallet, purchase, history)` replays the period's history so caps are counted, scores
+every card for the purchase, blocks cards carrying a balance, and returns the ranking and
+the pick.
+
 Rules the engine keeps: it never routes spend to a card carrying a balance, and it never
 recommends a new card while you carry one.
