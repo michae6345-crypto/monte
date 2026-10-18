@@ -3,17 +3,30 @@
 // A scroll stage, the way spacefs tells its story: a tall block whose content stays pinned
 // while you scroll through it, and the scroll position drives the product forward.
 
-import { useMotionValueEvent, useScroll } from "framer-motion";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export function Stage({ vh = 240, children, className }: { vh?: number; children: (p: number) => ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [p, setP] = useState(0);
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    const q = Math.round(v * 100) / 100;
-    setP((old) => (old === q ? old : q));
-  });
+  // plain scroll events (not animation frames), so it tracks in every browser state
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const on = () => {
+      const r = el.getBoundingClientRect();
+      const span = r.height - window.innerHeight;
+      const v = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : r.top < 0 ? 1 : 0;
+      const q = Math.round(v * 100) / 100;
+      setP((old) => (old === q ? old : q));
+    };
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    window.addEventListener("resize", on);
+    return () => {
+      window.removeEventListener("scroll", on);
+      window.removeEventListener("resize", on);
+    };
+  }, []);
   return (
     <div ref={ref} className={className} style={{ height: `${vh}vh` }}>
       <div className="sticky top-0 flex min-h-[100svh] items-center">
