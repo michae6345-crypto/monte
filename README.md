@@ -6,6 +6,8 @@
 
 ![Monte: rewards $553, interest $735](docs/img/monte.png)
 
+## The problem
+
 Rewards apps show you points. Monte shows the net: rewards plus the perks you actually
 used, minus annual fees, minus interest. It reads a year of your purchases and tells you
 which card to use for each one, which card to keep, and which to apply for next.
