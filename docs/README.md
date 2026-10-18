@@ -5,3 +5,4 @@
 | File | What it is |
 |---|---|
 | `SPEC.md` | Features, owners and timeline |
+| `HACKATHON.md` | TrojanHacks rules and deadlines |
