@@ -27,8 +27,8 @@ const ROWS: [string, string, string, string][] = [
 
 // each note hangs on the row it explains
 const NOTES: [string, string][] = [
-  ["Best card at the register", "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Every purchase and every purchase there is replayed."],
-  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Federal Reserve survey, May 2026). When a balance carries over, a ranking by points alone points the wrong way."],
+  ["Best card at the register", "Card companies decide categories by store code and don't publish the map. Fix a store's category once in Every purchase and every purchase there is replayed."],
+  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Federal Reserve survey, May 2026). When a balance carries over, a ranking by points alone can pick a card whose interest costs more than it earns."],
   ["Paid by card referrals", "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card."],
 ];
 const noteOf = (row: string) => NOTES.findIndex(([r]) => r === row);
@@ -227,7 +227,7 @@ function Proof() {
   const gap = check ? check.bound - routed : 0;
   const steps: [string, string][] = [
     [txns.length.toLocaleString(), "purchases"],
-    [String(cats), "categories, by merchant code"],
+    [String(cats), "categories, by store code"],
     [String(CARDS.length), "cards' published rules"],
     [money(routed, { cents: true }), "rewards last year on the right card, within card limits"],
     [money(r.net, { cents: true, sign: true }), "net last year, after fees and interest"],
@@ -325,7 +325,7 @@ export function HowSection() {
               {MCC[t.category] ?? "····"} → category <span className="text-white">{t.category.replace(/_/g, " ")}</span>
             </Line>
             {trace.res.ranked.map((o) => (
-              <Line key={o.cardId} k={o.cardId === trace.res.pick.cardId ? "pick" : "card"}>
+              <Line key={o.cardId} k={o.cardId === trace.res.pick.cardId ? "right card" : "card"}>
                 <span className={o.cardId === trace.res.pick.cardId ? "font-semibold text-white" : "text-white"}>
                   {shortName(o.cardId)}: {o.rule} → {money(t.amount, { cents: true })} × {o.mult.toFixed(o.mult % 1 ? 1 : 0)} × {cents(o.cardId)}¢ ={" "}
                   {money(o.reward, { cents: true })}

@@ -46,7 +46,7 @@ export function OneCardView() {
           {[
             ["spent", money(r.spend)],
             ["earned", money(r.rewards + r.credits, { cents: true })],
-            ["back", r.spend ? `${(((r.rewards + r.credits) / r.spend) * 100).toFixed(1)}%` : "—"],
+            ["% back", r.spend ? `${(((r.rewards + r.credits) / r.spend) * 100).toFixed(1)}%` : "—"],
           ].map(([k, v]) => (
             <div key={k} className="bg-ace-panel px-3 py-2.5">
               <div className="m-label">{k}</div>

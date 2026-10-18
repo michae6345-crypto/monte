@@ -42,7 +42,7 @@ export function People() {
         role="radiogroup"
         aria-label="Whose year"
       >
-        <span className="m-label mr-1">whose year</span>
+        <span className="m-label mr-1">whose year · net last year</span>
         {PERSONAS.map((p) => {
           const on = persona.id === p.id;
           return (
@@ -61,7 +61,6 @@ export function People() {
               <span className="font-medium">{p.name}</span>
               <span>· {SITUATION[p.id] ?? p.blurb} ·</span>
               <span className={`m-num ${on ? "" : net[p.id] < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(on ? r.net : net[p.id], { sign: true })}</span>
-              <span>net last year</span>
             </button>
           );
         })}

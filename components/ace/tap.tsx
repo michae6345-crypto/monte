@@ -105,7 +105,7 @@ export function TapSection() {
                 k === i ? "bg-ace-panel shadow-[0_0_0_1.5px_var(--m-ink)]" : "bg-ace-panel shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
               }`}
             >
-              <span className={`m-num w-10 shrink-0 text-[11px] ${k === i ? "text-ace-ink" : "text-ace-dim"}`} title="Merchant category code: what the issuer sees">{s.mcc}</span>
+              <span className={`m-num w-10 shrink-0 text-[11px] ${k === i ? "text-ace-ink" : "text-ace-dim"}`} title="Store code: what the card company sees">{s.mcc}</span>
               <MerchantLogo name={s.merchant} size={26} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{s.merchant}</span>
@@ -251,7 +251,7 @@ export function TapSection() {
                 back to {nameOf(persona).whose} cards
               </button>
             ) : (
-              <>Tap the ones in your wallet; the phone above ranks them for each store.</>
+              <>Tap up to five cards from your wallet; the phone above ranks them for each store.</>
             )}
           </span>
         </div>

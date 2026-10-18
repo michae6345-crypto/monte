@@ -166,7 +166,7 @@ export function OddChargesSection() {
             {planted ? "Remove the 3 test charges" : "Plant 3 test charges"}
           </button>
           {/* a pointer that walks over and clicks, the way a demo video would */}
-          {manual === null && cursor > 0 && cursor < 1 && (
+          {manual === null && persona.id !== "you" && cursor > 0 && cursor < 1 && (
             <motion.svg
               aria-hidden
               viewBox="0 0 24 24"
@@ -187,7 +187,7 @@ export function OddChargesSection() {
           {run.flags.length === 0 && (
             <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-5 p-8">
               <span className="m-num text-5xl">[ ]</span>
-              <p>Checked for double charges, price rises, test charges and anything far above a store&apos;s usual. Turn on the test charges to see a catch.</p>
+              <p>Checked for double charges, price rises, card testing and anything far above a store&apos;s usual. Plant the 3 test charges to see a catch.</p>
             </motion.div>
           )}
           {run.flags.map((f, k) => (

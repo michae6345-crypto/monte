@@ -218,7 +218,7 @@ export function KeepSection() {
               </span>
             </h3>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ace-dim">
-              Each sample is one simulated year of {shortName(keepCase.cardId)}{" "}
+              Each sample is one simulated year with the {shortName(keepCase.cardId)}{" "}
               in the wallet minus the same year without it, fee and perks
               included. The engine replays every purchase through the card rules
               both ways.
@@ -456,7 +456,7 @@ export function ForYouSection() {
               </span>
             </span>
           ))}
-          ; points as{" "}
+          ; points redeemed as{" "}
           <Cycle
             value={valuation}
             options={[
@@ -617,7 +617,7 @@ export function ForYouSection() {
         {paidOff && paidOff.hypothetical ? (
           <>
             <p className="mb-4 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-sm">
-              Projection: once {nameOf(persona).who}{" "}
+              Projection: the same purchases after {nameOf(persona).who}{" "}
               {v(nameOf(persona), "clears", "clear")}{" "}
               {money(paidOff.hypothetical.clearedBalance)} on the{" "}
               {paidOff.hypothetical.cards.map(shortName).join(" and ")}.
@@ -667,15 +667,14 @@ function Cycle({
 
 /** What-if cards, said once wherever projections show them (every Plan tab, Next year). */
 export function WhatIfBar() {
-  const { wallet, held, removeCard } = useAce();
+  const { wallet, held, removeCard, persona } = useAce();
   const tried = wallet.filter((h) => !held.includes(h)).map((h) => h.cardId);
   if (!tried.length) return null;
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-ace-ink px-4 py-3 text-sm text-ace-bg">
       <span>
         What-if: {tried.map(shortName).join(", ")} added to next year&apos;s
-        projections. Last year&apos;s receipt, replay and leaks still show the
-        cards held.
+        projections. Last year&apos;s receipt, replay and leaks still show {nameOf(persona).whose} own cards.
       </span>
       <button
         onClick={() => tried.forEach((id) => removeCard(id))}

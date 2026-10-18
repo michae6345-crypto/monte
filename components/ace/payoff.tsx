@@ -248,8 +248,8 @@ export function PayoffSection() {
                   average) clears it in <span className="m-num">{span(stepped.months)}</span> with{" "}
                   <span className="m-num">{money(stepped.interest)}</span> of interest
                   {Math.round(stepped.interest) !== Math.round(mine.interest)
-                    ? `, ${money(Math.abs(Math.round(stepped.interest) - Math.round(mine.interest)))} ${stepped.interest > mine.interest ? "more" : "less"} than a flat ${money(monthly)}, which a slow month may not cover.`
-                    : `, the same as a flat ${money(monthly)}.`}
+                    ? `, ${money(Math.abs(Math.round(stepped.interest) - Math.round(mine.interest)))} ${stepped.interest > mine.interest ? "more" : "less"} interest than a flat ${money(monthly)}, which a slow month may not cover.`
+                    : `, the same interest as a flat ${money(monthly)}.`}
                 </>
               )}{" "}
               Never less than the {money(firstMinimum)} minimum: a missed one adds a late fee.

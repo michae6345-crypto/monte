@@ -386,7 +386,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
         <div className="px-4 py-3">
           <dt className="text-ace-dim">{k === 0 ? "the starting point" : `vs ${runs[0].short.replace(/^As T/, "as t").replace(/^As /, "as ")}, typical year`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
-            {beats === null ? "the other two are measured against it" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
+            {beats === null ? (runs.length > 2 ? "the other two are measured against it" : "the other one is measured against it") : `${money(gain, { sign: true })} · better in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
           </dd>
         </div>
       </dl>

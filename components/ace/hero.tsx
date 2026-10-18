@@ -52,7 +52,7 @@ export function NextYear() {
   const carried = wallet.find((h) => (h.balance ?? 0) > 0);
   const adds = strategies.find((x) => x.adds)?.adds;
   const words = [
-    { h: `As ${nm.Who} ${nm.plural ? "pay" : "pays"} today.`, d: `Every purchase on the card ${nm.who} actually reached for.${carried ? " The balance charges interest all year." : ""}` },
+    { h: `Every purchase as ${nm.who} paid it.`, d: `Every purchase on the card ${nm.who} actually reached for.${carried ? " The balance charges interest all year." : ""}` },
     adds
       ? { h: `With a ${shortName(adds)} beside it.`, d: `Same spending, each purchase on whichever of the two pays more. Both paid in full.` }
       : { h: "Every purchase on the right card.", d: `Same cards, same spending, each purchase on the card that pays most${carried ? ", never the one with a balance" : ""}.` },

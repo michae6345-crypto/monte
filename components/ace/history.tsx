@@ -106,7 +106,7 @@ export function HistorySection() {
           />
           {Object.keys(overrides).length > 0 && (
             <button onClick={resetOverrides} className="btn btn-ghost btn-sm">
-              {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} category changed · reset
+              {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} with a changed category · reset
             </button>
           )}
           {wallet.length > 1 && (

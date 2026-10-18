@@ -40,7 +40,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             Stop the leaks.
-            <span className="m-second block">What slips out, and the fix for each.</span>
+            <span className="m-second block">Interest, fees and the wrong card, each with its fix.</span>
           </>
         }
         tabs={[

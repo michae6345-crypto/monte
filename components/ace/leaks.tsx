@@ -224,7 +224,7 @@ export function LeaksSection() {
               = {money(total, { cents: true })} a year.
             </>
           ) : (
-            <>Counted: {leaks.find((l) => l.counts)?.title.toLowerCase()}, {money(total, { cents: true })} a year.</>
+            <>Counted: {leaks.find((l) => l.counts)?.title}, {money(total, { cents: true })} a year.</>
           )}{" "}
           Rows marked &ldquo;not counted&rdquo; are shown, not added.
         </p>
