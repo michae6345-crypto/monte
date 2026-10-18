@@ -118,6 +118,8 @@ workaround, one Monte card that charges your best card behind the scenes, breaks
 1. **The bonus disappears.** Rewards follow the store's category code. If Monte paid Trader
    Joe's (5411) and then charged your Amex Gold, Amex would see a charge from Monte, not a
    grocery store, and pay 1× instead of 4×.
+2. **It can count as a cash advance.** Some issuers treat loading another card as one: a fee
+   up front and interest from day one.
 
 ## Try it
 
