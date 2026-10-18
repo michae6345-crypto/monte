@@ -16,6 +16,9 @@
 //   earn the Q4 rotation and slots 1-9 earn the card's base rate on those categories.
 //   Q1-Q3 lineups aren't published; crediting nothing is conservative and matches
 //   receipt(), which also only pays a rotation inside its published window.
+// - No invented year-over-year drift by default: the fan is the spread from your own
+//   months, not a forecast of changed habits. opts.driftSd turns drift on, applied to
+//   purchase amounts before the rules run (so caps stay non-linear); see MonteCarloOpts.
 // - Common random numbers: every option is scored on the same resampled year as your
 //   current wallet, so winShare is a paired comparison (share of years strictly ahead).
 // - Net = best-play rewards (same greedy as simulate(..., "best"), re-implemented over
@@ -46,7 +49,21 @@ export type Outcome = {
   bands: Band[];
 };
 export type MonteCarloResult = { years: number; seed: number; current: Outcome; options: Outcome[] };
-export type MonteCarloOpts = { years?: number; seed?: number; candidates?: string[] };
+export type MonteCarloOpts = {
+  years?: number;
+  seed?: number;
+  candidates?: string[];
+  /** Optional year-over-year spending drift, OFF by default (0 = pure block bootstrap).
+   *  With driftSd = s, each simulated year multiplies every purchase AMOUNT in a category
+   *  by exp(s*z - s^2/2), z ~ N(0,1), drawn once per category per year (median 1, so the
+   *  mean year is unchanged). It scales amounts BEFORE the rules run, so a category that
+   *  drifts up earns less than proportionally once it crosses a cap; scaling finished
+   *  rewards instead would miss that. The default is 0 because nothing in one year of a
+   *  person's own statements estimates how their spending drifts between years: the fan
+   *  then shows exactly the uncertainty the data supports (which months you get), and
+   *  nothing invented. */
+  driftSd?: number;
+};
 
 const SYN_YEAR = 2026;
 const DAYS_IN = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // 2026 is not a leap year
@@ -352,8 +369,18 @@ export function monteCarloSamples(wallet: Holding[], txns: Txn[], opts: MonteCar
     blockStart.push(acc);
     acc += b.length;
   }
-  const amounts = Float64Array.from(pool, (t) => t.amount);
+  const baseAmounts = Float64Array.from(pool, (t) => t.amount);
   const draws = drawYears(blocks.length, years, seed);
+
+  // optional spending drift (see MonteCarloOpts.driftSd): its own PRNG stream, so turning
+  // it on does not change which months get drawn
+  const driftSd = Math.max(0, opts.driftSd ?? 0);
+  const cats = [...new Set(pool.map((t) => t.category))].sort();
+  const catOf = Int32Array.from(pool, (t) => cats.indexOf(t.category));
+  const drnd = mulberry32(seed ^ 0x9e3779b9);
+  const gauss = () => Math.sqrt(-2 * Math.log(drnd() || 1e-9)) * Math.cos(2 * Math.PI * drnd());
+  const factor = new Float64Array(cats.length);
+  const amounts = driftSd > 0 ? new Float64Array(baseAmounts.length) : baseAmounts;
 
   // rule tables for every card any option holds
   const pools = new Map<string, number>();
@@ -376,6 +403,10 @@ export function monteCarloSamples(wallet: Holding[], txns: Txn[], opts: MonteCar
   const dateCache = new Map<number, string>(); // purchase index * 16 + slot
 
   for (let y = 0; y < years; y++) {
+    if (driftSd > 0) {
+      for (let c = 0; c < cats.length; c++) factor[c] = Math.exp(driftSd * gauss() - (driftSd * driftSd) / 2);
+      for (let i = 0; i < amounts.length; i++) amounts[i] = baseAmounts[i] * factor[catOf[i]];
+    }
     // lay out the year: slot by slot, each drawn month in date order
     let n = 0;
     if (blocks.length)
