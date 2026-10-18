@@ -5,3 +5,4 @@ number comes from a rule in `data/cards.json` and the purchases it applied to.
 
 | File | What it does |
 |---|---|
+| `index.ts` | `simulate`, `receipt`, `tap`, `marginalValue`, `whatIf`: earn rules, caps, shared pools, rotations, credits, interest |
