@@ -3,6 +3,7 @@
 import { useBrand } from "./brands";
 import { Solver, jordanStrategies } from "./solver";
 import { DropHero } from "./drop";
+import { Lockup } from "@/components/brand";
 import { PERSONAS } from "@/lib/data/personas";
 import { useAce } from "./store";
 import { JORDAN, yearOf } from "@/lib/data/personas";
@@ -20,11 +21,10 @@ export function Nav() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-ace-line bg-ace-bg/90">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
-        <a href="#top" className="flex items-center gap-2">
-          <b.Mark size={28} />
-          <span className="text-xl font-bold leading-none tracking-tight" style={{ fontFamily: "var(--brand-head)" }}>{b.wordmark}</span>
+        <a href="#top" className="group flex items-center" aria-label="Monte, back to top">
+          <Lockup size={20} />
         </a>
-        <nav className="mono hidden gap-6 text-[11px] uppercase tracking-[0.18em] text-ace-dim md:flex">
+        <nav className="m-label hidden gap-6 md:flex">
           <a href="#money" className="hover:text-ace-ink">Money</a>
           <a href="#receipt" className="hover:text-ace-ink">Receipt</a>
           <a href="#history" className="hover:text-ace-ink">Purchases</a>

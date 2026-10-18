@@ -231,6 +231,10 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   const type = TYPES.find((t) => t.id === choice.type)!;
 
   useEffect(() => {
+    // The final brand lives in styles/brand.css. The old kit's themes only apply when someone
+    // opens the kit on purpose (?kit, ?theme=, ?type=, ?logo=).
+    const q = new URLSearchParams(location.search);
+    if (!(q.has("kit") || q.has("theme") || q.has("type") || q.has("logo"))) return;
     const root = document.documentElement;
     for (const [k, v] of Object.entries({ ...theme.vars, ...type.vars })) root.style.setProperty(k, v);
     root.dataset.theme = theme.id;

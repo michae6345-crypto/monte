@@ -82,7 +82,7 @@ export function StrategyChart() {
           </span>
         </span>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-ace-line">
+      <div className="overflow-x-auto m-panel">
         <table className="w-full min-w-[560px] border-collapse text-sm">
           <thead>
             <tr className="mono text-[11px] text-ace-dim">

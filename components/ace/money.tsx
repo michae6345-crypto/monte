@@ -72,7 +72,7 @@ export function MoneySection() {
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* treemap */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
+        <div className="m-panel p-5">
           <div className="mb-4 flex items-baseline justify-between">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">By category · {txns.length} purchases</div>
             <div className="text-right">
@@ -128,7 +128,7 @@ export function MoneySection() {
         </div>
 
         {/* merchants */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
+        <div className="m-panel p-5">
           <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">Top merchants</div>
           <div className="space-y-3">
             {merchants.map((m, i) => (
@@ -157,7 +157,7 @@ export function MoneySection() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* months */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
+        <div className="m-panel p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Month by month</div>
             <div className="flex flex-wrap gap-3">
@@ -192,7 +192,7 @@ export function MoneySection() {
         </div>
 
         {/* subscriptions */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
+        <div className="m-panel p-5">
           <div className="mb-4 flex items-baseline justify-between">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Keeps charging you</div>
             <span className="mono text-sm">
