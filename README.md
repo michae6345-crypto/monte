@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-# Monte
+<h1 align="center">Monte</h1>
 
 **Every card played right, and what your cards really cost you.**
 
