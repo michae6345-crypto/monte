@@ -6,7 +6,7 @@ import { useState } from "react";
 import { CARDS, card } from "@/lib/engine/catalog";
 import { PERSONAS } from "@/lib/data/personas";
 import { CardArt, shortName } from "./card-art";
-import { Num } from "./num";
+import { PaperReceipt } from "./paper-receipt";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
@@ -15,17 +15,6 @@ export function ReceiptSection() {
   const [picker, setPicker] = useState(false);
   const { brand: b } = useBrand();
 
-  const lines: { label: string; sub?: string; value: number }[] = [
-    ...r.perCard.map((c) => ({ label: `${shortName(c.cardId)} rewards`, value: c.rewards })),
-    ...r.perCard.filter((c) => c.credits > 0).map((c) => ({ label: `${shortName(c.cardId)} perks used`, value: c.credits })),
-    ...r.perCard.filter((c) => c.fee > 0).map((c) => ({ label: `${shortName(c.cardId)} annual fee`, value: -c.fee })),
-    ...r.perCard
-      .filter((c) => c.interest > 0)
-      .map((c) => {
-        const h = wallet.find((x) => x.cardId === c.cardId)!;
-        return { label: `${shortName(c.cardId)} interest`, sub: `$${h.balance?.toLocaleString()} balance at ${h.apr}% APR`, value: -c.interest };
-      }),
-  ];
 
   return (
     <Section
@@ -158,47 +147,7 @@ export function ReceiptSection() {
           className="relative mx-auto w-full max-w-[440px] lg:sticky lg:top-24 lg:self-start"
           style={{ filter: "drop-shadow(0 0 0.5px rgba(12,14,20,.35)) drop-shadow(0 18px 30px rgba(12,14,20,.12))" }}
         >
-          <div className="receipt-edge rounded-t-sm bg-ace-paper px-7 pb-12 pt-8 text-ace-ink">
-            <div className="mono text-center text-[11px] uppercase tracking-[0.3em] text-black/50">{b.name} · annual receipt</div>
-            <div className="serif mt-1 text-center text-3xl">{persona.name}</div>
-            <div className="mono mt-1 text-center text-[10px] uppercase tracking-widest text-black/40">18 Oct 2025 – 17 Oct 2026</div>
-            <div className="my-5 border-t border-dashed border-black/25" />
-            <div className="mono space-y-2.5 text-[13px]">
-              <AnimatePresence initial={false}>
-                {lines.map((l, i) => (
-                  <motion.div
-                    key={l.label}
-                    layout
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="flex items-baseline justify-between gap-4"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate">{l.label}</span>
-                      {l.sub && <span className="block text-[10px] text-black/45">{l.sub}</span>}
-                    </span>
-                    <Num value={l.value} sign className={`tnum shrink-0 ${l.value < 0 ? "text-ace-loss" : "text-ace-gain"}`} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-            <div className="my-5 border-t border-dashed border-black/25" />
-            <div className="flex items-end justify-between">
-              <span className="mono text-[11px] uppercase tracking-[0.25em] text-black/50">Net</span>
-              <Num value={r.net} sign className={`serif tnum text-6xl leading-none ${r.net < 0 ? "text-ace-loss" : "text-ace-gain"}`} />
-            </div>
-            <div className="mt-6 rounded-md bg-black/[0.06] p-3 text-[12px] leading-relaxed">
-              <span className="font-semibold">Left on the table: </span>
-              <Num value={r.leftOnTable} className="mono font-semibold tnum" /> more rewards from the same purchases, just by tapping the
-              right card in this same wallet{wallet.some((h) => h.balance) ? ", and never the one with a balance" : ""}.{" "}
-              <a href="#replay" className="underline underline-offset-2">Watch the replay ↓</a>
-            </div>
-            <div className="mono mt-5 text-center text-[10px] uppercase tracking-[0.3em] text-black/35">
-              {money(r.spend)} spent · {txns.length} purchases
-            </div>
-          </div>
+          <PaperReceipt name={persona.name} wallet={wallet} r={r} purchases={txns.length} brandName={b.name} />
         </motion.div>
       </div>
     </Section>
