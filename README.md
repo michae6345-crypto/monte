@@ -93,7 +93,7 @@ npm test             # 36 tests
 npm run smoke        # checks a deployment's demo path
 ```
 
-Verify the numbers yourself. Each script prints its own workings:
+**Check the numbers.** Each script prints its working:
 
 ```bash
 node --import ./scripts/_alias.mjs scripts/test.ts          # 36 tests, hand-computed cases
