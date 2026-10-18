@@ -63,7 +63,7 @@ source URL and the date we checked it, and to the purchases behind it.
 
 - **Rules engine** (`lib/engine/`): earn rates, spending caps, shared cap pools,
   pick-one categories, quarterly rotations, credits, cash vs travel point values.
-- **Monte Carlo** (`lib/engine/montecarlo.ts`) — resamples your own months into 1,000
+- **Monte Carlo** (`lib/engine/montecarlo.ts`): resamples your own months into 1,000
   simulated years and replays the full engine over each one, so caps and quarters
   re-accumulate from zero every year. Seeded, so the same inputs always give the same
   numbers. Runs in 19–313 ms.
