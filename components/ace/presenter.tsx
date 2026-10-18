@@ -24,7 +24,7 @@ const STEPS: Step[] = [
   { id: "top", title: "Hook", cue: "Jordan, 24, first job in LA, three cards. Last year they cost him $427. Monte plays every dollar right, for anyone with money moving through a bank." },
   { id: "see", tab: "stores", target: "money-view", title: "See where it goes", cue: "A year of Jordan's spending: every store, sized by money, growing month by month.", play: 5 },
   { id: "see", tab: "receipt", target: "receipt-net", block: "center", title: "What his cards cost", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
-  { id: "leaks", tab: "leaks", target: "leaks-list", title: "Stop the leaks", cue: "Monte found $891 a year leaking: interest, a fee that doesn't pay, the wrong card. Each with its fix." },
+  { id: "leaks", tab: "leaks", target: "leaks-list", title: "Stop the leaks", cue: "Monte found $891 a year leaking: interest, a fee that doesn't pay, the wrong card. Each with its fix.", play: 4 },
   { id: "spend", tab: "replay", target: "replay-view", title: "Spend it right", cue: "The same purchases move to the right card. $104 back.", play: 5 },
   { id: "spend", tab: "tap", target: "tap-view", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
   { id: "plan", tab: "payoff", target: "payoff-view", title: "Plan the next move", cue: "$250 a month clears it in 13 months, not 12 years. Then +$521 a year.", play: 5 },

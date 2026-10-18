@@ -15,6 +15,7 @@ import { MerchantLogo } from "./merchant-logo";
 import { findOddCharges } from "./odd";
 import { bestSecondCard } from "./one-card";
 import { money, nameOf, useAce } from "./store";
+import { Stage } from "./stage";
 
 type Leak = {
   key: string;
@@ -149,11 +150,19 @@ export function LeaksSection() {
 
   return (
     <div id="leaks-list" className="scroll-mt-24">
+      <Stage vh={170}>
+        {(p) => {
+          // the leaks land one by one as you scroll, and the total adds them up as they do
+          const k = Math.min(leaks.length, Math.max(1, Math.ceil(Math.max(0, (p - 0.04) / 0.72) * leaks.length)));
+          const sum = leaks.slice(0, k).filter((l) => l.counts).reduce((a, l) => a + l.amount, 0);
+          const done = k >= leaks.length;
+          return (
+    <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
         <h3 className="max-w-2xl text-3xl md:text-[2.6rem]">
           {total >= 1 ? (
             <>
-              Monte found <Bracketed>{money(total)}</Bracketed> a year leaking
+              Monte found <Bracketed state={done ? "resolved" : "computing"}>{money(sum)}</Bracketed> a year leaking
               <span className="m-second block">out of {nm.whose} wallet.</span>
             </>
           ) : (
@@ -169,10 +178,10 @@ export function LeaksSection() {
         {leaks.map((l, i) => (
           <motion.div
             key={l.key}
-            initial={{ opacity: 0, x: -12 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-            transition={{ delay: i * 0.06, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            initial={false}
+            animate={{ opacity: i < k ? 1 : 0, x: i < k ? 0 : -16 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            aria-hidden={i >= k}
             className="grid items-center gap-4 p-5 md:grid-cols-[minmax(0,1fr)_8rem_11rem] md:gap-8"
           >
             <div className="flex min-w-0 items-center gap-4">
@@ -202,7 +211,7 @@ export function LeaksSection() {
           </motion.div>
         ))}
       </div>
-      {total >= 1 && (
+      {total >= 1 && done && (
         // the headline, added up on screen: only the rows marked as counted
         <p className="m-mono mt-4 text-[13px]">
           {leaks.filter((l) => l.counts).length > 1 ? (
@@ -219,6 +228,10 @@ export function LeaksSection() {
           Rows marked &ldquo;not counted&rdquo; are shown, not added.
         </p>
       )}
+    </div>
+          );
+        }}
+      </Stage>
     </div>
   );
 }
