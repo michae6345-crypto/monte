@@ -81,12 +81,13 @@ async function computeRuns(strategies: Strategy[], txns: Txn[], alive: () => boo
 
 /** Runs after first paint, in slices, so the page never waits on it. */
 export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
-  const [runs, setRuns] = useState<Run[] | null>(null);
+  // runs are tagged with the strategies they answer, so a new person never sees the last one's
+  const [done, setDone] = useState<{ for: Strategy[]; runs: Run[] } | null>(null);
   useEffect(() => {
     let alive = true;
     const id = window.setTimeout(() => {
       computeRuns(strategies, txns, () => alive).then((r) => {
-        if (alive && r) setRuns(r);
+        if (alive && r) setDone({ for: strategies, runs: r });
       });
     }, 60);
     return () => {
@@ -94,7 +95,7 @@ export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
       clearTimeout(id);
     };
   }, [strategies, txns]);
-  return runs;
+  return done && done.for === strategies ? done.runs : null;
 }
 
 export function Solver({ strategies, txns, title, step }: { strategies: Strategy[]; txns: Txn[]; title: string; step?: number }) {

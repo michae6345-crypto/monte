@@ -203,7 +203,7 @@ export function KeepSection() {
         })}
       </div>
       {keepCase && (
-        <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+        <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center [&>*]:min-w-0">
           <div>
             <p className="m-label">
               the {shortName(keepCase.cardId)}, kept vs dropped
@@ -640,7 +640,8 @@ export function ForYouSection() {
 }
 
 /** 0.3 months → "about 9 days", 2.4 → "about 2.4 months" */
-const spanOf = (months: number) => (months < 1 ? `about ${Math.max(1, Math.round(months * 30))} days` : `about ${months.toFixed(1)} months`);
+const spanOf = (months: number) =>
+  months < 0.95 ? `about ${Math.max(1, Math.round(months * 30))} days` : months < 1.05 ? "about a month" : `about ${months.toFixed(1).replace(/\.0$/, "")} months`;
 
 function Cycle({
   value,

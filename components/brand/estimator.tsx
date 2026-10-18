@@ -88,7 +88,7 @@ export function Estimator({
       });
     }, tickMs);
     return () => window.clearInterval(id);
-  }, [seen, draws, total, batch, tickMs]);
+  }, [seen, draws, total, batch, tickMs, roll]);
 
   const lo = useMemo(() => Math.min(...draws), [draws]);
   const hi = useMemo(() => Math.max(...draws), [draws]);
@@ -120,9 +120,9 @@ export function Estimator({
   const meanX = ((runMean - lo) / (hi - lo || 1)) * 100;
 
   return (
-    <div ref={box} className={cn("m-panel flex flex-col gap-5 p-6", className)}>
+    <div ref={box} className={cn("m-panel flex min-w-0 flex-col gap-5 p-6", className)}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <Expect of={of} state={done ? "resolved" : "computing"} tone={done ? (runMean >= 0 ? "gain" : "loss") : undefined} className="whitespace-nowrap text-3xl">
+        <Expect of={of} state={done ? "resolved" : "computing"} tone={done ? (runMean >= 0 ? "gain" : "loss") : undefined} className="min-w-0 text-2xl sm:text-3xl">
           {usd(runMean)}
         </Expect>
         <span className="m-num whitespace-nowrap text-xs" style={{ color: "var(--m-slate)" }}>

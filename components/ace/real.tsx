@@ -37,7 +37,7 @@ export function RealSection() {
       tag: "Next",
       tone: "text-ace-dim",
       items: [
-        ["Bank linking", "Live Plaid with real keys: transactions and balances in, no card numbers ever. Production needs Plaid's review."],
+        ["Bank linking", "Built and switched off in this demo. Turned on, it reads transactions and balances, never card numbers. Production needs Plaid's review."],
         ["The merchant map", "Issuers don't publish which codes count as dining. Today a correction applies to every purchase at that store, in your browser; next, it improves the map for everyone."],
         ["At the register", `${b.name} in the phone's wallet, so the pick appears before you tap.`],
       ],
