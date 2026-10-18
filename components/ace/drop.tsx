@@ -75,6 +75,7 @@ export function DropHero() {
   const stage = useRef<HTMLDivElement>(null);
   const els = useRef<(HTMLDivElement | null)[]>([]);
   const tagEls = useRef<(HTMLDivElement | null)[]>([]);
+  const copy = useRef<HTMLDivElement>(null);
   const [allDealt, setAllDealt] = useState(false);
   const [landed, setLanded] = useState(false);
 
@@ -205,8 +206,10 @@ export function DropHero() {
         const w = tg.offsetWidth || 220;
         const top = bd.position.y - Math.abs(Math.sin(bd.angle)) * (CW / 2) - Math.abs(Math.cos(bd.angle)) * (CH / 2) - 10;
         const x = Math.max(8 + w / 2, Math.min(W - 8 - w / 2, bd.position.x));
-        let y = Math.max(CH * 0.25, top);
-        for (const p of placed) if (Math.abs(p.x - x) < (p.w + w) / 2 + 6 && Math.abs(p.y - y) < 30) y = p.y - 32;
+        // never above the bottom of the headline block, so a tag can't cover the buttons
+        const floor = copy.current ? copy.current.getBoundingClientRect().bottom - st.getBoundingClientRect().top + 18 + (tg.offsetHeight || 30) : CH * 0.25;
+        let y = Math.max(floor, top);
+        for (const p of placed) if (Math.abs(p.x - x) < (p.w + w) / 2 + 6 && Math.abs(p.y - y) < 30) y = p.y + 34;
         placed.push({ x, y, w });
         tg.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%)`;
         tg.style.opacity = shown[i] ? "1" : "0";
@@ -380,14 +383,14 @@ export function DropHero() {
                     {tags[id].text.split(" ")[0]}
                   </span>{" "}
                   <span className="hidden sm:inline">{tags[id].text.split(" ").slice(1).join(" ")}</span>
-                  <span className="sm:hidden">{tags[id].text.split(" ")[1]}</span>
+                  <span className="sm:hidden" aria-hidden>{tags[id].text.split(" ")[1]}</span>
                 </span>
               </div>
             ) : null,
           )}
         </div>
 
-        <div className="pointer-events-none relative z-10 mx-auto max-w-5xl px-5 pt-24 text-center md:pt-28">
+        <div ref={copy} className="pointer-events-none relative z-10 mx-auto max-w-5xl px-5 pt-24 text-center md:pt-28">
           <div className="mb-6 flex justify-center">
             <Lockup size={30} state={landed ? "resolved" : "breathe"} />
           </div>
