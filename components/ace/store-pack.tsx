@@ -216,7 +216,7 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
   const swing = peak && low && low.total > 0 ? peak.total / low.total : 1;
 
   return (
-    <div className="m-panel overflow-x-auto p-5 md:p-6">
+    <div id="month-strip" className="m-panel scroll-mt-24 overflow-x-auto p-5 md:p-6">
       <div className="mb-5 flex items-baseline justify-between gap-4">
         <p className="m-label">month by month · top store each month</p>
         {peak && (
