@@ -1,0 +1,578 @@
+{
+  "76": {
+    "name": "76",
+    "site": "https://www.76.com/",
+    "logo": "https://www.76.com/wp-content/themes/fuels-redesign/assets/logos/e76-default.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "76.webp"
+  },
+  "amc-theatres": {
+    "name": "AMC Theatres",
+    "site": "https://www.amctheatres.com/",
+    "logo": "https://www.amctheatres.com/apple-icon1.png?90541acf4fc1df70",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "amc-theatres.webp"
+  },
+  "adobe": {
+    "name": "Adobe",
+    "site": "https://www.adobe.com/",
+    "logo": "https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "adobe.svg"
+  },
+  "airbnb": {
+    "name": "Airbnb",
+    "site": "https://www.airbnb.com/",
+    "logo": "https://a0.muscache.com/pictures/airbnb-platform-assets/AirbnbPlatformAssets-Favicons/original/304e8c59-05df-4fab-9846-f69fd7f749b0.svg?im_w=240",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "airbnb.svg"
+  },
+  "alaska-airlines": {
+    "name": "Alaska Airlines",
+    "site": "https://www.alaskaair.com/",
+    "logo": "https://resource.alaskaair.net/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "alaska-airlines.png"
+  },
+  "amazon": {
+    "name": "Amazon",
+    "site": "https://www.amazon.com/",
+    "logo": "https://www.amazon.com/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "amazon.png"
+  },
+  "apple": {
+    "name": "Apple",
+    "site": "https://www.apple.com/",
+    "logo": "https://www.apple.com/ (inline SVG, globalnav Apple logo)",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "apple.svg"
+  },
+  "arco": {
+    "name": "Arco",
+    "site": "https://www.arco.com/",
+    "logo": "https://www.arco.com/ (inline SVG, header logo)",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "arco.svg"
+  },
+  "b-h-photo": {
+    "name": "B&H Photo",
+    "site": "https://www.bhphotovideo.com/",
+    "logo": "https://static.bhphoto.com/bimages/touch-icon-ipad-retina.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "b-h-photo.webp"
+  },
+  "big-5-sporting-goods": {
+    "name": "Big 5 Sporting Goods",
+    "site": "https://www.big5sportinggoods.com/",
+    "logo": "https://www.big5sportinggoods.com/store/resources/images/favicon/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "big-5-sporting-goods.webp"
+  },
+  "blue-bottle-coffee": {
+    "name": "Blue Bottle Coffee",
+    "site": "https://bluebottlecoffee.com/",
+    "logo": "https://bluebottlecoffee.com/us/eng (inline SVG, header bottle logo)",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "blue-bottle-coffee.svg"
+  },
+  "chevron": {
+    "name": "Chevron",
+    "site": "https://www.chevron.com/",
+    "logo": "https://www.chevron.com/assets/fav/apple-touch-icon.png?v=7k4MjPGMX6",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "chevron.webp"
+  },
+  "costco": {
+    "name": "Costco",
+    "site": "https://www.costco.com/",
+    "logo": "https://www.costco.com/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "costco.webp"
+  },
+  "cvs-pharmacy": {
+    "name": "CVS Pharmacy",
+    "site": "https://www.cvs.com/",
+    "logo": "https://www.cvs.com/content/dam/enterprise/headless/retail/nav/en/assets/logos/cvs-logo.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "cvs-pharmacy.svg"
+  },
+  "daiso": {
+    "name": "Daiso",
+    "site": "https://daisous.com/",
+    "logo": "https://daisous.com/cdn/shop/files/Daiso_Arrow_1.png?crop=center&height=256&v=1675388896&width=256",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "daiso.webp"
+  },
+  "delta": {
+    "name": "Delta",
+    "site": "https://www.delta.com/",
+    "logo": "https://www.delta.com/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "delta.png"
+  },
+  "disney": {
+    "name": "Disney+",
+    "site": "https://www.disneyplus.com/",
+    "logo": "https://static-assets.bamgrid.com/product/disneyplus/favicons/disPlus-favicon-180x180.7d56f648dc95f591721935193bc827cb.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "disney.webp"
+  },
+  "doordash": {
+    "name": "DoorDash",
+    "site": "https://www.doordash.com/",
+    "logo": "https://www.doordash.com/ (inline SVG, header dash logo; fill set to #FF3008 from cdn.doordash.com favicon)",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "doordash.svg"
+  },
+  "equinox": {
+    "name": "Equinox",
+    "site": "https://www.equinox.com/",
+    "logo": "https://www.equinox.com/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "equinox.png"
+  },
+  "erewhon-cafe": {
+    "name": "Erewhon Cafe",
+    "site": "https://erewhon.com/",
+    "logo": "https://erewhon.com/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "erewhon-cafe.png"
+  },
+  "figma": {
+    "name": "Figma",
+    "site": "https://www.figma.com/",
+    "logo": "https://static.figma.com/app/icon/2/favicon.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "figma.svg"
+  },
+  "guisados": {
+    "name": "Guisados",
+    "site": "https://www.guisados.la/",
+    "logo": "https://images.squarespace-cdn.com/content/v1/52edef07e4b031c61e8970dc/bfe793ba-0ec0-4b85-aa0e-1eec7e767193/favicon.ico?format=100w",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "guisados.webp"
+  },
+  "h-mart": {
+    "name": "H Mart",
+    "site": "https://www.hmart.com/",
+    "logo": "https://hmartus.vtexassets.com/assets/vtex.file-manager-graphql/images/9de0b6b1-d5f6-4518-8181-cb3c1a9fae2c___1c0ab78f530a7b051a81d826b1cda318.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "h-mart.webp"
+  },
+  "hilton": {
+    "name": "Hilton",
+    "site": "https://www.hilton.com/",
+    "logo": "https://www.hilton.com/modules/assets/svgs/logos/WW.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "hilton.svg"
+  },
+  "home-depot": {
+    "name": "Home Depot",
+    "site": "https://www.homedepot.com/",
+    "logo": "https://www.homedepot.com/ (inline SVG, aria-label 'The Home Depot Logo')",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "home-depot.svg"
+  },
+  "howlin-ray-s": {
+    "name": "Howlin' Ray's",
+    "site": "https://howlinrays.com/",
+    "logo": "https://howlinrays.com/cdn/shop/files/Frame_315_192x.png?v=1719857314",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "howlin-ray-s.webp"
+  },
+  "hulu": {
+    "name": "Hulu",
+    "site": "https://www.hulu.com/",
+    "logo": "https://www.hulu.com/static/icons/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "hulu.webp"
+  },
+  "hyatt": {
+    "name": "Hyatt",
+    "site": "https://www.hyatt.com/",
+    "logo": "https://www.hyatt.com/hds/favicons/1.latest/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "hyatt.webp"
+  },
+  "in-n-out-burger": {
+    "name": "In-N-Out Burger",
+    "site": "https://www.in-n-out.com/",
+    "logo": "https://www.in-n-out.com/ResourcePackages/INNOUT/content/images/logo-2021.svg?package=INNOUT",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "in-n-out-burger.svg"
+  },
+  "joe-s-pizza": {
+    "name": "Joe's Pizza",
+    "site": "https://www.joespizzanyc.com/",
+    "logo": "https://images.squarespace-cdn.com/content/v1/5fb3405312797c6fcd738f7a/1605584633387-AFV81DPX5AQ944QGOWZY/favicon.ico?format=100w",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "joe-s-pizza.webp"
+  },
+  "jollibee": {
+    "name": "Jollibee",
+    "site": "https://www.jollibeefoods.com/",
+    "logo": "https://www.jollibeefoods.com/favicon.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "jollibee.svg"
+  },
+  "kang-ho-dong-baekjeong": {
+    "name": "Kang Ho-dong Baekjeong",
+    "site": "https://www.baekjeongkbbq.com/",
+    "logo": "https://www.baekjeongkbbq.com/wp-content/uploads/2021/08/cropped-Baekjeong_Logo-01-180x180.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "kang-ho-dong-baekjeong.webp"
+  },
+  "kumon": {
+    "name": "Kumon",
+    "site": "https://www.kumon.com/",
+    "logo": "https://www.kumon.com/assets/images/kumon_logo.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "kumon.webp"
+  },
+  "ladwp": {
+    "name": "LADWP",
+    "site": "https://www.ladwp.com/",
+    "logo": "https://www.ladwp.com/sites/default/files/favicon_1.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "ladwp.png"
+  },
+  "lyft": {
+    "name": "Lyft",
+    "site": "https://www.lyft.com/",
+    "logo": "https://www.lyft.com/favicon.ico",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "lyft.webp"
+  },
+  "marriott": {
+    "name": "Marriott",
+    "site": "https://www.marriott.com/",
+    "logo": "https://cache.marriott.com/Images/Mobile/MC_Logos/MarriottApple57x57.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "marriott.webp"
+  },
+  "metro-tap": {
+    "name": "Metro TAP",
+    "site": "https://www.taptogo.net/",
+    "logo": "https://www.taptogo.net/resource/1754431286000/FaviconTap",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "metro-tap.png"
+  },
+  "mobil": {
+    "name": "Mobil",
+    "site": "https://www.mobil.com/",
+    "logo": "https://www.mobil.com/-/media/favicons/fav/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "mobil.png"
+  },
+  "netflix": {
+    "name": "Netflix",
+    "site": "https://www.netflix.com/",
+    "logo": "https://www.netflix.com/ (inline SVG, n-logo-svg)",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "netflix.svg"
+  },
+  "nike": {
+    "name": "Nike",
+    "site": "https://www.nike.com/",
+    "logo": "https://www.nike.com/ (inline SVG, swoosh-svg)",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "nike.svg"
+  },
+  "philz-coffee": {
+    "name": "Philz Coffee",
+    "site": "https://philzcoffee.com/",
+    "logo": "https://philzcoffee.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBak1MIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--2a46dd8f856e426653c11d57ddf66049bba3854f/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJY0c1bkJqb0dSVlE2QzNKbGMybDZaVWtpRFRJME5IZ3hNRFErQmpzR1ZBPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--43c6c87ddb43f7bedcd9a050cfac436ed72583d6/logo-new-web-2.0.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "philz-coffee.webp"
+  },
+  "planet-fitness": {
+    "name": "Planet Fitness",
+    "site": "https://www.planetfitness.com/",
+    "logo": "https://www.planetfitness.com/remix/brand-favicons/favicon.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "planet-fitness.svg"
+  },
+  "rei": {
+    "name": "REI",
+    "site": "https://www.rei.com/",
+    "logo": "https://www.rei.com/rei-co-op-logo-black.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "rei.svg"
+  },
+  "ralphs": {
+    "name": "Ralphs",
+    "site": "https://www.ralphs.com/",
+    "logo": "https://www.ralphs.com/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "ralphs.webp"
+  },
+  "rite-aid": {
+    "name": "Rite Aid",
+    "site": "https://www.riteaid.com/",
+    "logo": "https://riteaid.com/riteaid/img/android-chrome-512x512.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "rite-aid.webp"
+  },
+  "shell": {
+    "name": "Shell",
+    "site": "https://www.shell.us/",
+    "logo": "https://www.shell.us/etc.clientlibs/amidala/clientlibs/theme-base/resources/favicon/favicon.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "shell.svg"
+  },
+  "socalgas": {
+    "name": "SoCalGas",
+    "site": "https://www.socalgas.com/",
+    "logo": "https://www.socalgas.com/sites/default/files/images/logo/scg-logo-white.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "socalgas.svg"
+  },
+  "southwest-airlines": {
+    "name": "Southwest Airlines",
+    "site": "https://www.southwest.com/",
+    "logo": "https://www.southwest.com/swa-resources/images/swa_og_heart_blue_bg.jpg",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "southwest-airlines.webp"
+  },
+  "spectrum": {
+    "name": "Spectrum",
+    "site": "https://www.spectrum.com/",
+    "logo": "https://www.spectrum.com/icons/spectrum.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "spectrum.svg"
+  },
+  "spotify": {
+    "name": "Spotify",
+    "site": "https://www.spotify.com/",
+    "logo": "https://www.scdn.co/i/_global/touch-icon-144.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "spotify.webp"
+  },
+  "sprouts-farmers-market": {
+    "name": "Sprouts Farmers Market",
+    "site": "https://www.sprouts.com/",
+    "logo": "https://www.sprouts.com/wp-content/uploads/2020/08/cropped-SFM-fav-icon-new-4C-larger-192x192.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "sprouts-farmers-market.webp"
+  },
+  "sugarfish": {
+    "name": "Sugarfish",
+    "site": "https://sugarfishsushi.com/",
+    "logo": "https://sugarfishsushi.com/wp-content/uploads/2019/09/cropped-JustFISH_color-e1568738375572-1-192x192.jpg",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "sugarfish.webp"
+  },
+  "sweetgreen": {
+    "name": "Sweetgreen",
+    "site": "https://www.sweetgreen.com/",
+    "logo": "https://www.sweetgreen.com/icon.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "sweetgreen.svg"
+  },
+  "t-mobile": {
+    "name": "T-Mobile",
+    "site": "https://www.t-mobile.com/",
+    "logo": "https://www.t-mobile.com/content/dam/t-mobile/ntm/branding/logos/corporate/tmo-logo-v4.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "t-mobile.svg"
+  },
+  "tacos-1986": {
+    "name": "Tacos 1986",
+    "site": "https://tacos1986.com/",
+    "logo": "https://static.showit.co/400/wer1fYRmWArUtXp_s1VwsQ/303398/logo-nocrop.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "tacos-1986.webp"
+  },
+  "target-com": {
+    "name": "Target.com",
+    "site": "https://www.target.com/",
+    "logo": "https://www.target.com/icons-illustrations/v2/light/bullseye-tm.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "target-com.svg"
+  },
+  "the-comedy-store": {
+    "name": "The Comedy Store",
+    "site": "https://thecomedystore.com/",
+    "logo": "https://thecomedystore.com/favicon/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "the-comedy-store.webp"
+  },
+  "ticketmaster": {
+    "name": "Ticketmaster",
+    "site": "https://www.ticketmaster.com/",
+    "logo": "https://uk.tmconst.com/rc-5fd95ab4/images/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "ticketmaster.png"
+  },
+  "trader-joe-s": {
+    "name": "Trader Joe's",
+    "site": "https://www.traderjoes.com/",
+    "logo": "https://www.traderjoes.com/etc.clientlibs/trjo/clientlibs/clientlib-react/resources/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "trader-joe-s.webp"
+  },
+  "uber": {
+    "name": "Uber",
+    "site": "https://www.uber.com/",
+    "logo": "https://www.uber.com/_static/de0e97ed977ad313.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "uber.webp"
+  },
+  "uber-eats": {
+    "name": "Uber Eats",
+    "site": "https://www.ubereats.com/",
+    "logo": "https://www.ubereats.com/_static/9d965730ecb40206.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "uber-eats.webp"
+  },
+  "united-airlines": {
+    "name": "United Airlines",
+    "site": "https://www.united.com/",
+    "logo": "https://www.united.com/icons/icon-512x512.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "united-airlines.webp"
+  },
+  "urban-outfitters": {
+    "name": "Urban Outfitters",
+    "site": "https://www.urbanoutfitters.com/",
+    "logo": "https://static.urbanoutfitters.com/static/v3/apple-touch/itunes_artwork.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "urban-outfitters.webp"
+  },
+  "venmo": {
+    "name": "Venmo",
+    "site": "https://venmo.com/",
+    "logo": "https://www.paypalobjects.com/venmocmsnodeweb/brand-assets/favicons/favicon_258x258.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "venmo.webp"
+  },
+  "verizon": {
+    "name": "Verizon",
+    "site": "https://www.verizon.com/",
+    "logo": "https://www.verizon.com/etc/designs/vzwcom/gnav20/core.css (data-URI SVG in .gnav20-logoWhiteBg)",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "verizon.svg"
+  },
+  "vons": {
+    "name": "Vons",
+    "site": "https://www.vons.com/",
+    "logo": "https://www.vons.com/home/favicons/vons.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "vons.png"
+  },
+  "walgreens": {
+    "name": "Walgreens",
+    "site": "https://www.walgreens.com/",
+    "logo": "https://www.walgreens.com/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "walgreens.webp"
+  },
+  "wework": {
+    "name": "WeWork",
+    "site": "https://www.wework.com/",
+    "logo": "https://cdn-static.wework.com/content/app-icons/safari_pinned_tab.svg",
+    "kind": "svg",
+    "fetched": "2026-10-18",
+    "file": "wework.svg"
+  },
+  "whole-foods-market": {
+    "name": "Whole Foods Market",
+    "site": "https://www.wholefoodsmarket.com/",
+    "logo": "https://m.media-amazon.com/images/S/assets.wholefoodsmarket.com/sales_flyer/img/favicon_180x180.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "whole-foods-market.webp"
+  },
+  "youtube-tv": {
+    "name": "YouTube TV",
+    "site": "https://tv.youtube.com/",
+    "logo": "https://tv.youtube.com/favicon.ico",
+    "kind": "ico",
+    "fetched": "2026-10-18",
+    "file": "youtube-tv.png"
+  },
+  "zion-market": {
+    "name": "Zion Market",
+    "site": "https://zionmarket.com/",
+    "logo": "https://zionmarket.com/images/favicon_io/apple-touch-icon.png",
+    "kind": "png",
+    "fetched": "2026-10-18",
+    "file": "zion-market.webp"
+  },
+  "missing": [
+    {
+      "slug": "bcd-tofu-house",
+      "name": "BCD Tofu House",
+      "site": "https://bcdtofu.com/",
+      "reason": "site (GoDaddy builder) has a text-only logo; its icons are GoDaddy's generic placeholder house"
+    }
+  ]
+}
