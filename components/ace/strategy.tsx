@@ -103,7 +103,7 @@ export function StrategyChart() {
                 <td className="border-b border-ace-line px-3 py-2">
                   <span className="mono mr-2 text-[11px] text-ace-dim tnum">{MCC[r.cat] ?? "····"}</span>
                   <span>{cap(r.cat)}</span>
-                  <span className="mono ml-2 text-[10px] text-ace-dim/70">{money(r.total)}/yr</span>
+                  <span className="mono ml-2 text-[10px] text-ace-dim">{money(r.total)}/yr</span>
                 </td>
                 {r.cells.map((c) => {
                   const on = sel?.cat === r.cat && sel.cardId === c.cardId;

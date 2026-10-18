@@ -215,7 +215,7 @@ export function ForYouSection() {
       lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot on this list.`}
     >
       <div className="grid gap-8 lg:grid-cols-[320px_1fr] [&>*]:min-w-0">
-        <div className="space-y-6 rounded-lg border border-ace-line bg-ace-panel/70 p-6">
+        <div className="space-y-6 rounded-lg border border-ace-line bg-ace-panel p-6">
           <div>
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">What {b.name} learned</div>
             <ul className="mt-3 space-y-2 text-sm">
@@ -328,7 +328,7 @@ export function ForYouSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: k * 0.08 }}
-                  className="rounded-md border border-ace-line bg-ace-panel/60 p-4"
+                  className="rounded-md border border-ace-line bg-ace-panel p-4"
                 >
                   <div
                     className={`mono text-[10px] uppercase tracking-[0.2em] ${n.tone === "gain" ? "text-ace-gain" : n.tone === "loss" ? "text-ace-loss" : "text-ace-gold"}`}

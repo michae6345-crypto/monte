@@ -51,7 +51,7 @@ export function HistorySection() {
       }
       lede={`Every purchase you made, the card you paid with, and the card ${b.name} would have picked, with what the difference cost you. Search it, or click a merchant to see every visit.`}
     >
-      <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5 md:p-6">
+      <div className="rounded-lg border border-ace-line bg-ace-panel p-5 md:p-6">
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <input
             value={q}

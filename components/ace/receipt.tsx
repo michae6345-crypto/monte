@@ -38,7 +38,7 @@ export function ReceiptSection() {
           {persona.name} · <R>{wallet.length}</R> cards · net <R tone={r.net < 0 ? "loss" : "gain"}>{money(r.net, { sign: true })}</R>
         </>
       }
-      lede={`Every rewards app shows the points. ${b.name} shows the net: rewards and perks you actually used, minus annual fees, minus interest. Pick a person, or build your own wallet.`}
+      lede="Rewards and the perks you used, minus annual fees, minus interest. One number per card, and one for the wallet. Add a card or mark a balance and it reprints."
     >
       <div className="grid gap-10 lg:grid-cols-[1fr_440px]">
         {/* controls */}
@@ -156,8 +156,9 @@ export function ReceiptSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="relative mx-auto w-full max-w-[440px] lg:sticky lg:top-24 lg:self-start"
+          style={{ filter: "drop-shadow(0 0 0.5px rgba(12,14,20,.35)) drop-shadow(0 18px 30px rgba(12,14,20,.12))" }}
         >
-          <div className="receipt-edge rounded-t-sm border border-b-0 border-ace-line bg-ace-paper px-7 pb-12 pt-8 text-[#1d1b16] shadow-[0_24px_60px_-28px_rgba(12,14,20,.35)]">
+          <div className="receipt-edge rounded-t-sm bg-ace-paper px-7 pb-12 pt-8 text-ace-ink">
             <div className="mono text-center text-[11px] uppercase tracking-[0.3em] text-black/50">{b.name} · annual receipt</div>
             <div className="serif mt-1 text-center text-3xl">{persona.name}</div>
             <div className="mono mt-1 text-center text-[10px] uppercase tracking-widest text-black/40">18 Oct 2025 – 17 Oct 2026</div>
@@ -178,7 +179,7 @@ export function ReceiptSection() {
                       <span className="block truncate">{l.label}</span>
                       {l.sub && <span className="block text-[10px] text-black/45">{l.sub}</span>}
                     </span>
-                    <Num value={l.value} sign className={`tnum shrink-0 ${l.value < 0 ? "text-[#c23a2f]" : "text-[#1a7a48]"}`} />
+                    <Num value={l.value} sign className={`tnum shrink-0 ${l.value < 0 ? "text-ace-loss" : "text-ace-gain"}`} />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -186,7 +187,7 @@ export function ReceiptSection() {
             <div className="my-5 border-t border-dashed border-black/25" />
             <div className="flex items-end justify-between">
               <span className="mono text-[11px] uppercase tracking-[0.25em] text-black/50">Net</span>
-              <Num value={r.net} sign className={`serif tnum text-6xl leading-none ${r.net < 0 ? "text-[#c23a2f]" : "text-[#1a7a48]"}`} />
+              <Num value={r.net} sign className={`serif tnum text-6xl leading-none ${r.net < 0 ? "text-ace-loss" : "text-ace-gain"}`} />
             </div>
             <div className="mt-6 rounded-md bg-black/[0.06] p-3 text-[12px] leading-relaxed">
               <span className="font-semibold">Left on the table: </span>
