@@ -33,7 +33,7 @@ export function KeepSection() {
       }
       lede="A card is worth what it adds over the next-best card you already carry, plus the perks you actually use, minus its fee. Then Monte replays next year a thousand times with and without it."
     >
-      <div className="overflow-hidden rounded-lg border border-ace-line">
+      <div className="overflow-hidden m-panel">
         <div className="mono hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.4fr)] gap-6 border-b border-ace-line px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-ace-dim md:grid">
           <span>Card</span>
           <span>What it adds vs what it costs, per year</span>
@@ -215,7 +215,7 @@ export function ForYouSection() {
       lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot on this list.`}
     >
       <div className="grid gap-8 lg:grid-cols-[320px_1fr] [&>*]:min-w-0">
-        <div className="space-y-6 rounded-lg border border-ace-line bg-ace-panel p-6">
+        <div className="space-y-6 m-panel p-6">
           <div>
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">What {b.name} learned</div>
             <ul className="mt-3 space-y-2 text-sm">
@@ -343,7 +343,7 @@ export function ForYouSection() {
         </div>
       </div>
 
-      <div className="mt-10 rounded-lg border border-ace-line p-5 md:p-6">
+      <div className="mt-10 m-panel p-5 md:p-6">
         <div className="mono mb-1 flex flex-wrap items-baseline justify-between gap-2 text-[11px] uppercase tracking-[0.18em] text-ace-dim">
           <span>Next year, played {mc.years.toLocaleString()} times</span>
           <DriftToggle />

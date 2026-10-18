@@ -11,6 +11,7 @@ import { receipt } from "@/lib/engine";
 import { useBrand } from "./brands";
 import { CardArt, shortName } from "./card-art";
 import { money } from "./store";
+import { Bracketed, Lockup } from "@/components/brand";
 
 const MINE = JORDAN.wallet.map((h) => h.cardId);
 // Jordan's first, then the market in the order it's dealt. Phones skip the last three.
@@ -76,6 +77,7 @@ export function DropHero() {
   const els = useRef<(HTMLDivElement | null)[]>([]);
   const tagEls = useRef<(HTMLDivElement | null)[]>([]);
   const [allDealt, setAllDealt] = useState(false);
+  const [landed, setLanded] = useState(false);
 
   useEffect(() => {
     const st = stage.current;
@@ -107,6 +109,7 @@ export function DropHero() {
 
     const bodies: (Matter.Body | null)[] = DECK.map(() => null);
     const shown: boolean[] = DECK.map(() => false);
+    let firstLanded = false;
     const order = () => DECK.map((_, i) => i).filter((i) => !(phone() && PHONE_SKIP.has(DECK[i])));
     const live = () => bodies.filter((x): x is Matter.Body => !!x);
 
@@ -191,7 +194,13 @@ export function DropHero() {
         el.style.transform = `translate3d(${bd.position.x - CW / 2}px, ${bd.position.y - CH / 2}px, 0) rotate(${bd.angle}rad)`;
         const tg = tagEls.current[i];
         if (!tg) return;
-        if (!shown[i] && bd.speed < 0.6 && bd.position.y > 0) shown[i] = true;
+        if (!shown[i] && bd.speed < 0.6 && bd.position.y > 0) {
+          shown[i] = true;
+          if (!firstLanded) {
+            firstLanded = true;
+            setLanded(true);
+          }
+        }
         else if (shown[i] && bd.speed > 6) shown[i] = false;
         // above the card's top edge, kept on screen and clear of the other tags
         const w = tg.offsetWidth || 220;
@@ -331,8 +340,6 @@ export function DropHero() {
     };
   }, []);
 
-  const lost = Math.round(-jr.net);
-
   return (
     <div ref={track} id="top" className="relative h-[175svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
@@ -368,24 +375,33 @@ export function DropHero() {
         </div>
 
         <div className="pointer-events-none relative z-10 mx-auto max-w-5xl px-5 pt-24 text-center md:pt-28">
-          <h1 className="text-[9.5vw] font-semibold leading-[1] tracking-[-0.045em] sm:text-5xl md:text-[4.1rem]">
-            Your cards are costing you.
-            <span className="block text-ace-dim">{b.name} shows exactly how much.</span>
+          <div className="mb-6 flex justify-center">
+            <Lockup size={30} state={landed ? "resolved" : "breathe"} />
+          </div>
+          <h1 className="text-[11vw] sm:text-6xl md:text-[5.25rem]">
+            Every card, <Bracketed mono={false}>played right</Bracketed>.
+            <span className="m-second block text-[0.62em]">
+              {JORDAN.name}&apos;s cost him <Bracketed>{money(jr.net, { sign: true })}</Bracketed> last year.
+            </span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ace-dim md:text-lg">
-            {JORDAN.name}&apos;s three cards paid him <Tone tone="gain">{money(jr.rewards + jr.credits)}</Tone> last year and charged him{" "}
-            <Tone tone="loss">{money(jr.fees + jr.interest)}</Tone> in fees and interest. Net{" "}
-            <Tone tone="loss">−${lost.toLocaleString()}</Tone>.
+            Three cards paid him <Tone tone="gain">{money(jr.rewards + jr.credits, { sign: true })}</Tone> and charged him{" "}
+            <Tone tone="loss">{money(-(jr.fees + jr.interest), { sign: true })}</Tone> in fees and interest. {b.name} plays every purchase on
+            the right card and says which cards to keep.
           </p>
           <div className="pointer-events-auto mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#receipt" className="rounded-md bg-ace-ink px-5 py-3 font-medium text-ace-bg transition hover:bg-ace-gold">
-              Read {JORDAN.name}&apos;s receipt
+            <a href="#receipt" className="m-mono whitespace-nowrap rounded-full bg-ace-gold px-5 py-2.5 text-sm text-white transition hover:brightness-110">
+              [ try {JORDAN.name}&apos;s year ]
             </a>
-            <a href="#tap" className="rounded-md border border-ace-line bg-ace-panel px-5 py-3 text-ace-ink transition hover:border-ace-ink/40">
-              Try a tap
+            <a
+              href="#tap"
+              className="m-mono whitespace-nowrap rounded-full bg-ace-panel px-5 py-2.5 text-sm text-ace-ink transition hover:bg-[var(--m-wash)]"
+              style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}
+            >
+              [ try a tap ]
             </a>
           </div>
-          <p className="mono mt-6 text-[11px] text-ace-dim transition-opacity" style={{ opacity: allDealt ? 0 : 1 }}>
+          <p className="m-label mt-6 transition-opacity" style={{ opacity: allDealt ? 0 : 1 }}>
             scroll to deal the rest of the market ↓
           </p>
         </div>

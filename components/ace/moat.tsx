@@ -7,6 +7,7 @@ import { pointValue, tap, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { Section } from "./section";
 import { MCC, hostOf } from "./strategy";
+import { Lockup } from "@/components/brand";
 import { money, useAce } from "./store";
 
 const ROWS: [string, string, string, string][] = [
@@ -34,7 +35,7 @@ export function MoatSection() {
       title={<>Uno picks the card. {b.name} also counts the fees and the interest.</>}
       readout={<>compared on what each one advertises, Oct 2026</>}
     >
-      <div className="overflow-x-auto rounded-lg border border-ace-line bg-ace-panel">
+      <div className="overflow-x-auto m-panel">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="mono text-[11px] uppercase tracking-[0.15em] text-ace-dim">
             <tr className="border-b border-ace-line">
@@ -123,7 +124,7 @@ export function HowSection() {
         ))}
       </div>
       {t && trace && (
-        <div className="overflow-x-auto rounded-lg border border-ace-line bg-ace-ink text-[13px] text-ace-bg">
+        <div className="overflow-x-auto m-panel-ink text-[13px]">
           <div className="mono flex items-center justify-between border-b border-white/10 px-5 py-2.5 text-[11px] text-white/50">
             <span>
               <span style={{ color: "var(--ace-gold)" }}>$</span> {b.name.toLowerCase()} trace {t.id}
@@ -185,14 +186,13 @@ function Line({ k, children }: { k: string; children: ReactNode }) {
 }
 
 export function Footer() {
-  const { brand: b } = useBrand();
   return (
     <footer className="border-t border-ace-line py-12">
       <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-5 text-sm text-ace-dim md:flex-row">
-        <p>
-          <span className="font-medium text-ace-ink">{b.name}</span> · built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with
-          Claude Code.
-        </p>
+        <div className="flex flex-col gap-3">
+          <Lockup size={28} state="resolved" />
+          <p>Built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with Claude Code.</p>
+        </div>
         <p className="mono text-[11px] uppercase tracking-wider">Card terms checked 17 Oct 2026 · Demo people are synthetic · Not financial advice</p>
       </div>
     </footer>

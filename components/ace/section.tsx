@@ -25,11 +25,11 @@ export function Section({
   return (
     <section id={id} className="relative scroll-mt-16 py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-5">
-        <div className="mono mb-10 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-ace-ink/25 pt-3 text-[11px] uppercase tracking-[0.18em]">
+        <div className="m-label mb-10 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-ace-ink/25 pt-3">
           <span className="text-ace-dim">
-            <span className="text-ace-gold">§{index}</span> {kicker}
+            <span className="text-ace-ink">§{index}</span> · {kicker.toLowerCase()}
           </span>
-          {readout && <span className="tnum normal-case tracking-normal text-ace-dim">{readout}</span>}
+          {readout && <span className="m-num normal-case tracking-normal text-ace-dim">{readout}</span>}
         </div>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -38,7 +38,7 @@ export function Section({
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12 max-w-3xl"
         >
-          <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.035em] md:text-[3.4rem]">{title}</h2>
+          <h2 className="text-[2.5rem] md:text-[3.5rem]">{title}</h2>
           {lede && <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ace-dim">{lede}</p>}
         </motion.div>
         {children}

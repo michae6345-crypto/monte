@@ -237,7 +237,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
   const gain = r.p50 - runs[0].p50;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-ace-line bg-ace-panel shadow-[0_1px_2px_rgba(12,14,20,.05),0_16px_40px_-24px_rgba(12,14,20,.22)]">
+    <div className="overflow-hidden m-panel">
       <div className="mono flex items-center justify-between gap-3 border-b border-ace-line px-4 py-2.5 text-[11px] text-ace-dim">
         <span className="truncate">
           <span className="text-ace-gold">$</span> {title}
