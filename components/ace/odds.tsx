@@ -38,7 +38,7 @@ export function DriftToggle() {
   const d = useDrift();
   return (
     <div className="mono inline-flex items-center gap-1 rounded-md border border-ace-line bg-ace-panel p-0.5 text-[11px]" role="radiogroup" aria-label="Spending drift">
-      <span className="px-1.5 text-ace-dim">spending drift</span>
+      <span className="px-1.5 text-ace-dim">vary spending</span>
       {[0, DRIFT_ON].map((v) => (
         <button
           key={v}
@@ -67,8 +67,8 @@ export function useMonteCarlo(w?: Holding[]): MonteCarloResult {
 export function oddsLine(o: Outcome, base: Outcome, years: number) {
   const d = o.p50 - base.p50;
   const n = Math.round(o.winShare * years);
-  const how = n >= years ? `ahead in all ${years.toLocaleString()} simulated years` : n === 0 ? `behind in every simulated year` : `ahead in ${n.toLocaleString()} of ${years.toLocaleString()} simulated years`;
-  return `${money(d, { sign: true })}/yr median · ${how}`;
+  const how = n >= years ? `better in all ${years.toLocaleString()} simulated years` : n === 0 ? `behind in every simulated year` : `better in ${n.toLocaleString()} of ${years.toLocaleString()} simulated years`;
+  return `${money(d, { sign: true })} a year, typical · ${how}`;
 }
 
 export const winLine = (o: Outcome) => o.label.replace(/^Add /, "");
@@ -80,7 +80,7 @@ const MONTHS = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "
 
 export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pick?: string; kind?: "add" | "drop" }) {
   const nm = nameOf(useAce().persona);
-  const adds = mc.options.filter((o) => o.id.startsWith(`${kind}:`));
+  const adds = mc.options.filter((o) => o.id.startsWith(`${kind}:`)).sort((a, b) => b.p50 - a.p50);
   const [sel, setSel] = useState<string | null>(null);
   const o = adds.find((x) => x.id === (sel ?? pick)) ?? adds[0];
 
@@ -120,7 +120,7 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
             className={`btn btn-sm h-auto min-h-8 max-w-full whitespace-normal py-1.5 text-left ${a.id === o.id ? "btn-primary" : "btn-ghost"}`}
           >
             {a.label.replace(/^Add /, "+ ").replace(/^(Cancel|Drop) /, "− ").replace(/ Card| from American Express| Visa Signature/g, "")}
-            <span className="ml-1.5">{money(a.p50 - mc.current.p50, { sign: true })} median</span>
+            <span className="ml-1.5">{money(a.p50 - mc.current.p50, { sign: true })} a typical year</span>
           </button>
         ))}
       </div>
@@ -167,7 +167,7 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
           <span className="text-ace-gold">{winLine(o)}</span> · {oddsLine(o, mc.current, mc.years)}
         </span>
         <span>
-          bands: middle 50% and 90% of {mc.years.toLocaleString()} years · seed {mc.seed}
+          shaded: where half, and 9 in 10, of the {mc.years.toLocaleString()} simulated years land
         </span>
       </div>
     </div>

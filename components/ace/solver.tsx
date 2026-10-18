@@ -8,9 +8,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { creditsUsed, interestFor, simulate, type Holding, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { monteCarloSamples, resampledYears } from "@/lib/engine/montecarlo";
-import { Sampler } from "@/components/brand";
+import { HandNote, Sampler } from "@/components/brand";
 import { money } from "./store";
-import { shortName } from "./card-art";
+import { nick, shortName } from "./card-art";
 import { bestSecondCard } from "./one-card";
 
 /** adds: a card that is not in the wallet today (the one-card case: what a second card would do) */
@@ -81,12 +81,13 @@ async function computeRuns(strategies: Strategy[], txns: Txn[], alive: () => boo
 
 /** Runs after first paint, in slices, so the page never waits on it. */
 export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
-  const [runs, setRuns] = useState<Run[] | null>(null);
+  // runs are tagged with the strategies they answer, so a new person never sees the last one's
+  const [done, setDone] = useState<{ for: Strategy[]; runs: Run[] } | null>(null);
   useEffect(() => {
     let alive = true;
     const id = window.setTimeout(() => {
       computeRuns(strategies, txns, () => alive).then((r) => {
-        if (alive && r) setRuns(r);
+        if (alive && r) setDone({ for: strategies, runs: r });
       });
     }, 60);
     return () => {
@@ -94,13 +95,15 @@ export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
       clearTimeout(id);
     };
   }, [strategies, txns]);
-  return runs;
+  return done && done.for === strategies ? done.runs : null;
 }
 
 export function Solver({ strategies, txns, title, step }: { strategies: Strategy[]; txns: Txn[]; title: string; step?: number }) {
   const ready = useSolver(strategies, txns);
   const runs = useMemo(() => ready ?? [], [ready]);
-  const [k, setK] = useState(step ?? 0);
+  const [kPicked, setK] = useState(step ?? 0);
+  // a person with fewer strategies than the last one: clamp, so the chart never waits on runs[k]
+  const k = Math.min(kPicked, Math.max(0, strategies.length - 1));
   // a scroll stage can drive the strategy; a click still overrides until the next step
   const [lastStep, setLastStep] = useState(step);
   if (step !== undefined && step !== lastStep) {
@@ -319,7 +322,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           <span className="text-ace-gold">$</span> {title}
         </span>
         <span className="shrink-0 tnum">
-          {shown.toLocaleString()} / {YEARS.toLocaleString()} years · seed 42
+          {shown.toLocaleString()} / {YEARS.toLocaleString()} years
         </span>
       </div>
 
@@ -354,33 +357,37 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           ref={canvas}
           className="absolute inset-0 h-full w-full"
           role="img"
-          aria-label={`${YEARS} simulated years. ${r.label}: median ${money(r.p50)}, 90% of years between ${money(r.p5)} and ${money(r.p95)}.`}
+          aria-label={`${YEARS} simulated years. ${r.label}: typical year ${money(r.p50)}, 9 in 10 years between ${money(r.p5)} and ${money(r.p95)}.`}
         />
         {hover && (
           <div
-            className="mono pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded border border-ace-line bg-ace-bg/95 px-2 py-1 text-[10px] text-ace-ink"
+            className="mono pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded border border-ace-line bg-ace-bg/95 px-2 py-1 text-[11px] text-ace-ink"
             style={{ left: Math.max(70, Math.min(hover.x, hover.w - 70)) }}
           >
             {hover.n} years net {money(hover.lo)} to {money(hover.hi)}
           </div>
         )}
       </div>
+      {/* the one thing to know to read the chart, under it so it never crosses a line */}
+      <HandNote dir="up" className="mx-auto -mt-1 mb-2 hidden md:flex" delay={0.4}>
+        each dot is one simulated year
+      </HandNote>
 
       <dl className="mono grid grid-cols-3 border-t border-ace-line text-[11px]">
         <div className="border-r border-ace-line px-4 py-3">
-          <dt className="text-ace-dim">median year</dt>
+          <dt className="text-ace-dim">typical year</dt>
           <dd className={`mt-0.5 text-base tnum ${r.p50 < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(r.p50, { sign: true })}</dd>
         </div>
         <div className="border-r border-ace-line px-4 py-3">
-          <dt className="text-ace-dim">90% of years</dt>
+          <dt className="text-ace-dim">9 in 10 years</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {money(r.p5)} … {money(r.p95)}
           </dd>
         </div>
         <div className="px-4 py-3">
-          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `median vs ${runs[0].short}`}</dt>
+          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `vs ${runs[0].short.replace(/^As T/, "as t").replace(/^As /, "as ")}, typical year`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
-            {beats === null ? "every other strategy is measured against this" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
+            {beats === null ? (runs.length > 2 ? "the other two are measured against it" : "the other one is measured against it") : `${money(gain, { sign: true })} · better in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
           </dd>
         </div>
       </dl>
@@ -397,7 +404,7 @@ function niceStep(raw: number) {
 
 export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: string }, txns: Txn[] = []): Strategy[] {
   const carried = wallet.filter((h) => h.balance && h.balance > 0);
-  const habit: Strategy = { id: "habit", short: `${nm.Whose} habits`, label: `Every purchase on the card ${nm.who} actually reached for.`, wallet, policy: "actual" };
+  const habit: Strategy = { id: "habit", short: `As ${nm.who} paid`, label: `Every purchase on the card ${nm.who} actually reached for.`, wallet, policy: "actual" };
   // one card and nothing carried: routing changes nothing, so the next move is a second card
   const second = wallet.length === 1 && !carried.length ? bestSecondCard(wallet, txns) : undefined;
   if (second)
@@ -405,7 +412,7 @@ export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: st
       habit,
       {
         id: "second",
-        short: `+ a ${shortName(second.id)}`,
+        short: `+ a ${nick(second.id)}`,
         label: `The same spending with a ${shortName(second.id)} beside the ${shortName(wallet[0].cardId)}, each purchase on whichever pays more. Both paid in full.`,
         wallet: [...wallet, { cardId: second.id }],
         policy: "best",
@@ -416,7 +423,7 @@ export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: st
     habit,
     {
       id: "routed",
-      short: "Monte's routing",
+      short: "Right card",
       label: `Same cards, same spending: each purchase on the card Monte picks, caps respected${carried.length ? ", never the card carrying a balance" : ""}.`,
       wallet,
       policy: "best",
@@ -425,8 +432,8 @@ export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: st
   if (carried.length)
     out.push({
       id: "cleared",
-      short: `+ clear the ${shortName(carried[0].cardId)}`,
-      label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" above.)`,
+      short: `+ clear the ${nick(carried[0].cardId)}`,
+      label: `Every purchase on the right card, with the ${nick(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" above.)`,
       wallet,
       policy: "best",
       paidOff: true,

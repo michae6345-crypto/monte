@@ -47,7 +47,7 @@ export function MoneySection() {
       kicker="Where your money goes"
       title={
         <>
-          {nameOf(persona).Who} spent <Bracketed>{money(total)}</Bracketed> last year.
+          {nameOf(persona).Who} spent <Bracketed mono={false}>{money(total)}</Bracketed> last year.
           <span className="m-second block">Here is where it went.</span>
         </>
       }
@@ -97,8 +97,8 @@ export function MoneySection() {
                       {s.merchant}
                       {s.priceHike && <span className="m-label ml-2 rounded-full px-1.5 py-0.5 shadow-[0_0_0_1px_var(--m-line-strong)]">price up</span>}
                     </div>
-                    <div className="mono truncate text-[10px] text-ace-dim">
-                      every {s.cadenceDays}d{wallet.length > 1 ? ` · best on ${shortName(best.cardId)}` : ""}
+                    <div className="mono truncate text-[11px] text-ace-dim">
+                      every {s.cadenceDays} days{wallet.length > 1 ? ` · right card: ${shortName(best.cardId)}` : ""}
                     </div>
                   </div>
                   <span className="mono shrink-0">{money(s.amount, { cents: true })}</span>
@@ -116,6 +116,12 @@ function StatementUpload({ onLoad, defaultCard, active }: { onLoad: (t: import("
   const ref = useRef<HTMLInputElement>(null);
   const [card, setCard] = useState(defaultCard);
   const [msg, setMsg] = useState<string | null>(null);
+  // a new person: their first card becomes the default, without remounting (which would drop the message)
+  const [prev, setPrev] = useState(defaultCard);
+  if (defaultCard !== prev) {
+    setPrev(defaultCard);
+    setCard(defaultCard);
+  }
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button

@@ -122,7 +122,7 @@ export function ReplaySection() {
           return (
       <div ref={ref} className="m-panel p-5 md:p-8">
         <div className="mb-5">
-          <StageSteps steps={["as paid", "the sweep", "on Monte's pick"]} p={p} />
+          <StageSteps steps={["as paid", "moving", "on the right card"]} p={shown === "sweep" ? 0.5 : shown === "best" ? 1 : 0} />
         </div>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="inline-flex rounded-full p-1" style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}>
@@ -132,7 +132,7 @@ export function ReplaySection() {
                 onClick={() => setMode(m)}
                 className={`rounded-full px-5 py-2 text-sm transition ${view === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
               >
-                {m === "actual" ? `What ${nameOf(persona).who} did` : `What ${b.name} would do`}
+                {m === "actual" ? `As ${nameOf(persona).who} paid` : "On the right card"}
               </button>
             ))}
           </div>
@@ -142,7 +142,7 @@ export function ReplaySection() {
             </HandNote>
           )}
           <div className="text-right">
-            <div className="m-label">{shown === "actual" ? "Rewards, as played" : shown === "best" ? "Rewards, played right" : "Rewards, replayed so far"}</div>
+            <div className="m-label">{shown === "actual" ? "Rewards as paid" : shown === "best" ? "Rewards on the right card" : "Rewards, replayed so far"}</div>
             <div className="text-6xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.04em" }}>
               <span className="tnum">{money(shown === "best" ? r.best.total : shown === "actual" ? r.actual.total : sofar)}</span>
             </div>
@@ -208,10 +208,10 @@ export function ReplaySection() {
             {view === "best" ? (
               <>
                 <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. {b.name}{" "}
-                respects every cap and quarter{wallet.some((h) => h.balance) ? ", and never routes new spending to a card carrying a balance: those purchases start charging interest the day they post" : ""}.
+                stays within each card&apos;s bonus limits and this quarter&apos;s bonus categories{wallet.some((h) => h.balance) ? ", and never puts new purchases on a card with a balance: those charge interest from the day of purchase" : ""}.
               </>
             ) : (
-              <>Flip to “What {b.name} would do” to re-route the year.</>
+              <>Flip to “On the right card” to move each purchase.</>
             )}
           </p>
           <div className="space-y-2">

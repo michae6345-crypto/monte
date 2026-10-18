@@ -4,12 +4,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
-import { tap } from "@/lib/engine";
-import { card } from "@/lib/engine/catalog";
-import { CardArt, shortName } from "./card-art";
+import { tap, type Holding } from "@/lib/engine";
+import { CARDS, card } from "@/lib/engine/catalog";
+import { CardArt, nick, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { Stage } from "./stage";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 import { spotsFor } from "./spots";
 
 const BASE = [
@@ -28,7 +28,15 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 };
 
 export function TapSection() {
-  const { wallet, txns, valuation } = useAce();
+  const { wallet: theirs, txns, valuation, persona } = useAce();
+  // a judge's own cards, for Tap only: the rest of the page stays on the selected person
+  const [own, setOwn] = useState<string[] | null>(null);
+  const [ownFor, setOwnFor] = useState(persona.id);
+  if (ownFor !== persona.id) {
+    setOwnFor(persona.id);
+    setOwn(null);
+  }
+  const wallet = useMemo<Holding[]>(() => (own && own.length ? own.map((cardId) => ({ cardId })) : theirs), [own, theirs]);
   const SPOTS = useMemo(() => spotsFor(BASE, txns, "Los Angeles"), [txns]);
   const [i, setI] = useState(0);
   // brackets blink while the engine ranks the cards, then resolve on the winner
@@ -45,13 +53,18 @@ export function TapSection() {
   useEffect(() => {
     const on = (e: Event) => {
       const k = SPOTS.findIndex((s) => s.merchant === (e as CustomEvent<string>).detail);
-      if (k >= 0) choose(k);
+      if (k >= 0) {
+        // hold it: the scroll tour mustn't swap the store mid-pitch
+        setManual(true);
+        choose(k);
+      }
     };
     window.addEventListener("monte:tap", on);
     return () => window.removeEventListener("monte:tap", on);
   }, [SPOTS]);
   const spot = SPOTS[Math.min(i, SPOTS.length - 1)];
-  const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
+  // caps already used this month come from the person's purchases, so a judge's own cards start fresh
+  const history = useMemo(() => (own && own.length ? [] : txns.filter((t) => t.date >= "2026-10-01")), [txns, own]);
   const res = useMemo(
     () => tap(wallet, { date: "2026-10-18", merchant: spot.merchant, category: spot.category, amount: spot.amount }, history),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,11 +105,11 @@ export function TapSection() {
                 k === i ? "bg-ace-panel shadow-[0_0_0_1.5px_var(--m-ink)]" : "bg-ace-panel shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
               }`}
             >
-              <span className={`m-num w-10 shrink-0 text-[11px] ${k === i ? "text-ace-ink" : "text-ace-dim"}`} title="Merchant category code: what the issuer sees">{s.mcc}</span>
+              <span className={`m-num w-10 shrink-0 text-[11px] ${k === i ? "text-ace-ink" : "text-ace-dim"}`} title="Store code: what the card company sees">{s.mcc}</span>
               <MerchantLogo name={s.merchant} size={26} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{s.merchant}</span>
-                <span className="mono block text-[10px] uppercase tracking-wider text-ace-dim">{s.where}</span>
+                <span className="mono block text-[11px] uppercase tracking-wider text-ace-dim">{s.where}</span>
               </span>
               <span className="mono text-sm text-ace-dim">{money(s.amount, { cents: true })}</span>
             </button>
@@ -107,7 +120,7 @@ export function TapSection() {
         <div className="relative mx-auto h-[600px] w-[300px] rounded-[48px] border border-ace-line bg-[#e9ebef] p-3 shadow-[0_1px_2px_rgba(12,14,20,.06),0_30px_60px_-30px_rgba(12,14,20,.28)]">
           <div className="absolute left-1/2 top-5 z-10 h-6 w-24 -translate-x-1/2 rounded-full bg-[#0c0e14]" />
           <div className="relative h-full overflow-hidden rounded-[38px] bg-ace-panel px-4 pt-12 ring-1 ring-ace-line">
-            <div className="mono text-center text-[10px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
+            <div className="mono text-center text-[11px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
             <AnimatePresence mode="wait">
               <motion.div key={spot.merchant} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <div className="mt-3 flex justify-center">
@@ -115,7 +128,7 @@ export function TapSection() {
                 </div>
                 <div className="mt-2 text-center text-2xl font-semibold">{spot.merchant}</div>
                 <div className="mono text-center text-xs text-ace-dim">
-                  MCC {spot.mcc} · {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
+                  store code {spot.mcc} · {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -138,8 +151,8 @@ export function TapSection() {
                     transition={{ type: "spring", stiffness: 140, damping: 18 }}
                   >
                     <CardArt id={h.cardId} dim={!isPick} />
-                    {h.balance ? (
-                      <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[10px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)]">
+                    {h.balance && isPick ? (
+                      <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[11px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)]">
                         carries a balance
                       </div>
                     ) : null}
@@ -162,10 +175,10 @@ export function TapSection() {
                     <Bracketed state={solving ? "computing" : "resolved"}>{solving ? "···" : `+${money(pick.reward, { cents: true })}`}</Bracketed>
                   </span>
                 </div>
-                <div className="mono mt-0.5 text-[11px] text-ace-dim">{pick.rule}</div>
+                <div className="mono mt-0.5 text-[11px] text-ace-dim">earned on this purchase · {pick.rule}</div>
                 {runner && (
                   <div className="mono mt-1 text-[11px] text-ace-dim">
-                    vs {shortName(runner.cardId)} +{money(runner.reward, { cents: true })}
+                    vs {shortName(runner.cardId)} +{money(runner.reward, { cents: true })}{Math.abs(runner.reward - pick.reward) < 0.005 ? " (tie)" : ""}
                   </div>
                 )}
               </motion.div>
@@ -221,7 +234,7 @@ export function TapSection() {
                 </div>
               ))}
             </div>
-            <p className="mono mt-4 text-[10px] uppercase tracking-wider text-ace-dim">
+            <p className="mono mt-4 text-[11px] uppercase tracking-wider text-ace-dim">
               Source: {new URL(card(pick.cardId).source_urls[0] ?? "https://example.com").hostname}
             </p>
           </div>
@@ -229,6 +242,41 @@ export function TapSection() {
       </div>
         )}
       </Stage>
+      <div className="m-panel mt-8 p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <p className="text-lg font-medium">Try it with your own cards.</p>
+          <span className="text-sm">
+            {own && own.length ? (
+              <button onClick={() => setOwn(null)} className="underline">
+                back to {nameOf(persona).whose} cards
+              </button>
+            ) : (
+              <>Tap up to five cards from your wallet; the phone above ranks them for each store.</>
+            )}
+          </span>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {CARDS.map((c) => {
+            const on = !!own?.includes(c.id);
+            return (
+              <button
+                key={c.id}
+                onClick={() => {
+                  setManual(true);
+                  setOwn((o) => {
+                    const cur = o ?? [];
+                    return cur.includes(c.id) ? cur.filter((x) => x !== c.id) : cur.length >= 5 ? cur : [...cur, c.id];
+                  });
+                }}
+                aria-pressed={on}
+                className={`btn btn-sm ${on ? "btn-primary" : "btn-ghost"}`}
+              >
+                {nick(c.id)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </Section>
   );
 }

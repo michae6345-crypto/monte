@@ -3,9 +3,10 @@
 // Who Monte is for, as the people on this page: five kinds of wallet, one tap to switch every
 // section to that person's year. Opens chapter 01, so the framing comes before any number.
 
-import { PERSONAS } from "@/lib/data/personas";
+import { PERSONAS, yearOf } from "@/lib/data/personas";
+import { receipt, setValuation } from "@/lib/engine";
 import { PERSONA_LINE, PersonaAvatar } from "./persona-avatar";
-import { useAce } from "./store";
+import { money, useAce } from "./store";
 
 const SITUATION: Record<string, string> = {
   jordan: "three cards, a balance",
@@ -15,9 +16,25 @@ const SITUATION: Record<string, string> = {
   rosa: "income that swings, a balance",
 };
 
+// each person's year, net, at their own point value (Maya travel, everyone else cash): computed
+// once, and the engine's setting put back to what the page is using
+let NETS: Record<string, number> | null = null;
+function nets(current: "cash" | "travel") {
+  if (!NETS) {
+    NETS = {};
+    for (const p of PERSONAS) {
+      setValuation(p.id === "maya" ? "travel" : "cash");
+      NETS[p.id] = receipt(p.wallet, yearOf(p)).net;
+    }
+    setValuation(current);
+  }
+  return NETS;
+}
+
 /** Five people, five kinds of wallet. A tap switches every section to that person's year. */
 export function People() {
-  const { persona, setPersona } = useAce();
+  const { persona, setPersona, valuation, r } = useAce();
+  const net = nets(valuation);
   return (
     <div>
       <div
@@ -25,7 +42,7 @@ export function People() {
         role="radiogroup"
         aria-label="Whose year"
       >
-        <span className="m-label mr-1">whose year</span>
+        <span className="m-label mr-1">whose year · net last year</span>
         {PERSONAS.map((p) => {
           const on = persona.id === p.id;
           return (
@@ -42,7 +59,8 @@ export function People() {
             >
               <PersonaAvatar id={p.id} size={26} />
               <span className="font-medium">{p.name}</span>
-              <span>· {SITUATION[p.id] ?? p.blurb}</span>
+              <span>· {SITUATION[p.id] ?? p.blurb} ·</span>
+              <span className={`m-num ${on ? "" : net[p.id] < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(on ? r.net : net[p.id], { sign: true })}</span>
             </button>
           );
         })}

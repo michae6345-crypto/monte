@@ -12,6 +12,7 @@ import { Bracketed } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
 import { Section } from "./section";
 import { money, nameOf, useAce } from "./store";
+import { Stage } from "./stage";
 
 type Flag = { id: string; kind: "double" | "rise" | "test" | "far"; title: string; why: string; txns: Txn[]; planted: boolean };
 
@@ -116,14 +117,26 @@ function plant(txns: Txn[]): { txns: Txn[]; ids: Set<string> } {
 export function OddChargesSection() {
   const { txns, persona } = useAce();
   const who = nameOf(persona).whose;
-  const [planted, setPlanted] = useState(false);
-  const run = useMemo(() => {
-    if (!planted) return { flags: findOddCharges(txns), n: txns.length };
+  // null: the scroll decides (a cursor plants the test charges partway through); a click takes over
+  const [manual, setManual] = useState<boolean | null>(null);
+  const [manualFor, setManualFor] = useState(persona.id);
+  if (manualFor !== persona.id) {
+    setManualFor(persona.id);
+    setManual(null);
+  }
+  const clean = useMemo(() => ({ flags: findOddCharges(txns), n: txns.length }), [txns]);
+  const withTests = useMemo(() => {
     const p = plant(txns);
     return { flags: findOddCharges(p.txns, p.ids), n: p.txns.length };
-  }, [txns, planted]);
+  }, [txns]);
 
   return (
+    <Stage vh={160}>
+      {(p) => {
+        const cursor = Math.min(1, Math.max(0, (p - 0.08) / 0.4));
+        const planted = manual ?? (persona.id !== "you" && p > 0.43);
+        const run = planted ? withTests : clean;
+        return (
     <Section
       id="odd"
       index="03½"
@@ -148,20 +161,33 @@ export function OddChargesSection() {
       lede={`${nameOf(persona).Whose} year is synthetic and clean, so turn on the test charges to watch the check work. On your own statement it runs as soon as you load it.`}
     >
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <button onClick={() => setPlanted((v) => !v)} className={`btn btn-sm ${planted ? "btn-primary" : "btn-ghost"}`}>
-          {planted ? "Remove the 3 test charges" : "Plant 3 test charges"}
-        </button>
+        <span className="relative">
+          <button onClick={() => setManual(!planted)} className={`btn btn-sm ${planted ? "btn-primary" : "btn-ghost"}`}>
+            {planted ? "Remove the 3 test charges" : "Plant 3 test charges"}
+          </button>
+          {/* a pointer that walks over and clicks, the way a demo video would */}
+          {manual === null && persona.id !== "you" && cursor > 0 && cursor < 1 && (
+            <motion.svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              className="pointer-events-none absolute left-1/2 top-1/2 h-6 w-6"
+              style={{ x: (1 - Math.min(1, cursor / 0.75)) * 160, y: (1 - Math.min(1, cursor / 0.75)) * 70, scale: cursor > 0.8 && cursor < 0.92 ? 0.82 : 1 }}
+            >
+              <path d="M3 2l7 19 2.5-7.5L20 11z" fill="var(--m-ink)" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
+            </motion.svg>
+          )}
+        </span>
         <span className="text-sm text-ace-dim">
           {planted ? "Planted for this demo, marked below. Nothing else in the year changes." : `Checking ${who} ${txns.length} purchases.`}
         </span>
       </div>
 
-      <div className="m-panel divide-y divide-[var(--m-line)] overflow-hidden">
+      <div className="m-panel min-h-[300px] divide-y divide-[var(--m-line)] overflow-hidden">
         <AnimatePresence initial={false}>
           {run.flags.length === 0 && (
             <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-5 p-8">
               <span className="m-num text-5xl">[ ]</span>
-              <p>Checked for double charges, price rises, test charges and anything far above a store&apos;s usual. Turn on the test charges to see a catch.</p>
+              <p>Checked for double charges, price rises, card testing and anything far above a store&apos;s usual. Plant the 3 test charges to see a catch.</p>
             </motion.div>
           )}
           {run.flags.map((f, k) => (
@@ -199,5 +225,8 @@ export function OddChargesSection() {
         </AnimatePresence>
       </div>
     </Section>
+        );
+      }}
+    </Stage>
   );
 }

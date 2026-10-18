@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote, MonteMark, Sampler } from "@/components/brand";
-import { CardArt, shortName } from "@/components/ace/card-art";
+import { CardArt, nick } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money, nameOf, useAce } from "@/components/ace/store";
 import { spotsFor } from "@/components/ace/spots";
@@ -95,7 +95,7 @@ export function MonteCardDemo() {
                 <span className="m-label" style={{ color: "#c3cbff" }}>
                   monte card
                 </span>
-                <span className="m-mono text-[10px] text-[#c3cbff]">virtual</span>
+                <span className="m-mono text-[11px] text-[#c3cbff]">virtual</span>
               </div>
               <span className="dark">
                 <MonteMark size={34} />
@@ -117,7 +117,7 @@ export function MonteCardDemo() {
             </AnimatePresence>
           </div>
 
-          <p className="m-mono mt-4 text-center text-[11px] text-m-slate">one card in Apple Pay · charges your best card</p>
+          <p className="m-mono mt-12 text-center text-[11px] text-m-slate">one card in Apple Pay · charges your best card</p>
           <div>
             <div className="m-label mb-2">the store</div>
             <div className="flex flex-wrap gap-2">
@@ -149,7 +149,7 @@ export function MonteCardDemo() {
         </div>
 
         {/* right: what Monte receives, and what it decides */}
-        <div className="m-mono min-h-[420px] p-6 text-[13px] leading-[1.7]">
+        <div className="m-mono min-h-[420px] min-w-0 break-words p-6 text-[13px] leading-[1.7]">
           {!shown && (
             <div className="flex h-full flex-col items-start justify-center gap-4 text-m-slate">
               <span className="m-display text-5xl text-m-accent">[ ]</span>
@@ -165,7 +165,7 @@ export function MonteCardDemo() {
                 <div className="m-label mb-1.5">1 · authorization request</div>
                 {[
                   ["merchant", spot.merchant.toUpperCase()],
-                  ["mcc", `${spot.mcc} · ${spot.mccName}`],
+                  ["store code", `${spot.mcc} · ${spot.mccName}`],
                   ["amount", money(spot.amount, { cents: true })],
                   ["location", spot.where],
                   ["card", "Monte Card (virtual)"],
@@ -194,15 +194,15 @@ export function MonteCardDemo() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: n * 0.08 }}
-                      className={`grid grid-cols-[1fr_auto_auto] items-baseline gap-4 ${r.blocked ? "line-through" : ""}`}
+                      className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 ${r.blocked ? "line-through" : ""}`}
                     >
                       <span className={r.cardId === pick?.cardId ? "text-m-ink" : "text-m-slate"}>
                         {r.cardId === pick?.cardId ? "→ " : "  "}
-                        {shortName(r.cardId)}
+                        {nick(r.cardId)}
                         {r.blocked && <span className="font-semibold"> · skipped: carries a balance</span>}
                       </span>
-                      <span className="text-m-slate">{r.rule}</span>
                       <span className={r.reward > 0 && !r.blocked ? "m-gain" : ""}>{money(r.reward, { cents: true, sign: true })}</span>
+                      <span className="col-start-1 mb-1 text-[11px] text-m-slate">{r.rule}</span>
                     </motion.div>
                   ))}
               </div>
@@ -215,11 +215,11 @@ export function MonteCardDemo() {
                   pick && (
                     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-1">
                       <div className="m-display text-2xl text-m-ink">
-                        Charge <Bracketed>{shortName(pick.cardId)}</Bracketed>{" "}
+                        Charge <Bracketed>{nick(pick.cardId)}</Bracketed>{" "}
                         <span className="m-num m-gain">{money(pick.reward, { cents: true, sign: true })}</span>
                       </div>
                       <div className="text-m-slate">
-                        approved · engine decided in {res.ms < 1 ? res.ms.toFixed(2) : res.ms.toFixed(1)} ms · an issuer has about 2,000 ms
+                        approved · engine decided in {res.ms < 1 ? res.ms.toFixed(2) : res.ms.toFixed(1)} ms · a card company allows about 2 seconds to approve
                       </div>
                     </motion.div>
                   )
@@ -289,8 +289,9 @@ export function WhyNotRealCard() {
           ))}
         </ol>
         <div className="m-mono mt-6 rounded-[10px] bg-m-wash p-4 text-[12px] leading-[1.8]">
+          <div className="m-label mb-1">for example, with an Amex Gold</div>
           <div>
-            <span className="text-m-slate">you tap  </span>Trader Joe&apos;s · mcc <span className="text-m-ink">5411</span> → Monte Card
+            <span className="text-m-slate">you tap  </span>Trader Joe&apos;s · store code <span className="text-m-ink">5411</span> → Monte Card
           </div>
           <div>
             <span className="text-m-slate">monte    </span>charges Amex Gold · merchant <span className="text-m-ink">MONTE</span> · not 5411
@@ -318,11 +319,7 @@ export function WhyNotRealCard() {
             </li>
           ))}
         </ul>
-        <p className="mt-auto pt-8 text-sm leading-relaxed text-[#c3cbff]">
-          The engine part works today: the ranking above is its real output, timed on this page. Those four problems are why the Monte Card stays a
-          simulation.
-        </p>
-      </div>
+              </div>
     </div>
   );
 }

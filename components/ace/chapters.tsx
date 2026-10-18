@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Chapter } from "./chapter";
 import { People } from "./people";
+import { WhatIfBar } from "./keep";
 import { useAce } from "./store";
 
 type S = Record<
@@ -39,7 +40,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             Stop the leaks.
-            <span className="m-second block">Checked for interest, fees, the wrong card, price rises and double charges.</span>
+            <span className="m-second block">Interest, fees and the wrong card, each with its fix.</span>
           </>
         }
         tabs={[
@@ -78,6 +79,7 @@ export function Chapters({ sections: s }: { sections: S }) {
             <span className="m-second block">in the order that saves the most.</span>
           </>
         }
+        intro={<WhatIfBar />}
         tabs={[
           { key: "payoff", label: "Pay this first", node: s.payoff },
           { key: "keep", label: "Keep or cancel", node: s.keep },
@@ -103,8 +105,8 @@ export function Chapters({ sections: s }: { sections: S }) {
         kicker="How it works"
         title={
           <>
-            Open the engine.
-            <span className="m-second block">Nothing here is a model&apos;s guess.</span>
+            How it works.
+            <span className="m-second block">Every number is math on the card companies&apos; published terms.</span>
           </>
         }
         tabs={[

@@ -88,7 +88,7 @@ export function Estimator({
       });
     }, tickMs);
     return () => window.clearInterval(id);
-  }, [seen, draws, total, batch, tickMs]);
+  }, [seen, draws, total, batch, tickMs, roll]);
 
   const lo = useMemo(() => Math.min(...draws), [draws]);
   const hi = useMemo(() => Math.max(...draws), [draws]);
@@ -97,8 +97,6 @@ export function Estimator({
   for (const x of shown) counts[Math.min(bins - 1, Math.floor(((x - lo) / (hi - lo || 1)) * bins))]++;
   const peak = Math.max(1, ...counts);
   const runMean = shown.length ? shown.reduce((a, b) => a + b, 0) / shown.length : 0;
-  const sdShown = shown.length > 1 ? Math.sqrt(shown.reduce((a, b) => a + (b - runMean) ** 2, 0) / (shown.length - 1)) : 0;
-  const se = shown.length > 1 ? sdShown / Math.sqrt(shown.length) : 0;
   const done = k >= total;
 
   // running-mean path, sampled every few draws, scaled to its own wobble around the final mean
@@ -122,14 +120,13 @@ export function Estimator({
   const meanX = ((runMean - lo) / (hi - lo || 1)) * 100;
 
   return (
-    <div ref={box} className={cn("m-panel flex flex-col gap-5 p-6", className)}>
-      <div className="flex items-baseline justify-between gap-4">
-        <Expect of={of} state={done ? "resolved" : "computing"} tone={done ? (runMean >= 0 ? "gain" : "loss") : undefined} className="text-3xl">
+    <div ref={box} className={cn("m-panel flex min-w-0 flex-col gap-5 p-6", className)}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <Expect of={of} state={done ? "resolved" : "computing"} tone={done ? (runMean >= 0 ? "gain" : "loss") : undefined} className="min-w-0 text-2xl sm:text-3xl">
           {usd(runMean)}
         </Expect>
-        <span className="m-num text-xs" style={{ color: "var(--m-slate)" }}>
-          n = {k.toLocaleString("en-US")}
-          {se > 0 && <> · ±${se.toFixed(2)}</>}
+        <span className="m-num whitespace-nowrap text-xs" style={{ color: "var(--m-slate)" }}>
+          {k.toLocaleString("en-US")} of {total.toLocaleString("en-US")} years
         </span>
       </div>
 
@@ -143,7 +140,7 @@ export function Estimator({
       </svg>
 
       <div>
-        <div className="m-label mb-2">running mean</div>
+        <div className="m-label mb-2">running average</div>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-14 w-full" aria-hidden>
           <line x1={0} x2={100} y1={50} y2={50} stroke="var(--m-line-strong)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
           <polyline points={pathShown} fill="none" stroke="var(--m-ink)" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
@@ -158,15 +155,15 @@ export function Estimator({
             setK(0);
             setRoll((s) => ((s * 1103515245 + 12345) >>> 8) || 1);
           }}
-          disabled={!done || !!samples}
+          disabled={!done}
           className="m-mono rounded-full px-4 py-2 text-xs disabled:opacity-40"
           style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}
         >
-          [ re-roll ]
+          [ run again ]
         </button>
       </div>
       <p className="sr-only" aria-live="polite">
-        {done ? `Expected ${of}: ${usd(runMean)} over ${total} samples.` : ""}
+        {done ? `Typical ${of}: ${usd(runMean)}, averaged over ${total.toLocaleString("en-US")} simulated years.` : ""}
       </p>
     </div>
   );

@@ -2,12 +2,13 @@
 
 import { useBrand } from "./brands";
 import { motion } from "framer-motion";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { interestFor, marginalValue, pointValue, tap, type Txn } from "@/lib/engine";
-import { card } from "@/lib/engine/catalog";
+import { CARDS, card } from "@/lib/engine/catalog";
+import { optimalReplay } from "@/lib/engine/lp";
 import { Section } from "./section";
 import { MCC, hostOf } from "./strategy";
-import { Lockup } from "@/components/brand";
+import { Lockup, PenMark } from "@/components/brand";
 import { money, nameOf, useAce } from "./store";
 import { CardArt, shortName } from "./card-art";
 import { MerchantLogo } from "./merchant-logo";
@@ -26,8 +27,8 @@ const ROWS: [string, string, string, string][] = [
 
 // each note hangs on the row it explains
 const NOTES: [string, string][] = [
-  ["Best card at the register", "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Every purchase and every purchase there is replayed."],
-  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Fed SHED, May 2026). When a balance carries over, a ranking by points alone points the wrong way."],
+  ["Best card at the register", "Card companies decide categories by store code and don't publish the map. Fix a store's category once (Spend › Every purchase) and every purchase there is replayed."],
+  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Federal Reserve survey, May 2026). When a balance carries over, a ranking by points alone can pick a card whose interest costs more than it earns."],
   ["Paid by card referrals", "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card."],
 ];
 const noteOf = (row: string) => NOTES.findIndex(([r]) => r === row);
@@ -54,15 +55,23 @@ export function MoatSection() {
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((row) => (
-              <tr key={row[0]} className="border-b border-ace-line/70 last:border-b-0">
+            {ROWS.map((row, r) => (
+              <motion.tr
+                key={row[0]}
+                className="border-b border-ace-line/70 last:border-b-0"
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+                transition={{ delay: r * 0.07, duration: 0.4 }}
+              >
                 {row.map((c, k) => (
                   <td key={k} className={`px-5 py-3 ${k === 0 ? "text-ace-ink" : k === 1 ? "mono font-medium text-ace-ink" : "mono text-ace-dim"}`}>
-                    {c}
-                    {k === 0 && noteOf(row[0]) >= 0 ? <sup className="mono ml-1 text-[10px] text-ace-dim">{noteOf(row[0]) + 1}</sup> : null}
+                    {/* Monte's answers are circled by hand as each row lands, Monte's "no" to referral fees included */}
+                    {k === 1 ? <PenMark delay={0.3 + r * 0.07}>{c}</PenMark> : c}
+                    {k === 0 && noteOf(row[0]) >= 0 ? <sup className="mono ml-1 text-[11px] text-ace-dim">{noteOf(row[0]) + 1}</sup> : null}
                   </td>
                 ))}
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
@@ -75,7 +84,7 @@ export function MoatSection() {
           </li>
         ))}
       </ol>
-      <p className="mono mt-5 text-[10px] uppercase tracking-wider text-ace-dim">
+      <p className="mono mt-5 text-[11px] uppercase tracking-wider text-ace-dim">
         Uno Wallet (YC Spring 2026) from what its site advertises; it is waitlist-only. Comparison sites means referral-funded sites such as NerdWallet.
       </p>
     </Section>
@@ -196,6 +205,63 @@ function TwoAnswers() {
   );
 }
 
+// ---------- How it works: the pipeline, and the optimality check run live ----------
+
+/** The engine end to end for the selected person, and the linear program checking that the
+ *  routing shown everywhere else is the best possible assignment (lib/engine/lp.ts). */
+function Proof() {
+  const { held: wallet, txns, r, valuation } = useAce();
+  // run after paint, and timed: the milliseconds shown are this browser's
+  const [checked, setCheck] = useState<{ bound: number; method: string; ms: number; txns: unknown; wallet: unknown; valuation: unknown } | null>(null);
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const t0 = performance.now();
+      const o = optimalReplay(wallet, txns);
+      setCheck({ bound: o.bound ?? o.total, method: o.method, ms: performance.now() - t0, txns, wallet, valuation });
+    }, 120);
+    return () => clearTimeout(id);
+  }, [wallet, txns, valuation]);
+  const check = checked && checked.txns === txns && checked.wallet === wallet && checked.valuation === valuation ? checked : null;
+  const cats = new Set(txns.map((t) => t.category)).size;
+  const routed = r.best.total;
+  const gap = check ? check.bound - routed : 0;
+  const steps: [string, string][] = [
+    [txns.length.toLocaleString(), "purchases"],
+    [String(cats), "categories, by store code"],
+    [String(CARDS.length), "cards' published rules"],
+    [money(routed, { cents: true }), "rewards last year on the right card, within card limits"],
+    [money(r.net, { cents: true, sign: true }), "net last year, after fees and interest"],
+  ];
+  return (
+    <div className="mb-10">
+      <ol className="grid gap-px overflow-hidden rounded-[14px] bg-[var(--m-line)] sm:grid-cols-5">
+        {steps.map(([n, l], k) => (
+          <li key={l} className="bg-ace-panel px-4 py-3">
+            <div className="m-num text-[11px]">{String(k + 1).padStart(2, "0")}</div>
+            <div className="mt-1 text-xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
+              {n}
+            </div>
+            <div className="text-xs">{l}</div>
+          </li>
+        ))}
+      </ol>
+      <p className="m-mono mt-3 min-h-[2.5em] text-[12px] leading-relaxed">
+        {check ? (
+          <>
+            check: a solver tried every way to put these purchases on these cards, card limits included.{" "}
+            {Math.abs(gap) < 0.005
+              ? `None earns more than the right-card picks (${money(routed, { cents: true })}).`
+              : `The best possible is ${money(check.bound, { cents: true })}, ${money(gap, { cents: true })} above the right-card picks.`}{" "}
+            {Math.max(1, Math.round(check.ms))} ms in this browser.
+          </>
+        ) : (
+          "check: running…"
+        )}
+      </p>
+    </div>
+  );
+}
+
 // ---------- How it works: one real purchase, traced ----------
 
 const PICKS = ["Sweetgreen", "Mobil", "Uber", "Trader Joe's"];
@@ -228,10 +294,11 @@ export function HowSection() {
       id="how"
       index="09"
       kicker="How it works"
-      title={<>Every number is arithmetic on published terms.</>}
+      title={<>Follow one purchase through the math.</>}
       readout={<>no model decides a dollar amount</>}
       lede={`Pick one of ${nameOf(persona).whose} purchases and follow it through: merchant, merchant code, category, every card's published rule, and the cents.`}
     >
+      <Proof />
       <div className="mb-3 flex flex-wrap gap-1.5">
         {options.map((o, i) => (
           <button
@@ -254,31 +321,31 @@ export function HowSection() {
             <Line k="purchase">
               {t.date} · {t.merchant} · {money(t.amount, { cents: true })}
             </Line>
-            <Line k="mcc">
-              {MCC[t.category] ?? "····"} → category <span className="text-white">{t.category}</span>
+            <Line k="store code">
+              {MCC[t.category] ?? "····"} → category <span className="text-white">{t.category.replace(/_/g, " ")}</span>
             </Line>
             {trace.res.ranked.map((o) => (
-              <Line key={o.cardId} k={o.cardId === trace.res.pick.cardId ? "pick" : "card"}>
+              <Line key={o.cardId} k={o.cardId === trace.res.pick.cardId ? "right card" : "card"}>
                 <span className={o.cardId === trace.res.pick.cardId ? "font-semibold text-white" : "text-white"}>
-                  {o.cardId}: {o.rule} → {money(t.amount, { cents: true })} × {o.mult.toFixed(o.mult % 1 ? 1 : 0)} × {cents(o.cardId)}¢ ={" "}
+                  {shortName(o.cardId)}: {o.rule} → {money(t.amount, { cents: true })} × {o.mult.toFixed(o.mult % 1 ? 1 : 0)} × {cents(o.cardId)}¢ ={" "}
                   {money(o.reward, { cents: true })}
                 </span>
                 {o.blocked ? <span style={{ color: "#c3cbff" }}> · off limits: carries a balance</span> : null}
-                <span className="text-white"> · src {hostOf(card(o.cardId).source_urls[0])}, checked {card(o.cardId).checked ?? "2026-10-17"}</span>
+                <span className="text-white"> · source {hostOf(card(o.cardId).source_urls[0])}, checked <span className="whitespace-nowrap">{card(o.cardId).checked ?? "2026-10-17"}</span></span>
               </Line>
             ))}
             {trace.ha && trace.hb && (
               <>
-                <Line k="actual">
-                  paid on {trace.ha.cardId} → {money(trace.ha.reward, { cents: true })}
+                <Line k="as paid">
+                  on the {shortName(trace.ha.cardId)} → {money(trace.ha.reward, { cents: true })}
                 </Line>
                 <Line k="verdict">
                   <span className="text-white">
                     {trace.hb.cardId === trace.ha.cardId
                       ? "right card, nothing left on the table"
                       : trace.hb.reward - trace.ha.reward > 0.004
-                        ? `${money(trace.hb.reward - trace.ha.reward, { cents: true })} left on the table: ${trace.hb.cardId} was the play`
-                        : `${trace.hb.cardId} was the play: the card used carries a balance, so this purchase started charging interest`}
+                        ? `${money(trace.hb.reward - trace.ha.reward, { cents: true })} left on the table: the ${shortName(trace.hb.cardId)} was the right card`
+                        : `the ${shortName(trace.hb.cardId)} was the right card: the card used carries a balance, so this purchase started charging interest`}
                   </span>
                 </Line>
               </>
@@ -297,9 +364,9 @@ function cents(id: string) {
 
 function Line({ k, children }: { k: string; children: ReactNode }) {
   return (
-    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4 md:whitespace-nowrap">
-      <dt className="w-16 shrink-0 text-white">{k}</dt>
-      <dd className="text-white">{children}</dd>
+    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4">
+      <dt className="w-24 shrink-0 text-white">{k}</dt>
+      <dd className="min-w-0 break-words text-white">{children}</dd>
     </motion.div>
   );
 }

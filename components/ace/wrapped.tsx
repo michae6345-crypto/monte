@@ -4,7 +4,7 @@
 // their music year. Every figure is the engine's, for whichever person is selected.
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode, useSyncExternalStore } from "react";
 import { byCategory, subscriptions, topMerchants } from "@/lib/engine/insights";
 import { Bracketed, Lockup } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
@@ -19,7 +19,19 @@ export function WrappedSection() {
   const { txns, r, held: wallet, persona } = useAce();
   const nm = nameOf(persona);
   const [i, setI] = useState(0);
+  // stopped by the button (held), or for a moment by hover or focus
+  const [held, setHeld] = useState(false);
   const [paused, setPaused] = useState(false);
+  const reduce = useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+  const still = held || paused || reduce;
 
   const slides = useMemo<Slide[]>(() => {
     const top = topMerchants(txns, 1)[0];
@@ -117,7 +129,7 @@ export function WrappedSection() {
     if (worst && best && worst.cardId !== best.cardId)
       out.push({
         key: "cards",
-        kicker: "best and worst card",
+        kicker: "best and worst card, net last year",
         body: (
           <>
             <span className="mb-5 flex gap-3">
@@ -137,7 +149,7 @@ export function WrappedSection() {
       });
     out.push({
       key: "net",
-      kicker: "the net",
+      kicker: "net, last year",
       body: (
         <>
           <span className={r.net < 0 ? "text-ace-loss" : "text-ace-gain"}>
@@ -155,10 +167,10 @@ export function WrappedSection() {
   const cur = Math.min(i, n - 1);
 
   useEffect(() => {
-    if (paused) return;
+    if (still) return;
     const id = window.setTimeout(() => setI((x) => (x + 1) % n), 3600);
     return () => clearTimeout(id);
-  }, [cur, paused, n]);
+  }, [cur, still, n]);
 
   const s = slides[cur];
 
@@ -196,6 +208,13 @@ export function WrappedSection() {
           className="m-panel relative mx-auto aspect-[9/16] w-full max-w-[380px] cursor-pointer select-none overflow-hidden p-7"
           onPointerEnter={() => setPaused(true)}
           onPointerLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") setI((x) => (x + 1) % n);
+            if (e.key === "ArrowLeft") setI((x) => (x - 1 + n) % n);
+          }}
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             setI((x) => (e.clientX - rect.left < rect.width / 3 ? (x - 1 + n) % n : (x + 1) % n));
@@ -211,7 +230,7 @@ export function WrappedSection() {
                   className="block h-full bg-ace-ink"
                   initial={{ width: k < cur ? "100%" : "0%" }}
                   animate={{ width: k < cur ? "100%" : k === cur ? "100%" : "0%" }}
-                  transition={{ duration: k === cur && !paused ? 3.6 : 0, ease: "linear" }}
+                  transition={{ duration: k === cur && !still ? 3.6 : 0, ease: "linear" }}
                 />
               </span>
             ))}
@@ -231,8 +250,22 @@ export function WrappedSection() {
             </motion.div>
           </AnimatePresence>
           <div className="absolute inset-x-7 bottom-7 flex items-center justify-between">
-            <span className="m-label">
+            <span className="m-label flex items-center gap-3">
               {cur + 1} / {n}
+              {/* under reduced motion the story never plays by itself, so there is nothing to pause */}
+              {!reduce && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHeld((h) => !h);
+                  }}
+                  className="underline"
+                  aria-pressed={held}
+                >
+                  {held ? "play" : "pause"}
+                </button>
+              )}
             </span>
             {s.foot ?? <span className="m-label">tap →</span>}
           </div>

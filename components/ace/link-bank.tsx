@@ -10,6 +10,14 @@ import { useAce } from "./store";
 
 type State = { k: "idle" } | { k: "linking" } | { k: "done"; n: number; cards: number } | { k: "error"; code: string };
 
+// asked once per page load: the tab remounts this every time it opens
+let health: Promise<boolean> | null = null;
+const plaidReady = () =>
+  (health ??= fetch("/api/health", { cache: "no-store" })
+    .then((r) => r.json())
+    .then((h: { plaid?: string }) => !!h.plaid && h.plaid !== "not_configured")
+    .catch(() => false));
+
 export function LinkBank() {
   const { loadFeed } = useAce();
   const [s, setS] = useState<State>({ k: "idle" });
@@ -17,10 +25,7 @@ export function LinkBank() {
 
   useEffect(() => {
     let live = true;
-    fetch("/api/health", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((h: { plaid?: string }) => live && setConfigured(!!h.plaid && h.plaid !== "not_configured"))
-      .catch(() => live && setConfigured(false));
+    plaidReady().then((ok) => live && setConfigured(ok));
     return () => {
       live = false;
     };
@@ -37,6 +42,7 @@ export function LinkBank() {
     }
   };
 
+  // no keys on this deploy: Real vs simulated says so, so the first view doesn't open on "switched off"
   if (configured !== true) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">

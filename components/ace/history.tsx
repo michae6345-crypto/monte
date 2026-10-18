@@ -106,7 +106,7 @@ export function HistorySection() {
           />
           {Object.keys(overrides).length > 0 && (
             <button onClick={resetOverrides} className="btn btn-ghost btn-sm">
-              {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} re-counted · reset
+              {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} with a changed category · reset
             </button>
           )}
           {wallet.length > 1 && (
@@ -149,13 +149,13 @@ export function HistorySection() {
           </div>
         </div>
 
-        <div className="mono hidden grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] gap-3 border-b border-ace-line pb-2 text-[10px] uppercase tracking-[0.15em] text-ace-dim md:grid">
+        <div className="mono hidden grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] gap-3 border-b border-ace-line pb-2 text-[11px] uppercase tracking-[0.15em] text-ace-dim md:grid">
           <span>Date</span>
           <span>Merchant</span>
           <span>Category</span>
           <span className="text-right">Amount</span>
           <span>Paid with</span>
-          <span>{one ? "Rule" : "Should have used"}</span>
+          <span>{one ? "Rule" : "Right card"}</span>
           <span className="text-right">{one ? "Earned" : "Missed"}</span>
         </div>
         <div>
@@ -190,22 +190,28 @@ export function HistorySection() {
                 {one ? (
                   <span className="mono text-right">{money(x.got, { cents: true })}</span>
                 ) : x.miss > 0.005 ? (
-                  <span className="text-right text-ace-loss"><Trace lines={[provenanceFor(x.hb, x.t), provenanceFor(x.ha, x.t)]}><Bracketed state="rest">{money(-x.miss, { sign: true, cents: true })}</Bracketed></Trace></span>
+                  <span className="text-right text-ace-loss"><Trace lines={[provenanceFor(x.hb, x.t), provenanceFor(x.ha, x.t)]}><Bracketed state="resolved">{money(-x.miss, { sign: true, cents: true })}</Bracketed></Trace></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (
                   <span className="text-right text-[11px] leading-tight text-ace-dim" title="This card carries a balance, so new purchases on it accrue interest from day one.">
                     avoids interest
                     <br />
                     <span className="mono">earns {money(-x.miss, { cents: true })} less</span>
                   </span>
+                ) : x.used !== x.best && balanceCards.has(x.used) ? (
+                  <span className="text-right text-[11px] leading-tight" title="This card carries a balance, so new purchases on it accrue interest from day one.">
+                    avoids interest
+                    <br />
+                    <span className="mono">earns the same</span>
+                  </span>
                 ) : (
-                  <span className="mono text-right text-ace-dim">—</span>
+                  <span className="mono text-right">—</span>
                 )}
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
         {filtered.length > limit && (
-          <button onClick={() => setLimit((l) => l + 40)} className="mt-4 w-full rounded-md border border-ace-line py-2 text-sm text-ace-dim hover:text-ace-ink">
+          <button onClick={() => setLimit((l) => l + 40)} className="btn btn-ghost mt-4 w-full">
             Show more ({filtered.length - limit} left)
           </button>
         )}

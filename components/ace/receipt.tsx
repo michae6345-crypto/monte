@@ -50,7 +50,7 @@ export function ReceiptSection() {
                     <div className="mt-2 flex items-center justify-between gap-2 text-xs">
                       <button
                         onClick={() => toggleBalance(h.cardId)}
-                        className={`mono rounded-md border px-2 py-0.5 text-[10px] uppercase tracking-wider transition ${
+                        className={`mono rounded-md border px-2 py-0.5 text-[11px] uppercase tracking-wider transition ${
                           h.balance ? "border-ace-loss/50 bg-ace-loss/10 text-ace-loss" : "border-ace-line text-ace-dim hover:text-ace-ink"
                         }`}
                       >
@@ -84,7 +84,7 @@ export function ReceiptSection() {
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="grid max-h-[340px] grid-cols-3 gap-3 overflow-y-auto rounded-md border border-ace-line bg-ace-panel p-4 sm:grid-cols-4 md:grid-cols-5">
+                <div className="grid max-h-[340px] grid-cols-3 gap-3 overflow-y-auto rounded-[14px] border border-ace-line bg-ace-panel p-4 sm:grid-cols-4 md:grid-cols-5">
                   {CARDS.filter((c) => !wallet.some((h) => h.cardId === c.id)).map((c) => (
                     <button
                       key={c.id}
@@ -96,7 +96,7 @@ export function ReceiptSection() {
                       title={c.name}
                     >
                       <CardArt id={c.id} size="sm" />
-                      <div className="mt-1 truncate text-[10px] text-ace-dim">{shortName(c.id)}</div>
+                      <div className="mt-1 truncate text-[11px] text-ace-dim">{shortName(c.id)}</div>
                     </button>
                   ))}
                 </div>
@@ -112,13 +112,13 @@ export function ReceiptSection() {
                 onClick={() => setValuationMode(v)}
                 className={`btn btn-sm ${valuation === v ? "btn-primary" : "btn-ghost"}`}
               >
-                {v === "cash" ? "cash (1¢ a point)" : "travel (TPG, Oct 2026)"}
+                {v === "cash" ? "cash (1¢ a point)" : "travel (The Points Guy's values, Oct 2026)"}
               </button>
             ))}
           </div>
           <p className="max-w-xl text-sm leading-relaxed text-ace-dim">
             Every rule comes from the issuer&apos;s own terms for {CARDS.length} cards, checked {card("amex_gold").checked ?? "17 Oct 2026"}.
-            Purchases are a synthetic year at real LA merchants. Interest uses the average balance × APR.
+            Purchases are a synthetic year at real LA merchants. Interest is the balance carried all year × APR.
           </p>
         </div>
 

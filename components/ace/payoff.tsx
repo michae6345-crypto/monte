@@ -7,8 +7,8 @@
 import { useMemo, useState } from "react";
 import { card } from "@/lib/engine/catalog";
 import { monteCarlo } from "@/lib/engine/montecarlo";
-import { Bracketed, Expect, HandNote } from "@/components/brand";
-import { CardArt, shortName } from "./card-art";
+import { Bracketed, HandNote } from "@/components/brand";
+import { CardArt, nick, shortName } from "./card-art";
 import { Section } from "./section";
 import { Stage } from "./stage";
 import { money, nameOf, useAce, v } from "./store";
@@ -18,7 +18,7 @@ type Debt = { cardId: string; balance: number; apr: number };
 type Path = { months: number; interest: number; series: number[]; paid: number[] };
 
 /** Avalanche: pay the highest APR first, the rest at minimum, interest monthly at APR/12. */
-function payoff(debts: Debt[], monthly: number, cap = 600): Path {
+function payoff(debts: Debt[], monthly: number | ((m: number) => number), cap = 600): Path {
   const b = debts.map((d) => d.balance);
   const order = debts.map((d, i) => i).sort((x, y) => debts[y].apr - debts[x].apr);
   const series = [b.reduce((a, x) => a + x, 0)];
@@ -27,7 +27,7 @@ function payoff(debts: Debt[], monthly: number, cap = 600): Path {
   let m = 0;
   while (b.some((x) => x > 0.005) && m < cap) {
     m++;
-    let pay = monthly;
+    let pay = typeof monthly === "number" ? monthly : monthly(m);
     for (let i = 0; i < b.length; i++) {
       if (b[i] <= 0) continue;
       const int = (b[i] * debts[i].apr) / 100 / 12;
@@ -95,13 +95,26 @@ export function PayoffSection() {
     const hi = full.reduce((a, k) => (by.get(k)! > by.get(a)! ? k : a));
     const lo = full.reduce((a, k) => (by.get(k)! < by.get(a)! ? k : a));
     const ratio = by.get(hi)! / by.get(lo)!;
-    return ratio >= 2.5 ? { hi, lo, hiV: by.get(hi)!, loV: by.get(lo)! } : null;
+    // each calendar month's spending against the average month: the shape a payment can follow
+    const mean = full.reduce((a, k) => a + by.get(k)!, 0) / full.length;
+    const share = new Map(full.map((k) => [Number(k.slice(5, 7)), by.get(k)! / mean]));
+    return ratio >= 2.5 ? { hi, lo, hiV: by.get(hi)!, loV: by.get(lo)!, share } : null;
   }, [txns]);
   const mon = (k: string) => new Date(k + "-15T12:00").toLocaleDateString("en-US", { month: "short" });
   const [monthly, setMonthly] = useState(250);
 
   const mine = useMemo(() => payoff(debts, Math.max(monthly, debts.reduce((a, d) => a + (d.balance * d.apr) / 1200, 0) + 5)), [debts, monthly]);
   const mins = useMemo(() => minimums(debts), [debts]);
+  // income that swings: the same average payment, but more in busy months and the minimum in slow ones
+  const firstMonth = Number((txns.map((t) => t.date).sort().pop() ?? "2026-10").slice(5, 7));
+  const stepped = useMemo(() => {
+    if (!swing) return null;
+    const floor = debts.reduce((a, d) => a + Math.max(35, (d.balance * d.apr) / 1200 + d.balance * 0.01), 0);
+    const payFor = (m: number) => Math.max(floor, monthly * (swing.share.get(((firstMonth + m - 1) % 12) + 1) ?? 1));
+    const path = payoff(debts, payFor);
+    const pays = Array.from({ length: Math.max(1, path.months) }, (_, k) => payFor(k + 1));
+    return { ...path, lo: Math.min(...pays), hi: Math.max(...pays) };
+  }, [swing, debts, monthly, firstMonth]);
 
   // the engine's projection of the paid-off wallet (explicitly hypothetical)
   const proj = useMemo(() => {
@@ -133,7 +146,7 @@ export function PayoffSection() {
   const line = (s: number[]) => s.slice(0, months + 1).map((v, m) => `${m ? "L" : "M"}${x(m).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   const area = (s: number[]) => `${line(s)} L${x(Math.min(s.length - 1, months)).toFixed(1)},${y(0)} L${x(0)},${y(0)} Z`;
   const saved = mins.interest - mine.interest;
-  const debtNames = debts.map((d) => shortName(d.cardId)).join(" and ");
+  const debtNames = debts.map((d) => nick(d.cardId)).join(" and ");
 
   return (
     <Section
@@ -185,7 +198,7 @@ export function PayoffSection() {
             {done && (
               <>
                 <line x1={x(mine.months)} x2={x(mine.months)} y1={y(total)} y2={y(0)} strokeDasharray="2 3" style={{ stroke: "var(--m-accent)" }} />
-                <text x={Math.min(x(mine.months) + 6, W - 90)} y={y(total * 0.85)} fontSize={11} className="m-mono" style={{ fill: "var(--m-accent)" }}>
+                <text x={Math.min(x(mine.months) + 6, W - 90)} y={y(total * 0.85)} fontSize={11} className="m-mono" style={{ fill: "var(--m-accent)", stroke: "var(--m-panel)", strokeWidth: 4, paintOrder: "stroke" }}>
                   paid off · {span(mine.months)}
                 </text>
               </>
@@ -223,13 +236,23 @@ export function PayoffSection() {
           )}
           <p className="mt-3 text-[12px] leading-relaxed text-ace-dim">
             Interest charged monthly at the card&apos;s APR; the minimum is the month&apos;s interest plus 1% of the balance, at least $35 (a common
-            issuer formula).{wallet.length > 1 ? " Monte routes new spending to the other cards until it is paid off." : ""}
+            issuer formula).{wallet.length > 1 ? " Monte puts new purchases on the other cards until it is paid off." : ""}
           </p>
           {swing && (
             <p className="mt-3 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-[13px] leading-relaxed">
-              {nm.Whose} spending runs from {money(swing.loV)} ({mon(swing.lo)}) to {money(swing.hiV)} ({mon(swing.hi)}). In a slow month, pay at
-              least the {money(firstMinimum)} minimum so there&apos;s no late fee, and make it up in the next busy one: each month the balance stays
-              costs about {money(firstInterest)} in interest.
+              {nm.Whose} spending runs from {money(swing.loV)} ({mon(swing.lo)}) to {money(swing.hiV)} ({mon(swing.hi)}).
+              {stepped && (
+                <>
+                  {" "}
+                  Paying in step with those months ({money(stepped.lo)} in the slowest, {money(stepped.hi)} in the busiest, {money(monthly)} on
+                  average) clears it in <span className="m-num">{span(stepped.months)}</span> with{" "}
+                  <span className="m-num">{money(stepped.interest)}</span> of interest
+                  {Math.round(stepped.interest) !== Math.round(mine.interest)
+                    ? `, ${money(Math.abs(Math.round(stepped.interest) - Math.round(mine.interest)))} ${stepped.interest > mine.interest ? "more" : "less"} interest than a flat ${money(monthly)}, which a slow month may not cover.`
+                    : `, the same interest as a flat ${money(monthly)}.`}
+                </>
+              )}{" "}
+              Never less than the {money(firstMinimum)} minimum: a missed one adds a late fee.
             </p>
           )}
         </div>
@@ -244,16 +267,12 @@ export function PayoffSection() {
               </p>
               <div className="mt-5 space-y-2 text-xl">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-ace-dim">routed, balance kept</span>
-                  <Expect of="net" tone={proj.now.current.p50 >= 0 ? "gain" : "loss"}>
-                    {money(proj.now.current.p50, { sign: true })}
-                  </Expect>
+                  <span className="text-sm">typical next year, balance still owed</span>
+                  <span className={`m-num ${proj.now.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.now.current.p50, { sign: true })}</span>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-ace-dim">routed, paid off</span>
-                  <Expect of="net" tone={proj.after.current.p50 >= 0 ? "gain" : "loss"}>
-                    {money(proj.after.current.p50, { sign: true })}
-                  </Expect>
+                  <span className="text-sm">typical next year, balance paid off</span>
+                  <span className={`m-num ${proj.after.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.after.current.p50, { sign: true })}</span>
                 </div>
               </div>
               <div className="my-5 border-t border-ace-line" />
@@ -264,7 +283,7 @@ export function PayoffSection() {
                     <p className="m-label">then the first card worth adding</p>
                     <p className="mt-1 font-medium">{shortName(proj.add.id.slice(4))}</p>
                     <p className="m-num mt-0.5 text-[12px] text-ace-dim">
-                      {money(proj.add.p50 - proj.after.current.p50, { sign: true })}/yr median · ahead in{" "}
+                      {money(proj.add.p50 - proj.after.current.p50, { sign: true })} a year, typical · better in{" "}
                       {Math.round(proj.add.winShare * proj.after.years).toLocaleString()} of {proj.after.years.toLocaleString()} years
                     </p>
                   </div>

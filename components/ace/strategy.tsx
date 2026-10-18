@@ -75,7 +75,7 @@ export function StrategyChart() {
         <span>Strategy chart · {nameOf(persona).whose} wallet · cents back per dollar, Oct 2026</span>
         <span className="flex items-center gap-4 normal-case tracking-normal">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-sm border-2 border-ace-ink" /> the play
+            <span className="inline-block size-3 rounded-sm border-2 border-ace-ink" /> the right card
           </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block size-3 rounded-sm border border-ace-line" style={{ backgroundImage: HATCH }} /> off limits
@@ -86,7 +86,7 @@ export function StrategyChart() {
         <table className="w-full min-w-[560px] border-collapse text-sm">
           <thead>
             <tr className="mono text-[11px] text-ace-dim">
-              <th className="w-[38%] border-b border-ace-line px-3 py-2.5 text-left font-normal">MCC · category</th>
+              <th className="w-[38%] border-b border-ace-line px-3 py-2.5 text-left font-normal">Store code · category</th>
               {wallet.map((h) => (
                 <th key={h.cardId} className="border-b border-l border-ace-line px-2 py-2.5 text-left font-normal">
                   <span className="flex items-center gap-1.5">
@@ -103,7 +103,7 @@ export function StrategyChart() {
                 <td className="border-b border-ace-line px-3 py-2">
                   <span className="mono mr-2 text-[11px] text-ace-dim tnum">{MCC[r.cat] ?? "····"}</span>
                   <span>{cap(r.cat)}</span>
-                  <span className="mono ml-2 text-[10px] text-ace-dim">{money(r.total)}/yr</span>
+                  <span className="mono ml-2 text-[11px] text-ace-dim">{money(r.total)}/yr</span>
                 </td>
                 {r.cells.map((c) => {
                   const on = sel?.cat === r.cat && sel.cardId === c.cardId;
@@ -116,7 +116,7 @@ export function StrategyChart() {
                           on ? "ring-2 ring-inset ring-ace-gold" : ""
                         }`}
                         style={c.blocked ? { backgroundImage: HATCH } : { background: `color-mix(in oklab, var(--m-ink) ${Math.round(heat * heat * 7)}%, transparent)` }}
-                        aria-label={`${shortName(c.cardId)} at ${label(r.cat)}: ${c.cpd.toFixed(1)} cents per dollar${c.best ? ", the play" : ""}${c.blocked ? ", off limits" : ""}`}
+                        aria-label={`${shortName(c.cardId)} at ${label(r.cat)}: ${c.cpd.toFixed(1)} cents per dollar${c.best ? ", the right card" : ""}${c.blocked ? ", off limits" : ""}`}
                       >
                         {c.best && <span className="absolute inset-1 rounded-sm border-2 border-ace-ink" />}
                         <span className={c.best ? "font-semibold text-ace-ink" : c.blocked ? "text-ace-ink line-through" : "text-ace-ink"}>{c.cpd.toFixed(1)}¢</span>
@@ -129,7 +129,7 @@ export function StrategyChart() {
           </tbody>
         </table>
       </div>
-      <div className="mono mt-3 min-h-[3.5rem] rounded-md border border-dashed border-ace-line px-4 py-3 text-[12px] leading-relaxed text-ace-dim">
+      <div className="mono mt-3 min-h-[3.5rem] rounded-[14px] border border-dashed border-ace-line px-4 py-3 text-[12px] leading-relaxed text-ace-dim">
         {detail && detailCard && sel ? (
           <>
             <span className="text-ace-ink">

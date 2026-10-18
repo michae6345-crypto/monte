@@ -35,9 +35,12 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
     return [...m.values()];
   }, [txns]);
 
-  const monthKeys = useMemo(() => [...new Set(txns.map((t) => t.date.slice(0, 7)))].sort().slice(-12), [txns]);
+  // the year spans 13 calendar months (18 Oct to 17 Oct): the partial first one rides with month 1,
+  // so month 12 is every purchase and matches the receipt
+  const monthKeys = useMemo(() => [...new Set(txns.map((t) => t.date.slice(0, 7)))].sort(), [txns]);
+  const extra = Math.max(0, monthKeys.length - 12);
   const upTo = useMemo(() => {
-    const keep = new Set(monthKeys.slice(0, month));
+    const keep = new Set(monthKeys.slice(0, month + extra));
     const m = new Map<string, number>();
     let total = 0;
     for (const t of txns)
@@ -45,8 +48,8 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
         m.set(t.merchant, (m.get(t.merchant) ?? 0) + t.amount);
         total += t.amount;
       }
-    return { m, total, label: monthKeys[Math.max(0, month - 1)] };
-  }, [txns, monthKeys, month]);
+    return { m, total, label: monthKeys[Math.max(0, month - 1 + extra)] };
+  }, [txns, monthKeys, month, extra]);
 
   const layout = useMemo(() => {
     const byCat = new Map<string, Store[]>();
@@ -73,11 +76,11 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
   return (
     <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr] [&>*]:min-w-0">
       <div className="m-panel relative overflow-hidden p-3 md:p-5">
-        {month < 12 && upTo.label && (
+        {upTo.label && (
           <div className="pointer-events-none absolute left-5 top-4 z-10" style={display}>
             <div className="text-4xl">{money(upTo.total)}</div>
             <div className="text-sm" style={{ fontFamily: "var(--m-font-body)", fontWeight: 400, letterSpacing: 0 }}>
-              spent by the end of {new Date(upTo.label + "-15T12:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" })}
+              {month >= 12 ? "spent last year" : `spent by the end of ${new Date(upTo.label + "-15T12:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" })}`}
             </div>
           </div>
         )}
@@ -151,7 +154,7 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
                   <div className="text-4xl" style={display}>
                     {money(cur.total)}
                   </div>
-                  <div className="mt-1 text-sm text-ace-dim">this year</div>
+                  <div className="mt-1 text-sm text-ace-dim">last year</div>
                 </div>
                 <div>
                   <div className="text-4xl" style={display}>
@@ -164,7 +167,7 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
                 <div className="mt-auto flex items-center gap-3 rounded-[14px] bg-[var(--m-wash)] p-3 pt-3">
                   <CardArt id={pick.cardId} size="sm" className="w-16 shrink-0 shadow-none" />
                   <div className="min-w-0 text-sm">
-                    <div className="text-ace-dim">Best card here</div>
+                    <div className="text-ace-dim">Right card here</div>
                     <div className="truncate font-medium">
                       {shortName(pick.cardId)} · {pick.mult % 1 ? pick.mult.toFixed(1) : pick.mult}×
                     </div>

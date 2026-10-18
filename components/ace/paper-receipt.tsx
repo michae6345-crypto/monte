@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import type { Holding, Receipt } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { Bracketed, HandNote, MonteMark } from "@/components/brand";
-import { CardArt, shortName } from "./card-art";
+import { CardArt, nick, shortName } from "./card-art";
 import { money } from "./store";
 import { Trace } from "./trace";
 import { creditProvenanceFor, feeProvenanceFor, interestProvenanceFor, type ProvenanceLine } from "@/lib/engine/provenance";
@@ -90,7 +90,7 @@ export function PaperReceipt({
             {name}
           </div>
           <div className="m-mono text-[10.5px] uppercase tracking-[0.18em] text-ace-dim">
-            18 Oct 2025 – 17 Oct 2026 · {purchases} purchases · as used
+            18 Oct 2025 – 17 Oct 2026 · {purchases} purchases · as paid
           </div>
         </div>
 
@@ -107,7 +107,10 @@ export function PaperReceipt({
                   <div className="mb-2 flex items-center gap-2.5">
                     <CardArt id={c.cardId} size="sm" className="w-11 shrink-0 shadow-none" />
                     <div className="min-w-0">
-                      <div className="truncate text-[12px] font-semibold uppercase tracking-[0.04em]">{shortName(c.cardId)}</div>
+                      <div className="truncate text-[12px] font-semibold uppercase tracking-[0.04em]">
+                        <span className="sm:hidden">{nick(c.cardId)}</span>
+                        <span className="hidden sm:inline">{shortName(c.cardId)}</span>
+                      </div>
                       <div className="text-[10.5px] text-ace-dim">
                         {k.issuer.replace(/\s*\(.*\)\s*/, "")} · {h.balance ? `carries $${h.balance.toLocaleString()} at ${h.apr}%` : "paid in full"}
                       </div>
@@ -175,7 +178,7 @@ export function PaperReceipt({
 
         <div className="mt-6 text-ace-ink">
           <Barcode seed={seed} />
-          <div className="m-mono mt-3 text-center text-[10px] uppercase tracking-[0.22em] text-ace-dim">hover any line for its rule and source</div>
+          <div className="m-mono mt-3 text-center text-[11px] uppercase tracking-[0.22em] text-ace-dim">hover any line for its rule and source</div>
         </div>
       </div>
     </div>
