@@ -107,6 +107,9 @@ On screen: a countertop reader with four contactless lights and the approval bee
 Apple Pay-style phone holding the Monte card (*Hold Near Reader*), whose cards flip while it
 ranks. Nothing is timed: Next, space or the arrow keys move each step on.
 
+**Real:** the ranking, the cap counts, the balance block and the reward on every card.
+**Simulated:** the reader, the phone and the NFC. It runs in the browser.
+
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
