@@ -11,7 +11,7 @@ const grotesk = Space_Grotesk({ variable: "--font-grotesk", subsets: ["latin"] }
 const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Kicker: the card that tips it",
+  title: "Monte: every card, played right",
   description:
     "Picks the right card at every tap, and shows what your cards really cost you after interest, fees and the perks you never use.",
 };

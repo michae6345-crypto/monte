@@ -1,191 +1,111 @@
-# Ace: the right card every time, and the truth about what your cards cost you
+# Monte: every card played right, and what your cards really cost
 
-TrojanHacks 2026 · **Finance** vertical · Team 1 (Adrian Erlikhman, Michael Tarekegn)
-Copies **Uno Wallet** (YC Spring 2026: picks the best card at tap time, 33K waitlist)
-and goes past it: Uno only tells you which card earns the most, and Ace also tells you
-what your cards actually **cost**.
+TrojanHacks 2026 · **Finance** vertical · Team 1 · Adrian Erlikhman (UI, branding) and
+Michael Tarekegn (production, backend). Submission due **Sun 18 Oct, 12:00**; we submit
+at 11:30. Rules and rubric: `docs/HACKATHON.md`.
 
-> Name is a placeholder. "Ace" (the best card in the deck). Alternatives: Trump Card,
-> Stack, Swipe Right, Leftover.
+## The pitch
 
-## The problem
+People pick credit cards for the signup bonus, then lose money three ways:
 
-People choose credit cards on the signup bonus and then stop thinking about them. Three
-things quietly cost them money:
+- the wrong card at the register
+- annual fees for perks they never use
+- interest that outweighs every reward
 
-1. **Wrong card at the register.** Groceries go on the 1% card while the 4% card sits in
-   the wallet. Rotating 5% categories never get activated. Caps get blown.
-2. **Fees for benefits they don't use.** A $325 annual fee justified by $424 of credits,
-   of which they actually use $84.
-3. **Interest that dwarfs the rewards.** Earning 2% back while paying ~22% APR on a
-   carried balance. This is the one most rewards apps hide, because they earn from
-   recommending more cards.
+Rewards apps show points. **Monte shows the net**: rewards plus perks used, minus fees,
+minus interest. It reads a year of your purchases, tells you which card to use for each
+one, which card to keep, and which to apply for next. And it runs Monte Carlo
+simulations of next year, so every recommendation comes with odds, not a guess.
 
-Nobody shows the **net**: rewards + credits used − fees − interest, per card, from your
-real spending.
+**Name:** Monte Carlo simulation (finance and poker solvers), with a casino wink.
 
-## The user
+**Copies:** Uno Wallet (YC Spring 2026) picks the best card at tap time. Monte adds the
+cost side. Others in the space are Pointwise (YC W23), CardStack, Wallaby and Kudos:
+they compete on rewards, we compete on net cost.
 
-**Jordan, 24, first job in LA** ($58K). Three cards:
+**Track fit:** "make financial products, fees, and tradeoffs easier to understand and
+compare" for a clearly defined user (Jordan, 24, first job in LA, three cards, one with
+a balance).
 
-- Chase Freedom Unlimited, from college
-- Amex Gold, for the bonus
-- Apple Card, carrying about $2,800
+**Rule of the engine:** deterministic. The AI never does the math. Every dollar on
+screen traces to a card rule in `data/cards.json` (issuer source plus checked date)
+and to the purchases behind it.
 
-Spends on rent, dining, Trader Joe's, gas, Uber, Spotify and Amazon.
+## Features
 
-**Track challenge:** "make financial products, fees, and tradeoffs easier to understand
-and compare". Also helps "track expenses".
+Status: ✅ built and live · 🟡 partly built · ⬜ to build.
+Owner: **A** = Adrian (UI, branding) · **M** = Michael (production, backend).
 
-## What it does: six screens
+### Your money
+| # | Feature | Status | Owner |
+|---|---|---|---|
+| 1 | Spending treemap by category, month-by-month bars, top merchants | ✅ | A |
+| 2 | Recurring charges ("keeps charging you") with the best card for each, price-rise flag | ✅ | A |
+| 3 | Statement CSV upload (Chase, Amex, Capital One formats), parsed in the browser | ✅ | A/M |
+| 4 | **Plaid sandbox Link**: connect an account, pull transactions + liabilities (APR, balance), map Plaid categories with `data/category_map.json` | ⬜ | **M** |
+| 5 | Merchant correction: re-categorise a merchant once, applied everywhere (saved) | ⬜ | M (store) + A (UI) |
 
-### 1 · Add your wallet
+### Your cards
+| # | Feature | Status | Owner |
+|---|---|---|---|
+| 6 | Wallet builder: 29 real cards, balance per card, cash vs travel point value | ✅ | A |
+| 7 | **The Receipt**: rewards + perks used − fees − interest = net, per card | ✅ | A |
+| 8 | **Purchase history with a verdict**: card used, card Monte would pick, the difference; search, merchant drill-down, misses only | ✅ | A |
+| 9 | **Replay**: the year re-routed to the best card in the same wallet ("$104 left on the table") | ✅ | A |
+| 10 | **Tap**: best card at a merchant now; caps used this quarter, perk-first ("use your Uber Cash"), rotating-category activation, and never a card with a balance | ✅ | A |
+| 11 | **Keep or cancel**: each card's fee against the value it adds over your next-best card | ✅ | A |
 
-- **Pick your cards** from a grid of card art. You can also connect through Plaid
-  (sandbox) or drop in a statement CSV.
-- **No card numbers, ever.** We store only which products you hold.
-- **Transactions:** Plaid sandbox custom user, or our seeded 12-month history for Jordan.
+### What to apply for
+| # | Feature | Status | Owner |
+|---|---|---|---|
+| 12 | Best next card from your own spending; filters: no annual fee, perks you'd use, cash/travel | ✅ | A |
+| 13 | Signup-bonus planner: can your normal spending hit the minimum in time; rank by every year or first year with bonus | ✅ | A |
+| 14 | "No new card yet" when you carry a balance; payoff plan instead | ✅ | A |
+| 15 | **Monte Carlo**: resample your months into 1,000 simulated next years; show the odds a card or wallet beats yours ("Blue Cash Preferred wins in 84% of years"), as a fan chart | ⬜ | **M** (engine) + **A** (chart) |
 
-### 2 · The Receipt (the hero screen)
+### Engine and data
+| # | Feature | Status | Owner |
+|---|---|---|---|
+| 16 | Rules engine: earn rates, caps, shared cap pools, pick-one categories, Q4 2026 rotations, credits | ✅ | done |
+| 17 | **LP optimizer** for the replay (caps make greedy sub-optimal) + the number "LP beats greedy by $X on Jordan's year" | ⬜ | **M** |
+| 18 | Engine tests: 5 hand-computed purchases + one cap case + the 3 personas | ⬜ | **M** |
+| 19 | Provenance: every dollar clicks through to its rule, source URL and checked date; UNVERIFIED badge where the catalog marks one | 🟡 | M (data) + A (UI) |
+| 20 | Production: Vercel env vars for Plaid, error and empty states, no keys in the public repo | ⬜ | **M** |
 
-- One big animated number: **"Your cards cost you $[net] last year."** Every dollar
-  figure in this spec is illustrative until the engine computes it from Jordan's seeded
-  year.
-- It tallies up like a receipt printing. Each line expands into the transactions behind
-  it:
-  - **+ rewards earned**
-  - **+ credits used**
-  - **− annual fees**
-  - **− interest**
-  - **− foreign transaction and late fees**
-- **Money river:** a Sankey diagram flowing from spending categories → cards → where the
-  value ended up: green rewards, red interest and fees.
-- **Shareable card:** "My cards cost me $[net]. What do yours?" This is the marketable,
-  viral piece.
+### Brand and story
+| # | Feature | Status | Owner |
+|---|---|---|---|
+| 21 | Logo, theme and fonts for Monte (replace the brand kit) | ⬜ | **A** |
+| 22 | **Monte Wrapped**: shareable year in review ("61 Sweetgreen bowls, $231 left on the table") | ⬜ | **A** |
+| 23 | Nudges this week: activate categories, perks expiring, renewals worth negative, pay this first | ✅ | A |
+| 24 | Slides (7), 60-second backup video, submission text | ⬜ | **A** (deck) + **M** (Q&A sheet) |
 
-### 3 · Replay: "money left on the table"
+## Cut order if we're behind
+Merchant correction → Monte Wrapped → Plaid (keep CSV upload + personas, say so) → LP
+(keep greedy with caps) → fan chart (keep the one odds number).
 
-- A year of transactions plays on a timeline: dots fall into the card that was actually
-  used.
-- Flip the toggle to **"best card"** and every dot re-routes to the optimal card in the
-  same wallet. The **missed rewards** counter climbs ("+$231").
-- Bar of missed value by category: groceries $96, dining $71, gas $38…
-- Respects real caps:
-  - Freedom Flex 5% up to $1,500 per quarter
-  - Custom Cash 5% on its top category up to $500 per cycle
-  - Blue Cash Preferred 6% on groceries up to $6,000 per year
+**Never cut:** Receipt, purchase history, Replay, Tap with the balance rule, Keep or
+cancel, apply planner, click-to-source.
 
-### 4 · Tap: the Uno moment
-
-- A phone frame. Pick where you are: search, or a mini map of nearby LA merchants
-  (Sweetgreen, Trader Joe's, Shell, Uber, Delta).
-- The wallet fans out and the **best card rises**: "Amex Gold · 4x · $2.80 back vs
-  $0.70 on Apple Card".
-- **Live context:**
-  - **Cap meters:** "Freedom Flex 5% · $1,210 of $1,500 used this quarter"
-  - **Activation reminders:** "Activate Q4 categories first"
-  - **Credits:** "You have $10 Uber Cash left this month, use it first"
-  - **The honesty rule:** if you carry a balance on a card, Ace never recommends
-    putting more on it.
-
-### 5 · Keep or cancel
-
-- Each card sits on a **balance scale**.
-- **Left pan:** annual fee.
-- **Right pan:** the value the card *adds* over your next-best card for your spending
-  (its marginal value: optimal wallet with it minus optimal wallet without it), plus
-  credits you actually use.
-- **Verdict:**
-  - Keep
-  - **Downgrade** to the no-fee sibling, which keeps your credit history
-  - Cancel, with a note on credit-score impact
-
-### 6 · What if
-
-- Browse about 25 real cards with Oct 2026 terms, each sourced.
-- **Drag one into your wallet.** The optimizer re-runs on your real year: "+$184 a year,
-  net of the $95 fee". The signup bonus is shown separately as a one-time amount.
-- **Sliders** for monthly spend by category; the best wallet updates live.
-- **Ranking is by your net value only.** No affiliate ordering.
-
-### Interest reality (shows whenever there's a balance)
-
-- A banner that overrides everything else: **"Rewards don't matter until this is gone:
-  you paid $690 in interest to earn $410 in rewards."**
-- **Payoff plan:** avalanche order and a month slider ("pay $250/mo → debt-free by
-  July, $412 interest saved").
-- **Balance-transfer option,** with its 3–5% fee counted.
-
-## The engine (deterministic: the AI never does the math)
-
-| Part | How |
-|---|---|
-| **Category** | Plaid `personal_finance_category`, mapped to our 20 reward categories. Merchant overrides cover issuer quirks: Costco and Walmart don't count as "grocery" for Amex; Apple Card gives 3% at named merchants. Real issuers decide by merchant category code (MCC), so we document the mapping. |
-| **Reward per (transaction, card)** | amount × multiplier × point value. The rules cover caps, after-cap rates, conditions (portal-only, activation), and rotating categories for the current quarter. |
-| **Optimal assignment (replay)** | Caps make it a real optimization: maximize total reward subject to per-period caps, solved as a small LP / min-cost flow (javascript-lp-solver), with a greedy marginal-gain baseline we can compare against. |
-| **Tap-time pick** | An online greedy with the remaining cap per card and period. Explains itself: "4x dining × $70 × 1.0¢ = $2.80". |
-| **Marginal value of a card** | Optimal wallet value with the card minus without it. Drives Keep or cancel and What if. |
-| **Interest** | Average daily balance × APR / 365 per day, from statement balances (Plaid Liabilities in sandbox, or seeded). |
-| **Credits used** | Detected from transactions (Uber Cash, the dining credit merchants) or ticked by the user. |
-| **Provenance** | Every rule in `cards.json` carries its source URL and the date we checked it. Every dollar on screen clicks through to the rule and the transactions behind it. |
-
-**Where AI is used:**
-
-- cleaning merchant names
-- the category fallback when Plaid's category is ambiguous
-- an optional "explain my receipt" voice-over
-
-The user can override all of it. **This is the answer for Kaushal:** the numbers come
-from an optimizer and published card terms, not from a model.
-
-## Data
-
-- `data/cards.json`: about 25 cards. Earn rules, caps, rotating Q4 2026 categories,
-  credits, fees, APR ranges, point valuations with sources. Being built now.
-- `data/category_map.json`: Plaid categories → reward categories, plus notes on MCCs.
-- **Jordan's year:** about 600 synthetic transactions at real LA merchants, generated by
-  script with realistic amounts, plus statement balances for the Apple Card. The same
-  data is loaded into a Plaid sandbox custom user if the sandbox allows it.
-- **Pitch stats**, with sources:
-  - average APR (Fed G.19)
-  - US card debt (NY Fed)
-  - the share of cardholders who carry a balance
-
-## Impact, and how we'd measure it
-
-- **Dollars recovered per user per year:** missed rewards, plus fees on cards that
-  aren't worth it, plus interest saved by the payoff plan. Computed by replaying each
-  user's own history.
-- **Pilot:** USC students, first cards, about 50 users. Measure the change in net card
-  value over 3 months.
-- **Who pays (Chris's question):**
-  - premium tier ($3/mo)
-  - an employer financial-wellness benefit
-  - card referrals, but only ranked by user value and disclosed. That makes it the
-    honest NerdWallet.
-
-## Prior art
-
-| Product | What it does | What it misses |
+## Timeline (Sunday)
+| When | Adrian (UI, brand) | Michael (prod, backend) |
 |---|---|---|
-| Uno Wallet (YC Spring 2026) | Best card at tap | Not yet launched (waitlist); rewards only |
-| CardPointers, MaxRewards | Best-card lookup, offer activation | No interest or net cost; manual |
-| Kudos | Browser checkout extension | Online only |
-| NerdWallet | Card match | Ranked by referral fees; not your spending |
-| Apple Wallet | Holds cards | No recommendation |
+| now–2:00 | Logo + theme + fonts; apply to the site | Plaid sandbox Link + `/api/plaid/*`; LP optimizer |
+| 2:00 | Checkpoint: Plaid sandbox data renders in every section on the live URL | |
+| 8:00–9:30 | Monte Carlo chart, Wrapped, mobile pass | Monte Carlo engine, tests, provenance, prod env |
+| 9:30–10:30 | Slides, backup video | Q&A sheet, README, bug bash on prod |
+| 10:30 | **Feature freeze** | |
+| 10:30–11:30 | Rehearse 3× on prod; upload slides + description to the Team 1 Drive folder; submit by 11:30 | |
 
-**Ace's angle:** the net cost (including interest and unused benefits), a cap-aware
-optimizer, and every number traceable to its source.
+## Demo path (4 min + 1)
+Hook → Jordan → **Money** (where it goes) → **Receipt** (−$427) → **Purchases**
+(the misses) → **Replay** ($104) → **Tap** on a phone (Mobil: "not this one, it has a
+balance") → **Keep or cancel** (Amex Gold: downgrade) → **Apply** with Monte Carlo odds
+→ how it works (the AI never does the math) → real vs simulated. Bonus: run Tap on a
+judge's own wallet.
 
-## Scope
-
-- **In:** US consumer cards, the 25-card catalog, 12 months of history, the 6 screens.
-- **Out:** live tap-to-pay (no NFC or real card provisioning), business cards, points
-  transfers to airline and hotel partners (one cents-per-point value per currency).
-
-## Privacy
-
-- Sandbox data only.
-- We never see card numbers or credentials.
-- The engine runs in the browser.
-- The shareable card shows totals, never transactions.
+## Stack and repo
+Next.js 16 (App Router) + TypeScript, Tailwind v4 + shadcn/ui, framer-motion,
+d3-hierarchy, javascript-lp-solver, Plaid (sandbox), Vercel. The engine lives in
+`lib/engine/`, data in `data/`, demo people in `lib/data/personas.ts`, screens in
+`components/ace/`. `npm run check` before every push to main.

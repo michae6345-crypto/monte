@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-// Kicker brand kit: the name is fixed; logo, theme and type are separate choices so
+// Monte brand kit (placeholder until Adrian picks the real one): the name is fixed; logo, theme and type are separate choices so
 // they can be mixed on the live page. ?logo=&theme=&type= links pick a combination.
 
 type Vars = Record<string, string>;
@@ -12,9 +12,9 @@ export type Logo = { id: string; label: string; note: string; lower: boolean; Ma
 export type Theme = { id: string; label: string; note: string; vars: Vars };
 export type TypeSet = { id: string; label: string; note: string; vars: Vars };
 
-export const NAME = "Kicker";
-export const TAGLINE = "The card that tips it.";
-export const EYEBROW = "Every tap, the winning card";
+export const NAME = "Monte";
+export const TAGLINE = "Every card, played right.";
+export const EYEBROW = "Your wallet, simulated";
 
 export const LOGOS: Logo[] = [
   {
@@ -216,7 +216,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     const q = new URLSearchParams(location.search);
     let saved: Partial<Choice> = {};
     try {
-      saved = JSON.parse(localStorage.getItem("kicker-brand") ?? "{}");
+      saved = JSON.parse(localStorage.getItem("monte-brand") ?? "{}");
     } catch {}
     const pick = (k: keyof Choice, list: { id: string }[]) => {
       const v = q.get(k) ?? saved[k];
@@ -240,7 +240,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     const next = { ...choice, [k]: v };
     setChoice(next);
     try {
-      localStorage.setItem("kicker-brand", JSON.stringify(next));
+      localStorage.setItem("monte-brand", JSON.stringify(next));
     } catch {}
     const u = new URL(location.href);
     for (const [kk, vv] of Object.entries(next)) u.searchParams.set(kk, vv);
@@ -272,7 +272,7 @@ export function BrandSwitcher() {
     <div className="fixed bottom-4 left-1/2 z-[70] w-[min(96vw,760px)] -translate-x-1/2">
       <div className="rounded-2xl border border-ace-line bg-ace-panel/95 p-3 shadow-2xl backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3 px-1">
-          <span className="mono text-[10px] uppercase tracking-[0.2em] text-ace-dim">Kicker brand kit · mix and match</span>
+          <span className="mono text-[10px] uppercase tracking-[0.2em] text-ace-dim">Monte brand kit (placeholder) · mix and match</span>
           <button onClick={() => setOpen((v) => !v)} className="mono text-[10px] uppercase tracking-[0.2em] text-ace-dim hover:text-ace-ink">
             {open ? "hide" : "show"}
           </button>

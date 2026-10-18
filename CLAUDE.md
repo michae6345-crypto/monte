@@ -1,11 +1,12 @@
-# Ace: the right card every time, and what your cards really cost
+# Monte: every card played right, and what your cards really cost
 
 TrojanHacks 2026 · Finance vertical · Team 1 (Adrian Erlikhman, Michael Tarekegn).
-Copies Uno Wallet (YC Spring 2026) and adds the true net cost of each card.
+Copies Uno Wallet (YC Spring 2026) and adds the true net cost of each card, with Monte
+Carlo odds. (The code still says `ace` in folder and component names; that is fine.)
 
 ## Scope
-`docs/SPEC.md` is what we're building, `docs/DEMO.md` is the exact demo path, and
-`docs/PLAN.md` is the timeline and cut lines. Anything not on the demo path is out of
+`docs/SPEC.md` is the feature list with owners, status, timeline, cut order and demo path.
+`docs/HACKATHON.md` is the rulebook and rubric. Anything not on the demo path is out of
 scope until it's done.
 
 ## Stack
@@ -27,6 +28,8 @@ API you haven't used this session, check the current docs: versions are in packa
 - Small commits; never push a failing `npm run check` to main.
 
 ## Ownership
-- Engine (Michael): `lib/engine/`, `lib/data/`, `app/api/`, `scripts/`
-- Experience (Adrian): `app/(screens)/`, `components/`
-- Shared, ask first: `lib/contract.ts`, `package.json`
+- Production and backend (Michael): `lib/engine/`, `lib/data/`, `app/api/`, `scripts/`,
+  Plaid, the LP optimizer, Monte Carlo engine, tests, env and deploy settings
+- UI and branding (Adrian): `app/page.tsx`, `app/layout.tsx`, `app/globals.css`,
+  `components/`, the logo, theme and fonts
+- Shared, ask first: `lib/contract.ts`, `package.json`, `data/`
