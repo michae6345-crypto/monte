@@ -103,7 +103,7 @@ export function KeepSection() {
                   </span>
                   <span className="text-right">
                     <span className={`m-num block text-sm ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })}/yr</span>
-                    <span className="block text-[11px] text-ace-dim">last year, played right</span>
+                    <span className="block text-[11px] text-ace-dim">last year, on the right card</span>
                   </span>
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
@@ -117,7 +117,7 @@ export function KeepSection() {
                       simulated years
                     </span>
                     <span>
-                      next year&apos;s median without it:{" "}
+                      a typical next year without it:{" "}
                       <span className={`m-num ${drop.p50 - mc.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>
                         {money(drop.p50 - mc.current.p50, { sign: true })}/yr
                       </span>
@@ -349,7 +349,7 @@ export function ForYouSection() {
           <div>
             <div className="m-label mb-4">
               Best next card for {nameOf(persona).who}
-              {wallet.some((h) => h.balance) ? " · once the balance is paid" : ""}
+              
             </div>
             {wallet.some((h) => h.balance) && (
               <div className="mb-3 rounded-[10px] bg-[var(--m-wash)] p-4 text-sm leading-relaxed">
@@ -389,8 +389,8 @@ export function ForYouSection() {
                   <span className="sm:text-right">
                     <span className={`mono block text-sm ${x.score >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.score, { sign: true })}</span>
                     <span className="mono block text-[11px] text-ace-dim">
-                      {horizon === "first" ? "first year, median" : "next year, median"}
-                      {x.win !== undefined ? ` · ahead ${Math.round(x.win * priced.mc.years).toLocaleString()}/${priced.mc.years.toLocaleString()}` : ""}
+                      {horizon === "first" ? "typical first year" : "typical next year"}
+                      {x.win !== undefined ? ` · better in ${Math.round(x.win * priced.mc.years).toLocaleString()} of ${priced.mc.years.toLocaleString()} years` : ""}
                     </span>
                   </span>
                   <button
@@ -438,14 +438,14 @@ export function ForYouSection() {
           <DriftToggle />
         </div>
         <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ace-dim">
-          Each simulated year redraws twelve of {nameOf(persona).whose} months; turn drift on to let each category move up or down too.{" "}
+          Each simulated year redraws twelve of {nameOf(persona).whose} months; turn on ±30% to let each category&apos;s spending rise or fall each year.{" "}
           {nameOf(persona).Whose} wallet is dashed; the card added is blue. A card with no fee can only help; a card with a fee has to earn it.
         </p>
         {paidOff && paidOff.hypothetical ? (
           <>
             <p className="mb-4 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-sm">
               Projection: once {nameOf(persona).who} {v(nameOf(persona), "clears", "clear")} {money(paidOff.hypothetical.clearedBalance)} on the{" "}
-              {paidOff.hypothetical.cards.map(shortName).join(" and ")}. Until then, {b.name} recommends no new card.
+              {paidOff.hypothetical.cards.map(shortName).join(" and ")}.
             </p>
             <FanChart mc={paidOff} kind="add" pick={recs[0] && `add:${recs[0].id}`} />
           </>

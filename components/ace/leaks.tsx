@@ -77,8 +77,8 @@ export function LeaksSection() {
           key: `perk-${h.cardId}`,
           amount: unused,
           counts: false,
-          title: `Unused ${shortName(h.cardId)} credits`,
-          why: `${c.credits.map((cr) => cr.name).join(", ")}: ${money(unused)} a year of credits the fee pays for, not used. Only a loss if ${who} would have spent there anyway.`,
+          title: `Unused ${shortName(h.cardId)} perks`,
+          why: `${c.credits.map((cr) => cr.name).join(", ")}: ${money(unused)} a year of perks the fee pays for, not used. Only a loss if ${who} would have spent there anyway.`,
           fix: { label: "Keep or cancel", chapter: "plan", tab: "keep" },
           art: { card: h.cardId },
         });
@@ -137,7 +137,7 @@ export function LeaksSection() {
         amount: subs.reduce((a, s) => a + s.perYear, 0),
         counts: false,
         title: `${subs.length} recurring charges`,
-        why: `${subs.map((s) => s.merchant).slice(0, 5).join(", ")}${subs.length > 5 ? "…" : ""}. Shown, not counted.`,
+        why: `${subs.map((s) => s.merchant).slice(0, 5).join(", ")}${subs.length > 5 ? "…" : ""}.`,
         fix: { label: "Where it went", chapter: "see", tab: "stores" },
         art: { merchant: subs[0].merchant },
       });
@@ -165,7 +165,7 @@ export function LeaksSection() {
         </h3>
       </div>
       <div className="m-panel divide-y divide-[var(--m-line)] overflow-hidden">
-        {leaks.length === 0 && <p className="p-8 text-lg">No leaks found. Every dollar here is already played right.</p>}
+        {leaks.length === 0 && <p className="p-8 text-lg">No leaks found. Every purchase here is already on the right card.</p>}
         {leaks.map((l, i) => (
           <motion.div
             key={l.key}

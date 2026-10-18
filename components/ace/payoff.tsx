@@ -7,7 +7,7 @@
 import { useMemo, useState } from "react";
 import { card } from "@/lib/engine/catalog";
 import { monteCarlo } from "@/lib/engine/montecarlo";
-import { Bracketed, Expect, HandNote } from "@/components/brand";
+import { Bracketed, HandNote } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
 import { Section } from "./section";
 import { Stage } from "./stage";
@@ -236,7 +236,7 @@ export function PayoffSection() {
           )}
           <p className="mt-3 text-[12px] leading-relaxed text-ace-dim">
             Interest charged monthly at the card&apos;s APR; the minimum is the month&apos;s interest plus 1% of the balance, at least $35 (a common
-            issuer formula).{wallet.length > 1 ? " Monte routes new spending to the other cards until it is paid off." : ""}
+            issuer formula).{wallet.length > 1 ? " Monte puts new purchases on the other cards until it is paid off." : ""}
           </p>
           {swing && (
             <p className="mt-3 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-[13px] leading-relaxed">
@@ -267,16 +267,12 @@ export function PayoffSection() {
               </p>
               <div className="mt-5 space-y-2 text-xl">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-ace-dim">routed, balance kept</span>
-                  <Expect of="net" tone={proj.now.current.p50 >= 0 ? "gain" : "loss"}>
-                    {money(proj.now.current.p50, { sign: true })}
-                  </Expect>
+                  <span className="text-sm">typical next year, balance still owed</span>
+                  <span className={`m-num ${proj.now.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.now.current.p50, { sign: true })}</span>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-ace-dim">routed, paid off</span>
-                  <Expect of="net" tone={proj.after.current.p50 >= 0 ? "gain" : "loss"}>
-                    {money(proj.after.current.p50, { sign: true })}
-                  </Expect>
+                  <span className="text-sm">typical next year, balance paid off</span>
+                  <span className={`m-num ${proj.after.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.after.current.p50, { sign: true })}</span>
                 </div>
               </div>
               <div className="my-5 border-t border-ace-line" />
@@ -287,7 +283,7 @@ export function PayoffSection() {
                     <p className="m-label">then the first card worth adding</p>
                     <p className="mt-1 font-medium">{shortName(proj.add.id.slice(4))}</p>
                     <p className="m-num mt-0.5 text-[12px] text-ace-dim">
-                      {money(proj.add.p50 - proj.after.current.p50, { sign: true })}/yr median · ahead in{" "}
+                      {money(proj.add.p50 - proj.after.current.p50, { sign: true })} a year, typical · better in{" "}
                       {Math.round(proj.add.winShare * proj.after.years).toLocaleString()} of {proj.after.years.toLocaleString()} years
                     </p>
                   </div>

@@ -98,7 +98,7 @@ export function MoneySection() {
                       {s.priceHike && <span className="m-label ml-2 rounded-full px-1.5 py-0.5 shadow-[0_0_0_1px_var(--m-line-strong)]">price up</span>}
                     </div>
                     <div className="mono truncate text-[10px] text-ace-dim">
-                      every {s.cadenceDays}d{wallet.length > 1 ? ` · best on ${shortName(best.cardId)}` : ""}
+                      every {s.cadenceDays} days{wallet.length > 1 ? ` · right card: ${shortName(best.cardId)}` : ""}
                     </div>
                   </div>
                   <span className="mono shrink-0">{money(s.amount, { cents: true })}</span>

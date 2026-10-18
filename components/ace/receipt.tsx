@@ -112,7 +112,7 @@ export function ReceiptSection() {
                 onClick={() => setValuationMode(v)}
                 className={`btn btn-sm ${valuation === v ? "btn-primary" : "btn-ghost"}`}
               >
-                {v === "cash" ? "cash (1¢ a point)" : "travel (TPG, Oct 2026)"}
+                {v === "cash" ? "cash (1¢ a point)" : "travel (The Points Guy's values, Oct 2026)"}
               </button>
             ))}
           </div>

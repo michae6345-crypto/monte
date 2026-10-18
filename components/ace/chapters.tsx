@@ -105,8 +105,8 @@ export function Chapters({ sections: s }: { sections: S }) {
         kicker="How it works"
         title={
           <>
-            Open the engine.
-            <span className="m-second block">Nothing here is a model&apos;s guess.</span>
+            How it works.
+            <span className="m-second block">Every number is math on the card companies&apos; published terms.</span>
           </>
         }
         tabs={[

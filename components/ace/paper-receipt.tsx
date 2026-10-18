@@ -90,7 +90,7 @@ export function PaperReceipt({
             {name}
           </div>
           <div className="m-mono text-[10.5px] uppercase tracking-[0.18em] text-ace-dim">
-            18 Oct 2025 – 17 Oct 2026 · {purchases} purchases · as used
+            18 Oct 2025 – 17 Oct 2026 · {purchases} purchases · as paid
           </div>
         </div>
 

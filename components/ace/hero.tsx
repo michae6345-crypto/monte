@@ -1,6 +1,5 @@
 "use client";
 
-import { useBrand } from "./brands";
 import { Solver, jordanStrategies } from "./solver";
 import { DropHero } from "./drop";
 import { Stage, StageSteps } from "./stage";
@@ -44,7 +43,6 @@ export function Hero() {
 
 /** Right under the cards: the same wallet, next year, simulated 1,000 times. */
 export function NextYear() {
-  const { brand: b } = useBrand();
   const { wallet, txns, persona } = useAce();
   const nm = useMemo(() => nameOf(persona), [persona]);
   const name = nm.Who;
@@ -56,7 +54,7 @@ export function NextYear() {
     { h: `As ${they} ${they === "you" || they === "they" ? "play" : "plays"} today.`, d: `Every purchase on the card ${nm.who} actually reached for.${carried ? " The balance charges interest all year." : ""}` },
     adds
       ? { h: `With a ${shortName(adds)} beside it.`, d: `Same spending, each purchase on whichever of the two pays more. Both paid in full.` }
-      : { h: `Every purchase on ${b.name}'s pick.`, d: `Same cards, same spending, each purchase routed to the card that pays most${carried ? ", never the one with a balance" : ""}.` },
+      : { h: "Every purchase on the right card.", d: `Same cards, same spending, each purchase routed to the card that pays most${carried ? ", never the one with a balance" : ""}.` },
     ...(carried
       ? [{ h: "And the balance paid off.", d: `The same routing once the ${shortName(carried.cardId)} is clear: no interest, and it can earn again.` }]
       : []),
@@ -74,7 +72,7 @@ export function NextYear() {
                 <WhatIfBar />
               </div>
               <div className="mb-5">
-                <StageSteps steps={["today", adds ? "a second card" : `${b.name}'s routing`, ...(carried ? ["paid off"] : [])]} p={p} />
+                <StageSteps steps={["as paid", adds ? "a second card" : "the right card", ...(carried ? ["paid off"] : [])]} p={p} />
               </div>
               <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div>

@@ -106,7 +106,7 @@ export function HistorySection() {
           />
           {Object.keys(overrides).length > 0 && (
             <button onClick={resetOverrides} className="btn btn-ghost btn-sm">
-              {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} re-counted · reset
+              {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} category changed · reset
             </button>
           )}
           {wallet.length > 1 && (
@@ -155,7 +155,7 @@ export function HistorySection() {
           <span>Category</span>
           <span className="text-right">Amount</span>
           <span>Paid with</span>
-          <span>{one ? "Rule" : "Should have used"}</span>
+          <span>{one ? "Rule" : "Right card"}</span>
           <span className="text-right">{one ? "Earned" : "Missed"}</span>
         </div>
         <div>

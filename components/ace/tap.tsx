@@ -175,7 +175,7 @@ export function TapSection() {
                     <Bracketed state={solving ? "computing" : "resolved"}>{solving ? "···" : `+${money(pick.reward, { cents: true })}`}</Bracketed>
                   </span>
                 </div>
-                <div className="mono mt-0.5 text-[11px] text-ace-dim">{pick.rule}</div>
+                <div className="mono mt-0.5 text-[11px] text-ace-dim">earned on this purchase · {pick.rule}</div>
                 {runner && (
                   <div className="mono mt-1 text-[11px] text-ace-dim">
                     vs {shortName(runner.cardId)} +{money(runner.reward, { cents: true })}

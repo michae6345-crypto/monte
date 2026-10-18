@@ -165,7 +165,7 @@ export function MonteCardDemo() {
                 <div className="m-label mb-1.5">1 · authorization request</div>
                 {[
                   ["merchant", spot.merchant.toUpperCase()],
-                  ["mcc", `${spot.mcc} · ${spot.mccName}`],
+                  ["store code", `${spot.mcc} · ${spot.mccName}`],
                   ["amount", money(spot.amount, { cents: true })],
                   ["location", spot.where],
                   ["card", "Monte Card (virtual)"],
@@ -219,7 +219,7 @@ export function MonteCardDemo() {
                         <span className="m-num m-gain">{money(pick.reward, { cents: true, sign: true })}</span>
                       </div>
                       <div className="text-m-slate">
-                        approved · engine decided in {res.ms < 1 ? res.ms.toFixed(2) : res.ms.toFixed(1)} ms · an issuer has about 2,000 ms
+                        approved · engine decided in {res.ms < 1 ? res.ms.toFixed(2) : res.ms.toFixed(1)} ms · a card company allows about 2 seconds to approve
                       </div>
                     </motion.div>
                   )
@@ -319,11 +319,7 @@ export function WhyNotRealCard() {
             </li>
           ))}
         </ul>
-        <p className="mt-auto pt-8 text-sm leading-relaxed text-[#c3cbff]">
-          The engine part works today: the ranking above is its real output, timed on this page. Those four problems are why the Monte Card stays a
-          simulation.
-        </p>
-      </div>
+              </div>
     </div>
   );
 }

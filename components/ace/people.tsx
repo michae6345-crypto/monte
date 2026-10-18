@@ -61,6 +61,7 @@ export function People() {
               <span className="font-medium">{p.name}</span>
               <span>· {SITUATION[p.id] ?? p.blurb} ·</span>
               <span className={`m-num ${on ? "" : net[p.id] < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(net[p.id], { sign: true })}</span>
+              <span>net last year</span>
             </button>
           );
         })}

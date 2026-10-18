@@ -28,7 +28,7 @@ const ROWS: [string, string, string, string][] = [
 // each note hangs on the row it explains
 const NOTES: [string, string][] = [
   ["Best card at the register", "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Every purchase and every purchase there is replayed."],
-  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Fed SHED, May 2026). When a balance carries over, a ranking by points alone points the wrong way."],
+  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Federal Reserve survey, May 2026). When a balance carries over, a ranking by points alone points the wrong way."],
   ["Paid by card referrals", "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card."],
 ];
 const noteOf = (row: string) => NOTES.findIndex(([r]) => r === row);
@@ -220,8 +220,8 @@ function Proof() {
     [txns.length.toLocaleString(), "purchases"],
     [String(cats), "categories, by merchant code"],
     [String(CARDS.length), "cards' published rules"],
-    [money(routed, { cents: true }), "routed, caps respected"],
-    [money(r.net, { cents: true, sign: true }), "the receipt, after fees and interest"],
+    [money(routed, { cents: true }), "rewards last year on the right card, within card limits"],
+    [money(r.net, { cents: true, sign: true }), "net last year, after fees and interest"],
   ];
   return (
     <div className="mb-10">
@@ -239,13 +239,14 @@ function Proof() {
       <p className="m-mono mt-3 min-h-[2.5em] text-[12px] leading-relaxed">
         {check ? (
           <>
-            optimality check · {check.method === "milp" ? "integer program" : "linear program"} over every purchase and cap,{" "}
-            {Math.max(1, Math.round(check.ms))} ms in this browser · best possible {money(check.bound, { cents: true })} vs routed{" "}
-            {money(routed, { cents: true })}
-            {Math.abs(gap) < 0.005 ? " · proven optimal" : ` · routing leaves ${money(gap, { cents: true })}`} · 35 engine tests pass (npm test)
+            check: a solver tried every way to put these purchases on these cards, card limits included.{" "}
+            {Math.abs(gap) < 0.005
+              ? `None earns more than the right-card picks (${money(routed, { cents: true })}).`
+              : `The best possible is ${money(check.bound, { cents: true })}, ${money(gap, { cents: true })} above the right-card picks.`}{" "}
+            {Math.max(1, Math.round(check.ms))} ms in this browser.
           </>
         ) : (
-          "optimality check · running…"
+          "check: running…"
         )}
       </p>
     </div>
@@ -284,7 +285,7 @@ export function HowSection() {
       id="how"
       index="09"
       kicker="How it works"
-      title={<>Every number is arithmetic on published terms.</>}
+      title={<>Follow one purchase through the math.</>}
       readout={<>no model decides a dollar amount</>}
       lede={`Pick one of ${nameOf(persona).whose} purchases and follow it through: merchant, merchant code, category, every card's published rule, and the cents.`}
     >
@@ -311,17 +312,17 @@ export function HowSection() {
             <Line k="purchase">
               {t.date} · {t.merchant} · {money(t.amount, { cents: true })}
             </Line>
-            <Line k="mcc">
-              {MCC[t.category] ?? "····"} → category <span className="text-white">{t.category}</span>
+            <Line k="store code">
+              {MCC[t.category] ?? "····"} → category <span className="text-white">{t.category.replace(/_/g, " ")}</span>
             </Line>
             {trace.res.ranked.map((o) => (
               <Line key={o.cardId} k={o.cardId === trace.res.pick.cardId ? "pick" : "card"}>
                 <span className={o.cardId === trace.res.pick.cardId ? "font-semibold text-white" : "text-white"}>
-                  {o.cardId}: {o.rule} → {money(t.amount, { cents: true })} × {o.mult.toFixed(o.mult % 1 ? 1 : 0)} × {cents(o.cardId)}¢ ={" "}
+                  {shortName(o.cardId)}: {o.rule} → {money(t.amount, { cents: true })} × {o.mult.toFixed(o.mult % 1 ? 1 : 0)} × {cents(o.cardId)}¢ ={" "}
                   {money(o.reward, { cents: true })}
                 </span>
                 {o.blocked ? <span style={{ color: "#c3cbff" }}> · off limits: carries a balance</span> : null}
-                <span className="text-white"> · src {hostOf(card(o.cardId).source_urls[0])}, checked {card(o.cardId).checked ?? "2026-10-17"}</span>
+                <span className="text-white"> · source {hostOf(card(o.cardId).source_urls[0])}, checked {card(o.cardId).checked ?? "2026-10-17"}</span>
               </Line>
             ))}
             {trace.ha && trace.hb && (

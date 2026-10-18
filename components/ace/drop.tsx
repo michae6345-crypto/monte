@@ -446,7 +446,7 @@ export function DropHero() {
             style={{ opacity: allDealt ? 0 : 1, pointerEvents: allDealt ? "none" : undefined }}
             tabIndex={allDealt ? -1 : 0}
           >
-            scroll: every card, every budget <span aria-hidden className="m-deal-arrow">↓</span>
+            scroll: student, credit-builder and travel cards <span aria-hidden className="m-deal-arrow">↓</span>
           </button>
         </div>
       </div>

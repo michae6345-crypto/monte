@@ -31,14 +31,14 @@ export function OneCardView() {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="m-panel p-6">
-        <p className="m-label">today</p>
+        <p className="m-label">last year, as paid</p>
         <div className="mt-4 flex items-center gap-4">
           <CardArt id={only.cardId} size="sm" className="w-24 shrink-0" />
           <div>
             <div className="text-2xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
               {shortName(only.cardId)}
             </div>
-            <p className="mt-1 text-sm">Every one of {txns.length} purchases. Nothing to re-route: it&apos;s already the only card.</p>
+            <p className="mt-1 text-sm">Every one of {txns.length} purchases. Nothing to move: it&apos;s already the only card.</p>
           </div>
         </div>
         <div className="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-[10px] bg-[var(--m-line)] text-sm">

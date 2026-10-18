@@ -319,7 +319,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           <span className="text-ace-gold">$</span> {title}
         </span>
         <span className="shrink-0 tnum">
-          {shown.toLocaleString()} / {YEARS.toLocaleString()} years · seed 42
+          {shown.toLocaleString()} / {YEARS.toLocaleString()} years
         </span>
       </div>
 
@@ -368,17 +368,17 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
 
       <dl className="mono grid grid-cols-3 border-t border-ace-line text-[11px]">
         <div className="border-r border-ace-line px-4 py-3">
-          <dt className="text-ace-dim">median year</dt>
+          <dt className="text-ace-dim">typical year</dt>
           <dd className={`mt-0.5 text-base tnum ${r.p50 < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(r.p50, { sign: true })}</dd>
         </div>
         <div className="border-r border-ace-line px-4 py-3">
-          <dt className="text-ace-dim">90% of years</dt>
+          <dt className="text-ace-dim">9 in 10 years</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {money(r.p5)} … {money(r.p95)}
           </dd>
         </div>
         <div className="px-4 py-3">
-          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `median vs ${runs[0].short.replace(/^The /, "the ")}`}</dt>
+          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `vs ${runs[0].short.replace(/^As T/, "as t").replace(/^As /, "as ")}, typical year`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {beats === null ? "every other strategy is measured against this" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
           </dd>
@@ -397,7 +397,7 @@ function niceStep(raw: number) {
 
 export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: string }, txns: Txn[] = []): Strategy[] {
   const carried = wallet.filter((h) => h.balance && h.balance > 0);
-  const habit: Strategy = { id: "habit", short: `${nm.Whose} habits`, label: `Every purchase on the card ${nm.who} actually reached for.`, wallet, policy: "actual" };
+  const habit: Strategy = { id: "habit", short: `As ${nm.who} paid`, label: `Every purchase on the card ${nm.who} actually reached for.`, wallet, policy: "actual" };
   // one card and nothing carried: routing changes nothing, so the next move is a second card
   const second = wallet.length === 1 && !carried.length ? bestSecondCard(wallet, txns) : undefined;
   if (second)
@@ -416,7 +416,7 @@ export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: st
     habit,
     {
       id: "routed",
-      short: "Monte's routing",
+      short: "Right card",
       label: `Same cards, same spending: each purchase on the card Monte picks, caps respected${carried.length ? ", never the card carrying a balance" : ""}.`,
       wallet,
       policy: "best",

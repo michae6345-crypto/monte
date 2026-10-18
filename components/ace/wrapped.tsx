@@ -129,7 +129,7 @@ export function WrappedSection() {
     if (worst && best && worst.cardId !== best.cardId)
       out.push({
         key: "cards",
-        kicker: "best and worst card",
+        kicker: "best and worst card, net last year",
         body: (
           <>
             <span className="mb-5 flex gap-3">
@@ -149,7 +149,7 @@ export function WrappedSection() {
       });
     out.push({
       key: "net",
-      kicker: "the net",
+      kicker: "net, last year",
       body: (
         <>
           <span className={r.net < 0 ? "text-ace-loss" : "text-ace-gain"}>
