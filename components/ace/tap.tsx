@@ -4,12 +4,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
-import { tap } from "@/lib/engine";
-import { card } from "@/lib/engine/catalog";
-import { CardArt, shortName } from "./card-art";
+import { tap, type Holding } from "@/lib/engine";
+import { CARDS, card, openToNewApplicants } from "@/lib/engine/catalog";
+import { CardArt, nick, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { Stage } from "./stage";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 import { spotsFor } from "./spots";
 
 const BASE = [
@@ -28,7 +28,15 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 };
 
 export function TapSection() {
-  const { wallet, txns, valuation } = useAce();
+  const { wallet: theirs, txns, valuation, persona } = useAce();
+  // a judge's own cards, for Tap only: the rest of the page stays on the selected person
+  const [own, setOwn] = useState<string[] | null>(null);
+  const [ownFor, setOwnFor] = useState(persona.id);
+  if (ownFor !== persona.id) {
+    setOwnFor(persona.id);
+    setOwn(null);
+  }
+  const wallet = useMemo<Holding[]>(() => (own && own.length ? own.map((cardId) => ({ cardId })) : theirs), [own, theirs]);
   const SPOTS = useMemo(() => spotsFor(BASE, txns, "Los Angeles"), [txns]);
   const [i, setI] = useState(0);
   // brackets blink while the engine ranks the cards, then resolve on the winner
@@ -55,7 +63,8 @@ export function TapSection() {
     return () => window.removeEventListener("monte:tap", on);
   }, [SPOTS]);
   const spot = SPOTS[Math.min(i, SPOTS.length - 1)];
-  const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
+  // caps already used this month come from the person's purchases, so a judge's own cards start fresh
+  const history = useMemo(() => (own && own.length ? [] : txns.filter((t) => t.date >= "2026-10-01")), [txns, own]);
   const res = useMemo(
     () => tap(wallet, { date: "2026-10-18", merchant: spot.merchant, category: spot.category, amount: spot.amount }, history),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -233,6 +242,41 @@ export function TapSection() {
       </div>
         )}
       </Stage>
+      <div className="m-panel mt-8 p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <p className="text-lg font-medium">Try it with your own cards.</p>
+          <span className="text-sm">
+            {own && own.length ? (
+              <button onClick={() => setOwn(null)} className="underline">
+                back to {nameOf(persona).whose} cards
+              </button>
+            ) : (
+              <>Tap the ones in your wallet; the phone above ranks them for each store.</>
+            )}
+          </span>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {CARDS.filter((c) => openToNewApplicants(c)).map((c) => {
+            const on = !!own?.includes(c.id);
+            return (
+              <button
+                key={c.id}
+                onClick={() => {
+                  setManual(true);
+                  setOwn((o) => {
+                    const cur = o ?? [];
+                    return cur.includes(c.id) ? cur.filter((x) => x !== c.id) : [...cur, c.id];
+                  });
+                }}
+                aria-pressed={on}
+                className={`btn btn-sm ${on ? "btn-primary" : "btn-ghost"}`}
+              >
+                {nick(c.id)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </Section>
   );
 }
