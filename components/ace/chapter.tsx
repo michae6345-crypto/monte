@@ -18,6 +18,7 @@ export function Chapter({
   kicker,
   title,
   lede,
+  intro,
   tabs,
 }: {
   id: string;
@@ -25,6 +26,8 @@ export function Chapter({
   kicker: string;
   title: ReactNode;
   lede?: ReactNode;
+  /** a block under the title (not inside a paragraph) */
+  intro?: ReactNode;
   tabs: Tab[];
 }) {
   const [key, setKey] = useState(tabs[0].key);
@@ -57,6 +60,7 @@ export function Chapter({
         >
           <h2 className="text-[2.5rem] md:text-[3.5rem]">{title}</h2>
           {lede && <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ace-dim">{lede}</p>}
+          {intro && <div className="mt-6">{intro}</div>}
         </motion.div>
         {tabs.length > 1 && (
           <div className="mb-10 flex flex-wrap gap-2" role="tablist" aria-label={kicker}>

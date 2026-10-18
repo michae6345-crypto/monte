@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Chapter } from "./chapter";
+import { People } from "./people";
 import { useAce } from "./store";
 
 type S = Record<
@@ -25,6 +26,7 @@ export function Chapters({ sections: s }: { sections: S }) {
             <span className="m-second block">Every store, every month, every fee.</span>
           </>
         }
+        intro={<People />}
         tabs={[
           { key: "stores", label: "Where it went", node: s.money },
           { key: "receipt", label: one ? "What the card costs" : "What the cards cost", node: s.receipt },
