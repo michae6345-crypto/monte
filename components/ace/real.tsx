@@ -12,7 +12,7 @@ export function RealSection() {
   const cols: { tag: string; tone: string; items: [string, string][] }[] = [
     {
       tag: "Real",
-      tone: "text-ace-gain",
+      tone: "text-ace-ink",
       items: [
         ["Card terms", `${CARDS.length} cards: earn rates, caps, rotations, credits, fees, APRs, each with the issuer page and the date checked (17 Oct 2026).`],
         ["The engine", "Routing, caps, the receipt, keep or cancel and the next card are arithmetic on those terms. Same input, same output."],
@@ -22,7 +22,7 @@ export function RealSection() {
     },
     {
       tag: "Simulated",
-      tone: "text-ace-gold",
+      tone: "text-ace-dim",
       items: [
         ["Jordan, Maya, the Parks", "Synthetic people with seeded spending at real LA merchants. Their numbers are reproducible."],
         ["Tap", "A web demo of the moment at the register, not an NFC wallet."],

@@ -18,10 +18,10 @@ import { money, useAce } from "./store";
 // Four tones, grouped by what the money is for, not a rainbow: food in the accent, then
 // getting around, bills, and shopping in steps of ink.
 const TONE = {
-  food: "var(--ace-gold)",
-  move: "color-mix(in oklab, var(--ace-gold) 45%, var(--ace-panel))",
-  bills: "color-mix(in oklab, var(--ace-ink) 20%, var(--ace-panel))",
-  shop: "color-mix(in oklab, var(--ace-ink) 9%, var(--ace-panel))",
+  food: "var(--m-ink)",
+  move: "color-mix(in oklab, var(--m-ink) 70%, var(--m-panel))",
+  bills: "color-mix(in oklab, var(--m-ink) 45%, var(--m-panel))",
+  shop: "color-mix(in oklab, var(--m-ink) 22%, var(--m-panel))",
 };
 const GROUP: Record<string, keyof typeof TONE> = {
   dining: "food", groceries: "food", online_groceries: "food", wholesale_clubs: "food",
@@ -30,7 +30,7 @@ const GROUP: Record<string, keyof typeof TONE> = {
   online_retail: "shop", home_improvement: "shop", entertainment: "shop", everything_else: "shop", other: "shop",
 };
 export const CAT_COLOR: Record<string, string> = Object.fromEntries(Object.entries(GROUP).map(([c, g]) => [c, TONE[g]]));
-export const CAT_TEXT = (c: string) => (GROUP[c] === "food" ? "var(--ace-on-accent)" : "var(--ace-ink)");
+export const CAT_TEXT = (c: string) => (GROUP[c] === "food" || GROUP[c] === "move" ? "var(--m-ground)" : "var(--ace-ink)");
 
 export const label = (c: string) => c.replace(/_/g, " ");
 
@@ -227,7 +227,7 @@ export function MoneySection() {
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">
                       {s.merchant}
-                      {s.priceHike && <span className="mono ml-2 rounded bg-ace-loss/15 px-1.5 py-0.5 text-[10px] uppercase text-ace-loss">price up</span>}
+                      {s.priceHike && <span className="m-label ml-2 rounded-full px-1.5 py-0.5 shadow-[0_0_0_1px_var(--m-line-strong)]">price up</span>}
                     </div>
                     <div className="mono truncate text-[10px] text-ace-dim">
                       every {s.cadenceDays}d · best on {shortName(best.cardId)}

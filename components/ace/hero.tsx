@@ -58,7 +58,7 @@ function SolverBand() {
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
         <div>
           <p className="mono mb-6 text-[11px] uppercase tracking-[0.22em] text-ace-dim">
-            <span className="text-ace-gold">{b.name}</span> · next year, played 1,000 times
+            <span className="text-ace-ink">{b.name}</span> · next year, played 1,000 times
           </p>
           <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.035em] md:text-5xl">
             Same cards. Same spending.
