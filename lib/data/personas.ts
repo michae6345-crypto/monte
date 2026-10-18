@@ -135,7 +135,7 @@ export const MAYA: Persona = {
 export const PARKS: Persona = {
   id: "parks",
   name: "The Parks",
-  blurb: "family of four · Koreatown · one card does everything",
+  blurb: "family of four · Koreatown · two cards, one with a balance",
   seed: 4,
   wallet: [
     { cardId: "amex_blue_cash_everyday" },
