@@ -8,15 +8,16 @@ import { CARDS, card, creditPerYear } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { money, nameOf, useAce, v } from "./store";
-import { DriftToggle, FanChart, useMonteCarlo } from "./odds";
+import { DriftToggle, FanChart, useDrift, useMonteCarlo } from "./odds";
 import { addMedians, addShortlist } from "./adds";
 import { Estimator } from "@/components/brand";
 import { monteCarloSamples } from "@/lib/engine/montecarlo";
 
 export function KeepSection() {
-  const { wallet, txns, valuation, r, persona } = useAce();
+  const { held: wallet, txns, valuation, r, persona } = useAce();
   const who = nameOf(persona);
-  const mc = useMonteCarlo();
+  const mc = useMonteCarlo(wallet);
+  const drift = useDrift();
   const rows = useMemo(
     () => wallet.map((h) => ({ h, m: marginalValue(wallet, txns, h.cardId), interest: interestFor(h) })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -29,14 +30,14 @@ export function KeepSection() {
   const keepCase = useMemo(() => {
     const fee = rows.filter((x) => x.m.fee > 0).sort((a, b) => b.m.fee - a.m.fee)[0];
     if (!fee) return null;
-    const s = monteCarloSamples(wallet, txns, { years: 1000, seed: 42 });
+    const s = monteCarloSamples(wallet, txns, { years: 1000, seed: 42, driftSd: drift });
     const cur = s.options.find((o) => o.id === "current");
     const drop = s.options.find((o) => o.id === `drop:${fee.h.cardId}`);
     if (!cur || !drop) return null;
     const diff = Array.from(cur.net, (v, i) => v - drop.net[i]);
     return { cardId: fee.h.cardId, diff, p: diff.filter((d) => d > 0).length / diff.length };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, wallet, txns, valuation]);
+  }, [rows, wallet, txns, valuation, drift]);
 
   return (
     <Section
@@ -176,8 +177,9 @@ function Bar({ label, v, span, tone }: { label: string; v: number; span: number;
 export function ForYouSection() {
   const { wallet, txns, valuation, setValuationMode, tryCard, removeCard, persona } = useAce();
   const [noFee, setNoFee] = useState(false);
-  const [tried, setTried] = useState<string[]>([]);
-  const triedNow = tried.filter((id) => wallet.some((h) => h.cardId === id));
+  const { held } = useAce();
+  const triedNow = wallet.filter((h) => !held.includes(h)).map((h) => h.cardId);
+  const drift = useDrift();
   const { brand: b } = useBrand();
   const [perks, setPerks] = useState<0 | 0.5 | 1>(0);
   const [horizon, setHorizon] = useState<"year" | "first">("year");
@@ -223,9 +225,9 @@ export function ForYouSection() {
   }, [wallet, txns, noFee, perks, valuation, horizon, spend]);
   const ids = pre.map((x) => x.id).join(",");
   const priced = useMemo(
-    () => addMedians(wallet, txns, ids ? ids.split(",") : []),
+    () => addMedians(wallet, txns, ids ? ids.split(",") : [], drift),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [wallet, txns, ids, valuation],
+    [wallet, txns, ids, valuation, drift],
   );
   const recs = pre
     .map((x) => {
@@ -355,7 +357,6 @@ export function ForYouSection() {
                 <button
                   onClick={() => {
                     triedNow.forEach((id) => removeCard(id));
-                    setTried([]);
                   }}
                   className="btn btn-sm bg-ace-bg text-ace-ink"
                 >
@@ -412,7 +413,6 @@ export function ForYouSection() {
                   <button
                     onClick={() => {
                       tryCard(x.id);
-                      setTried((t) => [...t, x.id]);
                     }}
                     className="btn btn-ghost btn-sm"
                     title="Adds this card to the wallet as a what-if; every section reruns with it"
@@ -464,10 +464,10 @@ export function ForYouSection() {
               Projection: once {nameOf(persona).who} {v(nameOf(persona), "clears", "clear")} {money(paidOff.hypothetical.clearedBalance)} on the{" "}
               {paidOff.hypothetical.cards.map(shortName).join(" and ")}. Until then, {b.name} recommends no new card.
             </p>
-            <FanChart mc={paidOff} kind="add" />
+            <FanChart mc={paidOff} kind="add" pick={recs[0] && `add:${recs[0].id}`} />
           </>
         ) : (
-          <FanChart mc={mc} kind="add" />
+          <FanChart mc={priced.mc} kind="add" pick={recs[0] && `add:${recs[0].id}`} />
         )}
       </div>
     </Section>

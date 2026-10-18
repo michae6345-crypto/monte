@@ -35,19 +35,20 @@ function timed<T>(f: () => T): [T, number] {
 }
 
 export function MonteCardDemo() {
-  const { wallet, txns, persona } = useAce();
+  const { wallet, txns, persona, valuation } = useAce();
   const SPOTS = useMemo(() => spotsFor(BASE, txns, "Los Angeles, CA"), [txns]);
   const [i, setI] = useState(0);
   const [phase, setPhase] = useState<Phase>("idle");
   const [res, setRes] = useState<{ ranked: TapOption[]; pick: TapOption; ms: number } | null>(null);
   const timers = useRef<number[]>([]);
-  const spot = SPOTS[i];
+  const spot = SPOTS[Math.min(i, SPOTS.length - 1)];
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const run = (k: number) => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
+    k = Math.min(k, SPOTS.length - 1);
     setI(k);
     const s = SPOTS[k];
     const history = txns.filter((t) => t.date >= "2026-10-01");
@@ -65,6 +66,13 @@ export function MonteCardDemo() {
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // a new person or point value: re-run the request shown, so the ranking is never someone else's
+  useEffect(() => {
+    if (phase === "idle") return;
+    const id = window.setTimeout(() => run(i), 0);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet, txns, valuation]);
 
   const shown = phase !== "idle";
   const pick = res?.pick;

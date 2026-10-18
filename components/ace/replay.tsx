@@ -57,23 +57,22 @@ export function ReplaySection() {
   const byCat = useMemo(() => {
     const m: Record<string, number> = {};
     let off = 0;
-    for (const d of dots)
-      if (d.moved) {
-        if (d.gain >= 0) m[d.cat] = (m[d.cat] ?? 0) + d.gain;
-        else off += d.gain;
-      }
-    const rows = Object.entries(m)
+    // every purchase counts, moved or not: one that stays put can still earn less once a cap fills
+    for (const d of dots) {
+      if (d.moved && d.gain < 0) off += d.gain;
+      else if (d.gain) m[d.cat] = (m[d.cat] ?? 0) + d.gain;
+    }
+    const rows: [string, number][] = Object.entries(m)
       .filter(([, v]) => v >= 5)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 4);
+    // whatever the small categories add, so the rows sum to the headline
+    const rest = r.leftOnTable - rows.reduce((t, [, v]) => t + v, 0) - (off < -0.5 ? off : 0);
+    if (Math.abs(rest) >= 0.5) rows.push([rows.some(([c]) => c === "everything_else") ? "other categories" : "everything else", rest]);
     // purchases moved off a card carrying a balance earn less, but stop charging interest
     if (off < -0.5) rows.push(["off the card with a balance", off]);
-    // whatever the small categories add, so the rows sum to the headline
-    const all = dots.reduce((t, d) => t + (d.moved ? d.gain : 0), 0);
-    const rest = all - rows.reduce((t, [, v]) => t + v, 0);
-    if (Math.abs(rest) >= 0.5) rows.splice(rows.length - (off < -0.5 ? 1 : 0), 0, ["everything else", rest]);
     return rows;
-  }, [dots]);
+  }, [dots, r.leftOnTable]);
 
   const moved = dots.filter((d) => d.moved).length;
 
@@ -215,7 +214,7 @@ export function ReplaySection() {
                   <motion.div
                     className={`h-full rounded-full ${v < 0 ? "bg-ace-loss" : "bg-ace-ink"}`}
                     initial={{ width: 0 }}
-                    animate={{ width: barsOn ? `${(Math.abs(v) / byCat[0][1]) * 100}%` : 0 }}
+                    animate={{ width: barsOn ? `${(Math.abs(v) / Math.max(...byCat.map(([, x]) => Math.abs(x)))) * 100}%` : 0 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   />
                 </div>

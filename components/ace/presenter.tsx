@@ -32,16 +32,18 @@ export function Presenter() {
   const [toggled, setToggled] = useState<boolean | null>(null);
   const on = toggled ?? urlOn;
   // the pitch always runs on the canonical numbers: no leftover store corrections
-  const { overrides, resetOverrides, persona, setPersona } = useAce();
-  const dirty = Object.keys(overrides).length > 0;
+  const { resetOverrides, setPersona } = useAce();
   const [i, setI] = useState(0);
   // the cue is for the speaker; on a projector the pill stays small unless C opens it
   const [cue, setCue] = useState(false);
   const want = STEPS[i].persona ?? "jordan";
+  // only when a step starts: the audience can still tap a person mid-step
   useEffect(() => {
-    if (on && dirty) resetOverrides();
-    if (on && persona.id !== want) setPersona(want);
-  }, [on, dirty, resetOverrides, persona.id, setPersona, want]);
+    if (!on) return;
+    resetOverrides();
+    setPersona(want);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [on, i]);
   const [t0, setT0] = useState<number | null>(null);
   const [now, setNow] = useState(0);
 

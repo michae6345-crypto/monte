@@ -55,8 +55,10 @@ export function DriftToggle() {
   );
 }
 
-export function useMonteCarlo(): MonteCarloResult {
-  const { wallet, txns, valuation } = useAce();
+/** w: the cards to simulate (default: the whole wallet, what-ifs included) */
+export function useMonteCarlo(w?: Holding[]): MonteCarloResult {
+  const { wallet: all, txns, valuation } = useAce();
+  const wallet = w ?? all;
   const drift = useDrift();
   return useMemo(() => cachedRun(wallet, txns, valuation, drift), [wallet, txns, valuation, drift]);
 }

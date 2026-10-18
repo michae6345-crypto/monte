@@ -17,7 +17,10 @@ export function Stage({ vh = 240, children, className }: { vh?: number; children
   useEffect(() => {
     const el = inner.current;
     if (!el) return;
-    const fit = () => setTop(Math.max(56, 56 + (window.innerHeight - 56 - el.offsetHeight) / 2));
+    const fit = () => {
+      const room = window.innerHeight - 56 - el.offsetHeight;
+      setTop(room >= 0 ? 56 + room / 2 : 56 + room - 16);
+    };
     const ro = new ResizeObserver(fit);
     ro.observe(el);
     // and once now: observers wait for a paint, which a background tab may never do

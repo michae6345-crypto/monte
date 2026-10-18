@@ -73,10 +73,15 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setPersonaId(id);
       setWallet(p.wallet);
       setTrials([]);
+      // Maya redeems for travel; everyone else takes cash
+      setVal(id === "maya" ? "travel" : "cash");
     },
     wallet,
     setWallet,
-    addCard: (id) => setWallet((w) => (w.some((h) => h.cardId === id) || w.length >= 5 ? w : [...w, { cardId: id }])),
+    addCard: (id) => {
+      setTrials((t) => t.filter((x) => x !== id));
+      setWallet((w) => (w.some((h) => h.cardId === id) || w.length >= 5 ? w : [...w, { cardId: id }]));
+    },
     tryCard: (id) => {
       if (wallet.some((h) => h.cardId === id) || wallet.length >= 5) return;
       setTrials((t) => [...t, id]);
@@ -98,6 +103,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setCustom(t);
       setCustomLabel("your own statement");
       setPersonaId("you");
+      setTrials([]);
       setWallet([{ cardId }]);
     },
     overrides,
@@ -122,6 +128,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setCustom(t);
       setCustomLabel(label);
       setPersonaId("you");
+      setTrials([]);
       setWallet(w);
     },
     r,

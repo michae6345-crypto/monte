@@ -21,8 +21,8 @@ export function addShortlist(wallet: Holding[], txns: Txn[], noFee = false) {
 
 /** The shortlist through 1,000 seeded years (balances assumed paid off): each card's median
  *  gain over the wallet, and the share of years it comes out ahead. */
-export function addMedians(wallet: Holding[], txns: Txn[], ids: string[]) {
-  const mc = monteCarlo(wallet, txns, { years: 1000, seed: 42, assumePaidOff: wallet.some((h) => (h.balance ?? 0) > 0), candidates: ids });
+export function addMedians(wallet: Holding[], txns: Txn[], ids: string[], driftSd = 0) {
+  const mc = monteCarlo(wallet, txns, { years: 1000, seed: 42, assumePaidOff: wallet.some((h) => (h.balance ?? 0) > 0), candidates: ids, driftSd });
   const gain = new Map(
     mc.options.filter((o) => o.id.startsWith("add:")).map((o) => [o.id.slice(4), { gain: o.p50 - mc.current.p50, win: o.winShare }]),
   );

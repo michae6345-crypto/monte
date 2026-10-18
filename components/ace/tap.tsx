@@ -28,7 +28,7 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 };
 
 export function TapSection() {
-  const { wallet, txns } = useAce();
+  const { wallet, txns, valuation } = useAce();
   const SPOTS = useMemo(() => spotsFor(BASE, txns, "Los Angeles"), [txns]);
   const [i, setI] = useState(0);
   // brackets blink while the engine ranks the cards, then resolve on the winner
@@ -54,7 +54,8 @@ export function TapSection() {
   const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
   const res = useMemo(
     () => tap(wallet, { date: "2026-10-18", merchant: spot.merchant, category: spot.category, amount: spot.amount }, history),
-    [wallet, spot, history],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [wallet, spot, history, valuation],
   );
   const pick = res.pick;
   const runner = res.ranked.find((x) => x.cardId !== pick.cardId && !x.blocked);
