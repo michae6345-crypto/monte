@@ -42,7 +42,7 @@ Owner: **A** = Adrian (UI, branding) · **M** = Michael (production, backend).
 | 1 | Spending treemap by category, month-by-month bars, top merchants | ✅ | A |
 | 2 | Recurring charges ("keeps charging you") with the best card for each, price-rise flag | ✅ | A |
 | 3 | Statement CSV upload (Chase, Amex, Capital One formats), parsed in the browser | ✅ | A/M |
-| 4 | **Plaid sandbox Link**: connect an account, pull transactions + liabilities (APR, balance), map Plaid categories with `data/category_map.json` | ⬜ | **M** |
+| 4 | **Plaid sandbox Link**: connect an account, pull transactions + liabilities (APR, balance), map Plaid categories with `data/category_map.json` | ✅ | **M** |
 | 5 | Merchant correction: re-categorise a merchant once, applied everywhere (saved) | ⬜ | M (store) + A (UI) |
 
 ### Your cards
@@ -61,16 +61,16 @@ Owner: **A** = Adrian (UI, branding) · **M** = Michael (production, backend).
 | 12 | Best next card from your own spending; filters: no annual fee, perks you'd use, cash/travel | ✅ | A |
 | 13 | Signup-bonus planner: can your normal spending hit the minimum in time; rank by every year or first year with bonus | ✅ | A |
 | 14 | "No new card yet" when you carry a balance; payoff plan instead | ✅ | A |
-| 15 | **Monte Carlo**: resample your months into 1,000 simulated next years; show the odds a card or wallet beats yours ("Blue Cash Preferred wins in 84% of years"), as a fan chart | ⬜ | **M** (engine) + **A** (chart) |
+| 15 | **Monte Carlo**: resample your months into 1,000 simulated next years; show the odds a card or wallet beats yours ("Blue Cash Preferred wins in 84% of years"), as a fan chart | ✅ | **M** (engine) + **A** (chart) |
 
 ### Engine and data
 | # | Feature | Status | Owner |
 |---|---|---|---|
 | 16 | Rules engine: earn rates, caps, shared cap pools, pick-one categories, Q4 2026 rotations, credits | ✅ | done |
-| 17 | **LP optimizer** for the replay (caps make greedy sub-optimal) + the number "LP beats greedy by $X on Jordan's year" | ⬜ | **M** |
-| 18 | Engine tests: 5 hand-computed purchases + one cap case + the 3 personas | ⬜ | **M** |
-| 19 | Provenance: every dollar clicks through to its rule, source URL and checked date; UNVERIFIED badge where the catalog marks one | 🟡 | M (data) + A (UI) |
-| 20 | Production: Vercel env vars for Plaid, error and empty states, no keys in the public repo | ⬜ | **M** |
+| 17 | **LP optimizer** for the replay (caps make greedy sub-optimal) + the number "LP beats greedy by $X on Jordan's year" | ✅ | **M** |
+| 18 | Engine tests: 5 hand-computed purchases + one cap case + the 3 personas | ✅ | **M** |
+| 19 | Provenance: every dollar clicks through to its rule, source URL and checked date; UNVERIFIED badge where the catalog marks one | ✅ | M (data) + A (UI) |
+| 20 | Production: Vercel env vars for Plaid, error and empty states, no keys in the public repo | 🟡 | **M** |
 
 ### Brand and story
 | # | Feature | Status | Owner |
@@ -79,6 +79,19 @@ Owner: **A** = Adrian (UI, branding) · **M** = Michael (production, backend).
 | 22 | **Monte Wrapped**: shareable year in review ("61 Sweetgreen bowls, $231 left on the table") | ⬜ | **A** |
 | 23 | Nudges this week: activate categories, perks expiring, renewals worth negative, pay this first | ✅ | A |
 | 24 | Slides (7), 60-second backup video, submission text | ⬜ | **A** (deck) + **M** (Q&A sheet) |
+
+## Status note (01:35 Sun, Michael)
+
+Backend/engine is COMPLETE and merged: Monte Carlo, LP, provenance, 35 passing tests,
+Plaid routes, `/api/health`, `render.yaml`, `docs/deploy.md`, `docs/JUDGE-QA.md`, README.
+Verify with `npm run check` and `npm test`.
+
+Two honest corrections to this spec:
+- **#17**: there is no "LP beats greedy by $X on Jordan's year". The gap is **$0.00** on all
+  three wallets — greedy is already optimal and the LP proves it by returning a matching
+  upper bound. The real case is a hand-built cap trap: greedy $30.00 vs optimal $33.00.
+- **#4**: Plaid code is done, but no deployment has keys, so those routes return
+  `503 plaid_not_configured` by design and the app stays on personas.
 
 ## Cut order if we're behind
 Merchant correction → Monte Wrapped → Plaid (keep CSV upload + personas, say so) → LP
