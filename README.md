@@ -122,6 +122,9 @@ workaround, one Monte card that charges your best card behind the scenes, breaks
    up front and interest from day one.
 3. **The money runs backwards.** Monte would pay about 2–3% in card fees each time it charged
    your real card and earn less than that on the Monte card side.
+4. **It takes a bank and months.** Issuing a card needs a partner bank, Visa or Mastercard
+   approval and identity checks. Curve runs this model in the UK and Europe, and some issuers
+   have blocked it.
 
 ## Try it
 
