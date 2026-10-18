@@ -95,6 +95,14 @@ The tap demo plays one purchase at the register, on the engine's real `tap()` an
 selected person's wallet. Open it from the nav, the floating *Try tap to pay* button,
 [`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) or `?tap`.
 
+| Step | What happens |
+|---|---|
+| 1. Store code | The reader sends the merchant, amount and category code (MCC), e.g. Trader Joe's, 5411 |
+| 2. Wallet | Monte opens the person's cards and their balances |
+| 3. Caps | It replays this period's purchases so each card's spending caps are already counted |
+| 4. Rank | Every card is scored for this purchase; a card carrying a balance is blocked |
+| 5. Pay | The top unblocked card pays |
+
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
