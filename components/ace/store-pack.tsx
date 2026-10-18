@@ -73,11 +73,11 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
   return (
     <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr] [&>*]:min-w-0">
       <div className="m-panel relative overflow-hidden p-3 md:p-5">
-        {month < 12 && upTo.label && (
+        {upTo.label && (
           <div className="pointer-events-none absolute left-5 top-4 z-10" style={display}>
             <div className="text-4xl">{money(upTo.total)}</div>
             <div className="text-sm" style={{ fontFamily: "var(--m-font-body)", fontWeight: 400, letterSpacing: 0 }}>
-              spent by the end of {new Date(upTo.label + "-15T12:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" })}
+              {month >= 12 ? "spent last year" : `spent by the end of ${new Date(upTo.label + "-15T12:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" })}`}
             </div>
           </div>
         )}

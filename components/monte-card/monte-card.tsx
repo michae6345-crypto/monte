@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote, MonteMark, Sampler } from "@/components/brand";
-import { CardArt, nick, shortName } from "@/components/ace/card-art";
+import { CardArt, nick } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money, nameOf, useAce } from "@/components/ace/store";
 import { spotsFor } from "@/components/ace/spots";
@@ -194,15 +194,15 @@ export function MonteCardDemo() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: n * 0.08 }}
-                      className={`grid grid-cols-[minmax(0,1fr)_minmax(0,auto)_auto] items-baseline gap-x-4 ${r.blocked ? "line-through" : ""}`}
+                      className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 ${r.blocked ? "line-through" : ""}`}
                     >
                       <span className={r.cardId === pick?.cardId ? "text-m-ink" : "text-m-slate"}>
                         {r.cardId === pick?.cardId ? "→ " : "  "}
-                        {shortName(r.cardId)}
+                        {nick(r.cardId)}
                         {r.blocked && <span className="font-semibold"> · skipped: carries a balance</span>}
                       </span>
-                      <span className="text-m-slate">{r.rule}</span>
                       <span className={r.reward > 0 && !r.blocked ? "m-gain" : ""}>{money(r.reward, { cents: true, sign: true })}</span>
+                      <span className="col-start-1 mb-1 text-[11px] text-m-slate">{r.rule}</span>
                     </motion.div>
                   ))}
               </div>
@@ -291,7 +291,7 @@ export function WhyNotRealCard() {
         <div className="m-mono mt-6 rounded-[10px] bg-m-wash p-4 text-[12px] leading-[1.8]">
           <div className="m-label mb-1">for example, with an Amex Gold</div>
           <div>
-            <span className="text-m-slate">you tap  </span>Trader Joe&apos;s · mcc <span className="text-m-ink">5411</span> → Monte Card
+            <span className="text-m-slate">you tap  </span>Trader Joe&apos;s · store code <span className="text-m-ink">5411</span> → Monte Card
           </div>
           <div>
             <span className="text-m-slate">monte    </span>charges Amex Gold · merchant <span className="text-m-ink">MONTE</span> · not 5411

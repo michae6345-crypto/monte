@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { card } from "@/lib/engine/catalog";
 import { monteCarlo } from "@/lib/engine/montecarlo";
 import { Bracketed, HandNote } from "@/components/brand";
-import { CardArt, shortName } from "./card-art";
+import { CardArt, nick, shortName } from "./card-art";
 import { Section } from "./section";
 import { Stage } from "./stage";
 import { money, nameOf, useAce, v } from "./store";
@@ -146,7 +146,7 @@ export function PayoffSection() {
   const line = (s: number[]) => s.slice(0, months + 1).map((v, m) => `${m ? "L" : "M"}${x(m).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   const area = (s: number[]) => `${line(s)} L${x(Math.min(s.length - 1, months)).toFixed(1)},${y(0)} L${x(0)},${y(0)} Z`;
   const saved = mins.interest - mine.interest;
-  const debtNames = debts.map((d) => shortName(d.cardId)).join(" and ");
+  const debtNames = debts.map((d) => nick(d.cardId)).join(" and ");
 
   return (
     <Section
@@ -247,8 +247,8 @@ export function PayoffSection() {
                   Paying in step with those months ({money(stepped.lo)} in the slowest, {money(stepped.hi)} in the busiest, {money(monthly)} on
                   average) clears it in <span className="m-num">{span(stepped.months)}</span> with{" "}
                   <span className="m-num">{money(stepped.interest)}</span> of interest
-                  {Math.abs(stepped.interest - mine.interest) >= 1
-                    ? `, ${money(Math.abs(stepped.interest - mine.interest))} ${stepped.interest > mine.interest ? "more" : "less"} than a flat ${money(monthly)} that a slow month may not cover.`
+                  {Math.round(stepped.interest) !== Math.round(mine.interest)
+                    ? `, ${money(Math.abs(Math.round(stepped.interest) - Math.round(mine.interest)))} ${stepped.interest > mine.interest ? "more" : "less"} than a flat ${money(monthly)}, which a slow month may not cover.`
                     : `, the same as a flat ${money(monthly)}.`}
                 </>
               )}{" "}

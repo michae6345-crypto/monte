@@ -363,9 +363,9 @@ function cents(id: string) {
 
 function Line({ k, children }: { k: string; children: ReactNode }) {
   return (
-    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4 md:whitespace-nowrap">
+    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4">
       <dt className="w-24 shrink-0 text-white">{k}</dt>
-      <dd className="text-white">{children}</dd>
+      <dd className="min-w-0 break-words text-white">{children}</dd>
     </motion.div>
   );
 }

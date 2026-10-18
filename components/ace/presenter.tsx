@@ -30,8 +30,8 @@ const STEPS: Step[] = [
   { id: "plan", tab: "payoff", target: "payoff-view", title: "Plan the next move", cue: "$250 a month clears it in 13 months, not 12 years. Then +$521 a year.", play: 5 },
   { id: "plan", tab: "keep", target: "keep-view", title: "Keep or cancel", cue: "The Amex Gold's $325 fee buys $273 of value. 1,000 of 1,000 simulated years say drop it: +$48 a year." },
   { id: "next", target: "next", title: "Next year ×1000", cue: "1,000 simulated next years: as paid, on the right card, and with the balance paid off.", play: 6 },
-  { id: "spend", tab: "replay", target: "replay-view", persona: "sam", title: "Only one card", cue: "Sam, 19, one student card. Nothing to re-route, so Monte asks the next question: a Savor beside it would have added $131 last year; +$114 a year median, simulated." },
-  { id: "plan", tab: "payoff", target: "payoff-view", persona: "rosa", title: "Income that swings", cue: "Rosa's spending runs from $738 to $3,792 a month. Her $1,900 balance costs $546 a year, more than her cards earned. Paying in step with her months, $76 to $391, clears it in 9 months for $6 more than a flat $250 a slow month may not cover.", play: 4 },
+  { id: "spend", tab: "replay", target: "replay-view", persona: "sam", title: "Only one card", cue: "Sam, 19, one student card. Nothing to move, so Monte asks the next question: a Savor beside it would have added $131 last year, about $114 in a typical next year." },
+  { id: "plan", tab: "payoff", target: "payoff-view", persona: "rosa", title: "Income that swings", cue: "Rosa's spending runs from $738 to $3,792 a month. Her $1,900 balance costs $546 a year, more than her cards earned. Paying in step with her months, $76 to $391, clears it in 9 months for $6 more interest than a flat $250, which a slow month may not cover.", play: 4 },
   { id: "how", tab: "trace", target: "how-view", title: "How it works", cue: "The pipeline, and a solver checking live that no other way of using these cards earns more. Then one purchase traced to its rule and source." },
   { id: "how", tab: "real", target: "real-view", title: "Real vs simulated", cue: "Card terms, engine, Monte Carlo, the solver check and 35 tests are real. The five people are synthetic. Plaid code is real; this deploy has no keys." },
 ];
@@ -95,7 +95,7 @@ export function Presenter() {
         const el = document.getElementById(s.target ?? s.id);
         if (!el) return;
         const far = Math.abs(el.getBoundingClientRect().top) > window.innerHeight * 2;
-        el.scrollIntoView({ behavior: far ? "auto" : "smooth", block: s.block ?? "start" });
+        el.scrollIntoView({ behavior: far || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: s.block ?? "start" });
         if (s.play) window.setTimeout(() => playStage(el, s.play!), far ? 300 : 900);
       }, s.tab || s.persona ? 160 : 0);
       if (s.tab) window.dispatchEvent(new CustomEvent("monte:tab", { detail: { chapter: s.id, tab: s.tab } }));

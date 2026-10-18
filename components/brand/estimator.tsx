@@ -97,8 +97,6 @@ export function Estimator({
   for (const x of shown) counts[Math.min(bins - 1, Math.floor(((x - lo) / (hi - lo || 1)) * bins))]++;
   const peak = Math.max(1, ...counts);
   const runMean = shown.length ? shown.reduce((a, b) => a + b, 0) / shown.length : 0;
-  const sdShown = shown.length > 1 ? Math.sqrt(shown.reduce((a, b) => a + (b - runMean) ** 2, 0) / (shown.length - 1)) : 0;
-  const se = shown.length > 1 ? sdShown / Math.sqrt(shown.length) : 0;
   const done = k >= total;
 
   // running-mean path, sampled every few draws, scaled to its own wobble around the final mean
@@ -128,8 +126,7 @@ export function Estimator({
           {usd(runMean)}
         </Expect>
         <span className="m-num text-xs" style={{ color: "var(--m-slate)" }}>
-          n = {k.toLocaleString("en-US")}
-          {se > 0 && <> · ±${se.toFixed(2)}</>}
+          {k.toLocaleString("en-US")} of {total.toLocaleString("en-US")} years
         </span>
       </div>
 
@@ -143,7 +140,7 @@ export function Estimator({
       </svg>
 
       <div>
-        <div className="m-label mb-2">running mean</div>
+        <div className="m-label mb-2">running average</div>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-14 w-full" aria-hidden>
           <line x1={0} x2={100} y1={50} y2={50} stroke="var(--m-line-strong)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
           <polyline points={pathShown} fill="none" stroke="var(--m-ink)" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
@@ -162,7 +159,7 @@ export function Estimator({
           className="m-mono rounded-full px-4 py-2 text-xs disabled:opacity-40"
           style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}
         >
-          [ re-roll ]
+          [ run again ]
         </button>
       </div>
       <p className="sr-only" aria-live="polite">

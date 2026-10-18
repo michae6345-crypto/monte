@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
 import { tap, type Holding } from "@/lib/engine";
-import { CARDS, card, openToNewApplicants } from "@/lib/engine/catalog";
+import { CARDS, card } from "@/lib/engine/catalog";
 import { CardArt, nick, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { Stage } from "./stage";
@@ -128,7 +128,7 @@ export function TapSection() {
                 </div>
                 <div className="mt-2 text-center text-2xl font-semibold">{spot.merchant}</div>
                 <div className="mono text-center text-xs text-ace-dim">
-                  MCC {spot.mcc} · {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
+                  store code {spot.mcc} · {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -178,7 +178,7 @@ export function TapSection() {
                 <div className="mono mt-0.5 text-[11px] text-ace-dim">earned on this purchase · {pick.rule}</div>
                 {runner && (
                   <div className="mono mt-1 text-[11px] text-ace-dim">
-                    vs {shortName(runner.cardId)} +{money(runner.reward, { cents: true })}
+                    vs {shortName(runner.cardId)} +{money(runner.reward, { cents: true })}{Math.abs(runner.reward - pick.reward) < 0.005 ? " (tie)" : ""}
                   </div>
                 )}
               </motion.div>
@@ -256,7 +256,7 @@ export function TapSection() {
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-1.5">
-          {CARDS.filter((c) => openToNewApplicants(c)).map((c) => {
+          {CARDS.map((c) => {
             const on = !!own?.includes(c.id);
             return (
               <button

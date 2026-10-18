@@ -47,7 +47,7 @@ export function MoneySection() {
       kicker="Where your money goes"
       title={
         <>
-          {nameOf(persona).Who} spent <Bracketed>{money(total)}</Bracketed> last year.
+          {nameOf(persona).Who} spent <Bracketed className="[font-variant-numeric:proportional-nums]">{money(total)}</Bracketed> last year.
           <span className="m-second block">Here is where it went.</span>
         </>
       }

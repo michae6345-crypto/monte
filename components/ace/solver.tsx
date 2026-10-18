@@ -384,7 +384,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
         <div className="px-4 py-3">
           <dt className="text-ace-dim">{k === 0 ? "the starting point" : `vs ${runs[0].short.replace(/^As T/, "as t").replace(/^As /, "as ")}, typical year`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
-            {beats === null ? "every other strategy is measured against this" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
+            {beats === null ? "the other two are measured against it" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
           </dd>
         </div>
       </dl>
@@ -409,7 +409,7 @@ export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: st
       habit,
       {
         id: "second",
-        short: `+ a ${shortName(second.id)}`,
+        short: `+ a ${nick(second.id)}`,
         label: `The same spending with a ${shortName(second.id)} beside the ${shortName(wallet[0].cardId)}, each purchase on whichever pays more. Both paid in full.`,
         wallet: [...wallet, { cardId: second.id }],
         policy: "best",
@@ -430,7 +430,7 @@ export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: st
     out.push({
       id: "cleared",
       short: `+ clear the ${nick(carried[0].cardId)}`,
-      label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" above.)`,
+      label: `Every purchase on the right card, with the ${nick(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" above.)`,
       wallet,
       policy: "best",
       paidOff: true,

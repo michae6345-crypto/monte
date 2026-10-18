@@ -3,7 +3,7 @@
 import { Solver, jordanStrategies } from "./solver";
 import { DropHero } from "./drop";
 import { Stage, StageSteps } from "./stage";
-import { shortName } from "./card-art";
+import { nick, shortName } from "./card-art";
 import { Lockup } from "@/components/brand";
 import { PERSONAS } from "@/lib/data/personas";
 import { nameOf, useAce } from "./store";
@@ -46,17 +46,16 @@ export function NextYear() {
   const { wallet, txns, persona } = useAce();
   const nm = useMemo(() => nameOf(persona), [persona]);
   const name = nm.Who;
-  const they = persona.id === "you" ? "you" : persona.id === "parks" || persona.id === "sam" ? "they" : persona.id === "maya" || persona.id === "rosa" ? "she" : "he";
   const strategies = useMemo(() => jordanStrategies(wallet, nm, txns), [wallet, nm, txns]);
   const carried = wallet.find((h) => (h.balance ?? 0) > 0);
   const adds = strategies.find((x) => x.adds)?.adds;
   const words = [
-    { h: `As ${they} ${they === "you" || they === "they" ? "play" : "plays"} today.`, d: `Every purchase on the card ${nm.who} actually reached for.${carried ? " The balance charges interest all year." : ""}` },
+    { h: `As ${nm.Who} ${nm.plural ? "pay" : "pays"} today.`, d: `Every purchase on the card ${nm.who} actually reached for.${carried ? " The balance charges interest all year." : ""}` },
     adds
       ? { h: `With a ${shortName(adds)} beside it.`, d: `Same spending, each purchase on whichever of the two pays more. Both paid in full.` }
-      : { h: "Every purchase on the right card.", d: `Same cards, same spending, each purchase routed to the card that pays most${carried ? ", never the one with a balance" : ""}.` },
+      : { h: "Every purchase on the right card.", d: `Same cards, same spending, each purchase on the card that pays most${carried ? ", never the one with a balance" : ""}.` },
     ...(carried
-      ? [{ h: "And the balance paid off.", d: `The same routing once the ${shortName(carried.cardId)} is clear: no interest, and it can earn again.` }]
+      ? [{ h: "And the balance paid off.", d: `The same right-card picks once the ${nick(carried.cardId)} is clear: no interest, and it can earn again.` }]
       : []),
   ];
   const n = words.length;

@@ -207,7 +207,7 @@ export function KeepSection() {
         <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
             <p className="m-label">
-              the {shortName(keepCase.cardId)}, played both ways
+              the {shortName(keepCase.cardId)}, kept vs dropped
             </p>
             <h3 className="mt-3 text-3xl md:text-4xl">
               Keep it or cancel it?
