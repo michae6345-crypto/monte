@@ -279,7 +279,7 @@ export function ForYouSection() {
           <R>{CARDS.length}</R> cards scored on <R>{txns.length}</R> of {persona.name}&apos;s purchases
         </>
       }
-      lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot on this list.`}
+      lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot here. Every number assumes the card is paid in full each month.`}
     >
       <div className="grid gap-8 lg:grid-cols-[320px_1fr] [&>*]:min-w-0">
         <div className="space-y-6 m-panel p-6">

@@ -170,10 +170,10 @@ export function PayoffSection() {
                 </text>
               </>
             )}
-            <text x={8} y={H - 6} fontSize={10} className="m-mono" style={{ fill: "var(--m-mute)" }}>
+            <text x={8} y={H - 6} fontSize={11} className="m-mono" style={{ fill: "var(--m-ink)" }}>
               now
             </text>
-            <text x={W - 8} y={H - 6} fontSize={10} textAnchor="end" className="m-mono" style={{ fill: "var(--m-mute)" }}>
+            <text x={W - 8} y={H - 6} fontSize={11} textAnchor="end" className="m-mono" style={{ fill: "var(--m-ink)" }}>
               {span(months)}
               {mins.months > months ? " →" : ""}
             </text>

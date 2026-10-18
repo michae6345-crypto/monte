@@ -56,6 +56,7 @@ export function OneCardView() {
                 On the same purchases it would have added <Bracketed>{money(best.w.net, { sign: true })}</Bracketed> a year after its fee, used only
                 where it beats the {shortName(only.cardId)}.
               </p>
+              <p className="mt-2 text-xs">Only if both are paid in full each month. A carried balance costs more than this earns.</p>
             </div>
           </div>
         ) : (

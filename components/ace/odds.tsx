@@ -125,14 +125,14 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
         {ticks.map((t) => (
           <g key={t}>
             <line x1={P.l} x2={W - P.r} y1={y(t)} y2={y(t)} stroke="var(--ace-line)" strokeDasharray={t === 0 ? undefined : "2 5"} />
-            <text x={P.l - 8} y={y(t) + 3.5} textAnchor="end" fontSize={10} className="mono" style={{ fill: "var(--ace-dim)" }}>
+            <text x={P.l - 8} y={y(t) + 3.5} textAnchor="end" fontSize={11} className="mono" style={{ fill: "var(--ace-dim)" }}>
               {money(t)}
             </text>
           </g>
         ))}
         {MONTHS.map((m, i) =>
           i % 2 === 0 ? (
-            <text key={m} x={x(i + 1)} y={H - 8} textAnchor="middle" fontSize={10} className="mono" style={{ fill: "var(--ace-dim)" }}>
+            <text key={m} x={x(i + 1)} y={H - 8} textAnchor="middle" fontSize={11} className="mono" style={{ fill: "var(--ace-dim)" }}>
               {m}
             </text>
           ) : null,
