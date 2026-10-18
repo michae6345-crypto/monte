@@ -271,8 +271,8 @@ with a source URL and a date. Breadth is a crawling problem with a known shape �
 re-crawl, a diff against the last snapshot, and a human review queue for changed terms. We'd rather
 ship 29 we can defend and badge the 11 we can't fully confirm.
 
-**H16. You copied Uno Wallet.**
-We say so in our own README. Uno picks the best card at tap time; Monte adds the entire cost side —
+**H16. Isn't this just another card-picker app?**
+Card pickers choose the best card at tap time; Monte adds the entire cost side —
 fees, credits actually used, and interest — which changes the recommendation, because the best card
 to tap is sometimes no new card at all.
 
@@ -332,7 +332,7 @@ It routes him to the next-best card instead. That's the demo moment where the pr
 
 **R9. What actually happens at the register in real life?**
 Today you'd open Monte and read the answer, which is a web demo, not NFC — we're clear about that.
-The real version is the thing Uno Wallet is building: a wallet-level intercept so the right card is
+The real version is a wallet-level intercept so the right card is
 selected on tap. Our bet is that the selection logic and the cost model are the hard part, and the
 tap surface is an integration.
 
@@ -641,8 +641,7 @@ balance, don't apply for anything" is a revenue-negative recommendation — and 
 recommendation Jordan needs. Our engine hard-codes the refusal, so the business model had to follow.
 
 **M5. Competitors — who's in this space?**
-Uno Wallet (YC Spring 2026) picks the best card at tap time, iPhone-first, currently a waitlist
-product. Pointwise (YC W23) recommends which cards to get, comparing roughly 4,000 cards from a
+Tap-time card-picker apps choose the best card at the register. Pointwise (YC W23) recommends which cards to get, comparing roughly 4,000 cards from a
 daily-refreshed database. Kudos is the funded incumbent — an app and browser extension that picks the
 card at checkout, $10.2M Series A in 2024 led by QED, reported 200,000 registered users and over
 $200M of annualised checkout volume. Wallaby was the original "which card should I use" app and was
@@ -658,7 +657,7 @@ routing.
 **M7. What about CardStack?**
 [UNVERIFIED] — we could not confirm an active product by that name in the card-optimizer space in
 public sources, so we won't characterise it. Treat our competitive claims as: Kudos and Pointwise
-verified from public reporting, Uno Wallet verified from its YC listing, Wallaby verified via the
+verified from public reporting, Wallaby verified via the
 2014 Bankrate acquisition, CardStack unverified.
 
 **M8. What's the moat?**

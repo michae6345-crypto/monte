@@ -29,7 +29,7 @@ export function MoatSection() {
       id="moat"
       index="08"
       kicker={`Why ${b.name}`}
-      title={<>Uno picks the card. {b.name} plays every dollar.</>}
+      title={<>Card pickers choose the card. {b.name} plays every dollar.</>}
       readout={<>compared on what each one advertises, Oct 2026</>}
     >
       <TwoAnswers />
@@ -39,7 +39,7 @@ export function MoatSection() {
             <tr className="border-b border-ace-line">
               <th className="px-5 py-3 font-normal"></th>
               <th className="px-5 py-3 font-normal text-ace-ink">{b.name}</th>
-              <th className="px-5 py-3 font-normal">Uno Wallet</th>
+              <th className="px-5 py-3 font-normal">Tap-time card pickers</th>
               <th className="px-5 py-3 font-normal">Comparison sites</th>
             </tr>
           </thead>
@@ -67,7 +67,7 @@ export function MoatSection() {
       <p className="mt-5 text-lg">
         45% of cardholders carried a balance last year (Federal Reserve, May 2026). For them, interest beats any reward.
       </p>
-      <p className="mono mt-3 text-[11px] uppercase tracking-wider text-ace-dim">Uno Wallet: from its site. Comparison sites: e.g. NerdWallet.</p>
+      <p className="mono mt-3 text-[11px] uppercase tracking-wider text-ace-dim">Card pickers: from what they advertise. Comparison sites: e.g. NerdWallet.</p>
     </Section>
   );
 }

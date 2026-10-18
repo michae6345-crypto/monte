@@ -1,4 +1,4 @@
-// The Ace engine. Deterministic: every dollar comes from a published card rule in
+// The Monte engine. Deterministic: every dollar comes from a published card rule in
 // data/cards.json and the transactions it applies to. No model is involved here.
 
 import { card, type CatalogCard, type EarnRule, type Period } from "./catalog";

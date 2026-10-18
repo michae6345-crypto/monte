@@ -1,7 +1,7 @@
 # Monte: every card played right, and what your cards really cost
 
 TrojanHacks 2026 · Finance vertical · Team 1 (Adrian Erlikhman, Michael Tarekegn).
-Copies Uno Wallet (YC Spring 2026) and adds the true net cost of each card, with Monte
+Picks the best card at the register and adds the true net cost of each card, with Monte
 Carlo odds. (The code still says `ace` in folder and component names; that is fine.)
 
 ## Scope

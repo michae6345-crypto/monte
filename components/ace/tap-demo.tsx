@@ -33,9 +33,8 @@ const STEPS = [
 ] as const;
 type StepKey = (typeof STEPS)[number]["k"];
 
-// phase: -1 waiting for a tap, 0..4 the steps above, 5 paid. Slow on purpose: each step is
-// held long enough to explain it out loud.
-const STEP_MS = 5200;
+// phase: -1 waiting for a tap, 0..4 the steps above, 5 paid. Nothing is timed: the presenter
+// moves it on, so each step stays up as long as it takes to explain.
 
 export function TapDemo() {
   const [open, setOpen] = useState(false);
@@ -91,7 +90,6 @@ function Dashboard({ onClose }: { onClose: () => void }) {
   const [i, setI] = useState(0);
   const spot = spots[Math.min(i, spots.length - 1)];
   const [phase, setPhase] = useState(-1);
-  const [playing, setPlaying] = useState(true);
 
   const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
   const res = useMemo(
@@ -119,18 +117,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
   };
 
   const reset = useCallback(() => setPhase(-1), []);
-  const start = useCallback(() => {
-    setPhase(0);
-    setPlaying(true);
-  }, []);
+  const start = useCallback(() => setPhase(0), []);
   const next = useCallback(() => setPhase((p) => Math.min(5, p + 1)), []);
   const back = useCallback(() => setPhase((p) => Math.max(0, p - 1)), []);
-
-  useEffect(() => {
-    if (!playing || phase < 0 || phase >= 5) return;
-    const t = window.setTimeout(() => setPhase((p) => p + 1), STEP_MS);
-    return () => clearTimeout(t);
-  }, [phase, playing]);
 
   // the beep, once, when the reader approves
   const beeped = useRef(false);
@@ -148,7 +137,7 @@ function Dashboard({ onClose }: { onClose: () => void }) {
       else if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
         if (phase === -1 || phase >= 5) start();
-        else setPlaying((x) => !x);
+        else next();
       } else if (e.key === "ArrowRight") {
         if (phase === -1) start();
         else next();
@@ -379,12 +368,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
                 <Ctl label="Back" onClick={back} disabled={phase <= 0}>
                   ‹
                 </Ctl>
-                <Ctl label={playing ? "Pause" : "Play"} onClick={() => setPlaying((x) => !x)} wide>
-                  {playing ? "❚❚" : "▶"}
-                </Ctl>
-                <Ctl label="Next" onClick={next}>
-                  ›
-                </Ctl>
+                <button onClick={next} className="btn btn-primary btn-sm">
+                  {phase === 4 ? "Pay" : "Next"} →
+                </button>
               </>
             )}
             {paid && (
@@ -399,19 +385,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
               const now = phase === k;
               return (
                 <li key={s.k} className="flex-1">
-                  <button onClick={() => (phase === -1 ? (setPlaying(false), setPhase(k)) : setPhase(k))} className="group block w-full text-left">
+                  <button onClick={() => setPhase(k)} className="group block w-full text-left">
                     <div className="h-1.5 overflow-hidden rounded-full bg-ace-line">
-                      {done ? (
-                        <div className="h-full w-full rounded-full bg-ace-ink" />
-                      ) : now ? (
-                        <motion.div
-                          key={`${phase}-${playing}`}
-                          className="h-full rounded-full bg-ace-ink"
-                          initial={{ width: playing ? "0%" : "35%" }}
-                          animate={{ width: playing ? "100%" : "35%" }}
-                          transition={{ duration: playing ? STEP_MS / 1000 : 0, ease: "linear" }}
-                        />
-                      ) : null}
+                      {done || now ? <div className={`h-full w-full rounded-full ${done ? "bg-ace-ink" : "bg-ace-gold"}`} /> : null}
                     </div>
                     <div className={`mono mt-1 truncate text-[10px] uppercase tracking-[0.14em] ${now ? "text-ace-ink" : "text-ace-dim group-hover:text-ace-ink"}`}>
                       {String(k + 1).padStart(2, "0")} {s.short}

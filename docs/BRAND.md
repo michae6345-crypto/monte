@@ -30,7 +30,6 @@ Everything else follows from that:
 | **spacefs.com** | A light ground, big confident type, product mockups scaled like real windows, generous whitespace, scroll that reveals one idea at a time | Its colours |
 | **Hivemind** (`~/hivemind`, our own SEPHacks site) | The hand notes (Shantell Sans + a pencil arrow that draws itself in), the `Fit` scaled canvases, two-tone headlines, the fonts | Its honey/rose accents |
 | **Fuser** | Motion that explains a mechanism: things move *because* the product is doing something, never for decoration | Dark-mode glow |
-| **Uno Wallet** (the YC company we copy) | Real card art, the tap moment, the "right card" answer front and centre | Its app-icon-in-a-gradient look |
 
 **Banned (Adrian has rejected all of these):** tilted floating cards for decoration, gradients
 (except the issuers' own card art), glows, glassmorphism, generic app icons in rounded squares,
