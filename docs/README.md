@@ -9,3 +9,4 @@
 | `RESEARCH.md` | Market research behind the idea |
 | `BRAND.md` | Name, mark, colours, type |
 | `deploy.md` | Deploy runbook and Plaid sandbox setup |
+| `JUDGE-QA.md` | Expected judge questions with answers |
