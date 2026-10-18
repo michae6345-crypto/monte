@@ -61,7 +61,7 @@ The engine is deterministic. **The AI never does the math.** Every dollar on scr
 to a published card rule in [`data/cards.json`](data/cards.json), each with the issuer's
 source URL and the date we checked it, and to the purchases behind it.
 
-- **Rules engine** (`lib/engine/`) — earn rates, spending caps, shared cap pools,
+- **Rules engine** (`lib/engine/`): earn rates, spending caps, shared cap pools,
   pick-one categories, quarterly rotations, credits, cash vs travel point values.
 - **Monte Carlo** (`lib/engine/montecarlo.ts`) — resamples your own months into 1,000
   simulated years and replays the full engine over each one, so caps and quarters
