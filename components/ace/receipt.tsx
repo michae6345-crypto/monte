@@ -118,7 +118,7 @@ export function ReceiptSection() {
           </div>
           <p className="max-w-xl text-sm leading-relaxed text-ace-dim">
             Every rule comes from the issuer&apos;s own terms for {CARDS.length} cards, checked {card("amex_gold").checked ?? "17 Oct 2026"}.
-            Purchases are a synthetic year at real LA merchants. Interest uses the average balance × APR.
+            Purchases are a synthetic year at real LA merchants. Interest is the balance carried all year × APR.
           </p>
         </div>
 

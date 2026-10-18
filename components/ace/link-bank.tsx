@@ -37,6 +37,16 @@ export function LinkBank() {
     }
   };
 
+  // no keys on this deploy: say so instead of hiding the integration
+  if (configured === false)
+    return (
+      <span className="inline-flex items-center gap-2 text-sm">
+        <button disabled className="btn btn-ghost btn-sm cursor-not-allowed">
+          Link a bank (sandbox)
+        </button>
+        <span className="text-xs">No Plaid keys on this deploy.</span>
+      </span>
+    );
   if (configured !== true) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">

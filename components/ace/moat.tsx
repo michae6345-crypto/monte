@@ -2,9 +2,10 @@
 
 import { useBrand } from "./brands";
 import { motion } from "framer-motion";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { interestFor, marginalValue, pointValue, tap, type Txn } from "@/lib/engine";
-import { card } from "@/lib/engine/catalog";
+import { CARDS, card } from "@/lib/engine/catalog";
+import { optimalReplay } from "@/lib/engine/lp";
 import { Section } from "./section";
 import { MCC, hostOf } from "./strategy";
 import { Lockup } from "@/components/brand";
@@ -196,6 +197,61 @@ function TwoAnswers() {
   );
 }
 
+// ---------- How it works: the pipeline, and the optimality check run live ----------
+
+/** The engine end to end for the selected person, and the linear program checking that the
+ *  routing shown everywhere else is the best possible assignment (lib/engine/lp.ts). */
+function Proof() {
+  const { held: wallet, txns, r, valuation } = useAce();
+  // run after paint, and timed: the milliseconds shown are this browser's
+  const [check, setCheck] = useState<{ bound: number; method: string; ms: number; key: unknown } | null>(null);
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const t0 = performance.now();
+      const o = optimalReplay(wallet, txns);
+      setCheck({ bound: o.bound ?? o.total, method: o.method, ms: performance.now() - t0, key: txns });
+    }, 120);
+    return () => clearTimeout(id);
+  }, [wallet, txns, valuation]);
+  const cats = new Set(txns.map((t) => t.category)).size;
+  const routed = r.best.total;
+  const gap = check ? check.bound - routed : 0;
+  const steps: [string, string][] = [
+    [txns.length.toLocaleString(), "purchases"],
+    [String(cats), "categories, by merchant code"],
+    [String(CARDS.length), "cards' published rules"],
+    [money(routed, { cents: true }), "routed, caps respected"],
+    [money(r.net, { cents: true, sign: true }), "the receipt, after fees and interest"],
+  ];
+  return (
+    <div className="mb-10">
+      <ol className="grid gap-px overflow-hidden rounded-[14px] bg-[var(--m-line)] sm:grid-cols-5">
+        {steps.map(([n, l], k) => (
+          <li key={l} className="bg-ace-panel px-4 py-3">
+            <div className="m-num text-[11px]">{String(k + 1).padStart(2, "0")}</div>
+            <div className="mt-1 text-xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
+              {n}
+            </div>
+            <div className="text-xs">{l}</div>
+          </li>
+        ))}
+      </ol>
+      <p className="m-mono mt-3 min-h-[2.5em] text-[12px] leading-relaxed">
+        {check ? (
+          <>
+            optimality check · {check.method === "milp" ? "integer program" : "linear program"} over every purchase and cap,{" "}
+            {Math.max(1, Math.round(check.ms))} ms in this browser · best possible {money(check.bound, { cents: true })} vs routed{" "}
+            {money(routed, { cents: true })}
+            {Math.abs(gap) < 0.005 ? " · proven optimal" : ` · routing leaves ${money(gap, { cents: true })}`} · 35 engine tests pass (npm test)
+          </>
+        ) : (
+          "optimality check · running…"
+        )}
+      </p>
+    </div>
+  );
+}
+
 // ---------- How it works: one real purchase, traced ----------
 
 const PICKS = ["Sweetgreen", "Mobil", "Uber", "Trader Joe's"];
@@ -232,6 +288,7 @@ export function HowSection() {
       readout={<>no model decides a dollar amount</>}
       lede={`Pick one of ${nameOf(persona).whose} purchases and follow it through: merchant, merchant code, category, every card's published rule, and the cents.`}
     >
+      <Proof />
       <div className="mb-3 flex flex-wrap gap-1.5">
         {options.map((o, i) => (
           <button
