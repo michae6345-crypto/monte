@@ -31,6 +31,11 @@ export type Persona = {
   habit: (category: string, merchant: string, r: () => number) => string;
   lines: Line[];
   seed: number;
+  /** Optional 12 multipliers, one per month, for people whose income is not steady.
+   *  Applied to non-fixed lines only: the count of purchases and their size both move,
+   *  because a slow month means fewer trips and smaller baskets, but rent and the phone
+   *  bill arrive regardless. Omit for a steady year. */
+  monthScale?: number[];
 };
 
 const START = new Date("2025-10-18T12:00:00Z");
@@ -42,14 +47,18 @@ export function yearOf(p: Persona): Txn[] {
   let n = 0;
   for (let m = 0; m < 12; m++) {
     for (const line of p.lines) {
-      const count = Math.floor(line.perMonth) + (r() < line.perMonth % 1 ? 1 : 0);
+      // Fixed lines (subscriptions, phone, utilities) arrive whatever the month is like.
+      const scale = line.fixed ? 1 : (p.monthScale?.[m] ?? 1);
+      const per = line.perMonth * scale;
+      const count = Math.floor(per) + (r() < per % 1 ? 1 : 0);
       for (let i = 0; i < count; i++) {
         const day = line.fixed ? 3 + (line.merchants[0].length % 20) : Math.floor(r() * 30);
         const d = new Date(START.getTime() + (m * 30.4 + day) * 86400000);
         if ((d.getTime() - START.getTime()) / 86400000 >= DAYS) continue;
         const merchant = line.fixed ? line.merchants[i % line.merchants.length] : line.merchants[Math.floor(r() * line.merchants.length)];
         const [lo, hi] = line.amount;
-        const amount = line.fixed ? lo : Math.round((lo + (hi - lo) * Math.pow(r(), 1.4)) * 100) / 100;
+        const raw = line.fixed ? lo : (lo + (hi - lo) * Math.pow(r(), 1.4)) * scale;
+        const amount = Math.round(raw * 100) / 100;
         out.push({
           id: `${p.id}-${n++}`,
           date: d.toISOString().slice(0, 10),
@@ -146,4 +155,55 @@ export const PARKS: Persona = {
   ],
 };
 
-export const PERSONAS = [JORDAN, MAYA, PARKS];
+/** One card, paid in full. The point of Sam is that Monte still has something to say
+ *  when there is nothing to optimise between cards: where the money goes, what keeps
+ *  charging him, and whether a second card is even worth it. */
+export const SAM: Persona = {
+  id: "sam",
+  name: "Sam",
+  blurb: "19 · student · one card, paid in full",
+  seed: 19,
+  wallet: [{ cardId: "discover_it_student_cash_back" }],
+  habit: () => "discover_it_student_cash_back",
+  lines: [
+    { category: "dining", merchants: ["Chipotle", "Panda Express", "Raising Cane's", "Starbucks", "In-N-Out Burger", "DoorDash"], perMonth: 14, amount: [8, 34] },
+    { category: "groceries", merchants: ["Trader Joe's", "Ralphs", "Target"], perMonth: 4, amount: [26, 95] },
+    { category: "transit", merchants: ["Metro TAP"], perMonth: 4, amount: [2.5, 12] },
+    { category: "streaming", merchants: ["Spotify Student"], perMonth: 1, amount: [5.99, 5.99], fixed: true },
+    { category: "streaming", merchants: ["Hulu"], perMonth: 1, amount: [9.99, 9.99], fixed: true },
+    { category: "phone", merchants: ["Mint Mobile"], perMonth: 1, amount: [30, 30], fixed: true },
+    { category: "online_retail", merchants: ["Amazon", "Uniqlo", "Nike"], perMonth: 2, amount: [12, 85] },
+    { category: "drugstores", merchants: ["CVS Pharmacy"], perMonth: 1, amount: [7, 28] },
+    { category: "entertainment", merchants: ["AMC Theatres", "Steam"], perMonth: 1, amount: [12, 45] },
+    { category: "everything_else", merchants: ["USC Bookstore", "Planet Fitness", "Venmo"], perMonth: 2.5, amount: [10, 60] },
+  ],
+};
+
+/** Irregular income. Rosa's spending swings with her work, which is the Finance prompt's
+ *  first bullet. The monthScale below is her year: a slow January and February, a heavy
+ *  spring, a dead August. Her balance is what that volatility costs her. */
+export const ROSA: Persona = {
+  id: "rosa",
+  name: "Rosa",
+  blurb: "38 · house-cleaning business · income swings month to month",
+  seed: 38,
+  monthScale: [0.55, 0.6, 1.35, 1.4, 1.25, 1.0, 0.8, 0.45, 1.15, 1.3, 1.1, 0.85],
+  wallet: [
+    { cardId: "capital_one_quicksilver", balance: 1900, apr: 28.74 },
+    { cardId: "citi_double_cash" },
+  ],
+  habit: (_c, _m, r) => (r() < 0.7 ? "capital_one_quicksilver" : "citi_double_cash"),
+  lines: [
+    { category: "gas", merchants: LA_GAS, perMonth: 9, amount: [40, 85] },
+    { category: "groceries", merchants: ["Superior Grocers", "Food 4 Less", "Vons", "Northgate Market"], perMonth: 8, amount: [30, 140] },
+    { category: "everything_else", merchants: ["Home Depot", "Smart & Final", "Dollar Tree", "U-Haul"], perMonth: 5, amount: [18, 190] },
+    { category: "dining", merchants: ["El Pollo Loco", "Guisados", "Jack in the Box", "Tacos 1986"], perMonth: 5, amount: [9, 38] },
+    { category: "utilities", merchants: ["LADWP", "SoCalGas"], perMonth: 2, amount: [70, 190] },
+    { category: "phone", merchants: ["Cricket Wireless"], perMonth: 1, amount: [55, 55], fixed: true },
+    { category: "streaming", merchants: ["Netflix"], perMonth: 1, amount: [17.99, 17.99], fixed: true },
+    { category: "drugstores", merchants: ["CVS Pharmacy", "Walgreens"], perMonth: 2, amount: [9, 55] },
+    { category: "online_retail", merchants: ["Amazon"], perMonth: 2.5, amount: [14, 110] },
+  ],
+};
+
+export const PERSONAS = [JORDAN, MAYA, PARKS, SAM, ROSA];
