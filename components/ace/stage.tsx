@@ -65,7 +65,7 @@ export function Stage({ vh = 240, children, className }: { vh?: number; children
       </div>
     );
   return (
-    <div ref={ref} className={className} style={{ height: `${vh}vh` }}>
+    <div ref={ref} data-stage className={className} style={{ height: `${vh}vh` }}>
       <div ref={inner} className="sticky" style={{ top }}>
         {children(p)}
       </div>
