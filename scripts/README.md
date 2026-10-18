@@ -11,3 +11,4 @@ its working.
 | `mc-method.ts` | Measures why each drawn year is re-simulated instead of resampling monthly rewards |
 | `lp-vs-greedy.ts` | LP against greedy routing, with a worked cap trap |
 | `print.ts` | Every person's receipt, per-card value and best card to add |
+| `stmt-test.ts` | Statement CSV parsing on Chase- and Amex-style exports |
