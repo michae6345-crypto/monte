@@ -3,15 +3,17 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { useBrand } from "./brands";
-import { cardArt, shortName } from "./card-art";
+import { CardMini, shortName } from "./card-art";
 import { CAT_COLOR, label } from "./money";
 import { Bracketed } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
+
+const CATEGORIES = Object.keys(CAT_COLOR).filter((c) => c !== "other");
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function HistorySection() {
-  const { txns, r, wallet } = useAce();
+  const { txns, r, wallet, overrides, setOverride, resetOverrides } = useAce();
   const { brand: b } = useBrand();
   const [q, setQ] = useState("");
   const [onlyMiss, setOnlyMiss] = useState(false);
@@ -69,6 +71,11 @@ export function HistorySection() {
             placeholder="Search a merchant or category…"
             className="h-9 min-w-[220px] flex-1 rounded-full bg-ace-panel px-4 text-sm shadow-[0_0_0_1px_var(--m-line-strong)] outline-none placeholder:text-ace-dim focus:shadow-[0_0_0_1.5px_var(--m-ink)]"
           />
+          {Object.keys(overrides).length > 0 && (
+            <button onClick={resetOverrides} className="btn btn-ghost btn-sm">
+              {Object.keys(overrides).length} store{Object.keys(overrides).length > 1 ? "s" : ""} re-counted · reset
+            </button>
+          )}
           <button
             onClick={() => setOnlyMiss((v) => !v)}
             className={`btn btn-sm ${onlyMiss ? "btn-primary" : "btn-ghost"}`}
@@ -79,6 +86,27 @@ export function HistorySection() {
             <button onClick={() => setMerchant(null)} className="btn btn-primary btn-sm">
               {merchant} ✕
             </button>
+          )}
+          {merchant && (
+            <label className="flex items-center gap-2 text-sm text-ace-dim">
+              count {merchant} as
+              <select
+                value={overrides[merchant] ?? txns.find((t) => t.merchant === merchant)?.category ?? ""}
+                onChange={(e) => setOverride(merchant, e.target.value)}
+                className="h-9 rounded-full bg-ace-panel px-3 text-sm text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)]"
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {label(c)}
+                  </option>
+                ))}
+              </select>
+              {overrides[merchant] && (
+                <button onClick={() => setOverride(merchant, null)} className="text-xs underline underline-offset-2">
+                  undo
+                </button>
+              )}
+            </label>
           )}
           <div className="mono ml-auto text-right text-xs text-ace-dim">
             {filtered.length} purchases · {money(spendTotal)} ·{" "}
@@ -106,7 +134,7 @@ export function HistorySection() {
                 exit={{ opacity: 0 }}
                 className="grid grid-cols-2 gap-x-3 gap-y-1 border-b border-ace-line/60 py-2.5 text-sm md:grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] md:items-center"
               >
-                <span className="mono text-xs text-ace-dim">{new Date(x.t.date + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                <span className="text-[13px] font-medium text-ace-dim" style={{ fontFamily: "var(--m-font-display)" }}>{new Date(x.t.date + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                 <button onClick={() => setMerchant(x.t.merchant)} className="flex min-w-0 items-center gap-2 text-left font-medium hover:underline">
                   <MerchantLogo name={x.t.merchant} size={20} />
                   <span className="truncate">{x.t.merchant}</span>
@@ -115,7 +143,7 @@ export function HistorySection() {
                   <span className="size-2 rounded-full" style={{ background: CAT_COLOR[x.t.category] }} />
                   {label(x.t.category)}
                 </span>
-                <span className="mono text-right">{money(x.t.amount, { cents: true })}</span>
+                <span className="tnum text-right font-semibold" style={{ fontFamily: "var(--m-font-display)" }}>{money(x.t.amount, { cents: true })}</span>
                 <CardTag id={x.used} />
                 {x.best === x.used ? <span className="m-mono text-xs text-ace-dim">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
                 {x.miss > 0.005 ? (
@@ -146,8 +174,8 @@ export function HistorySection() {
 function CardTag({ id, hint }: { id: string; hint?: string }) {
   return (
     <span className="flex min-w-0 items-center gap-2" title={hint}>
-      <span className="h-3.5 w-5 shrink-0 rounded-[3px]" style={{ background: cardArt(id).bg }} />
-      <span className="truncate text-xs">{shortName(id)}</span>
+      <CardMini id={id} />
+      <span className="truncate text-[13px] font-medium">{shortName(id)}</span>
     </span>
   );
 }

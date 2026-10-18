@@ -340,6 +340,15 @@ export function DropHero() {
     };
   }, []);
 
+  // the same scroll the hint asks for: to where the deal finishes (p = 0.75 in want())
+  const dealRest = () => {
+    const tr = track.current;
+    if (!tr) return;
+    const span = tr.offsetHeight - window.innerHeight;
+    const top = tr.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + span * 0.8, behavior: "smooth" });
+  };
+
   return (
     <div ref={track} id="top" className="relative h-[175svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
@@ -363,11 +372,16 @@ export function DropHero() {
                 ref={(el) => {
                   tagEls.current[i] = el;
                 }}
-                className="mono pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-full bg-ace-panel px-3 py-1 text-[12px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)] transition-opacity duration-300"
+                className="pointer-events-none absolute left-0 top-0 whitespace-nowrap transition-opacity duration-300"
                 style={{ opacity: 0 }}
               >
-                <span className="text-ace-dim">{shortName(id)}</span>{" "}
-                <span className={tags[id].tone === "gain" ? "text-ace-gain" : "text-ace-loss"}>{tags[id].text.split(" ")[0]}</span> {tags[id].text.split(" ").slice(1).join(" ")}
+                <span className={`m-tag ${i % 2 ? "m-tag-r" : ""}`}>
+                  <span className="text-ace-dim">{shortName(id)}</span>{" "}
+                  <span className={tags[id].tone === "gain" ? "text-ace-gain" : "text-ace-loss"}>
+                    {tags[id].text.split(" ")[0]}
+                  </span>{" "}
+                  {tags[id].text.split(" ").slice(1).join(" ")}
+                </span>
               </div>
             ) : null,
           )}
@@ -396,9 +410,15 @@ export function DropHero() {
               Try a tap
             </a>
           </div>
-          <p className="m-label mt-6 transition-opacity" style={{ opacity: allDealt ? 0 : 1 }}>
-            scroll to deal the rest of the market ↓
-          </p>
+          <button
+            type="button"
+            onClick={dealRest}
+            className="m-deal pointer-events-auto mt-7 transition-opacity"
+            style={{ opacity: allDealt ? 0 : 1, pointerEvents: allDealt ? "none" : undefined }}
+            tabIndex={allDealt ? -1 : 0}
+          >
+            scroll to deal the rest of the market <span aria-hidden className="m-deal-arrow">↓</span>
+          </button>
         </div>
       </div>
     </div>

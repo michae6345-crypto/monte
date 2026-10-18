@@ -115,3 +115,32 @@ export function CardArt({
     </div>
   );
 }
+
+/** The card at chip size (36×23 by default) for lists: the real issuer art where we have it,
+ *  otherwise our art with its chip, so it still reads as that card shrunk down. */
+export function CardMini({ id, width = 36, className }: { id: string; width?: number; className?: string }) {
+  const a = cardArt(id);
+  const style = { width, height: Math.round(width / 1.586) };
+  if (REAL.has(id))
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={`/cards/${id}.webp`}
+        alt=""
+        draggable={false}
+        style={style}
+        className={cn("block shrink-0 select-none rounded-[3px] object-cover shadow-[0_2px_5px_-1px_rgba(12,14,20,.35),0_0_0_0.5px_rgba(12,14,20,.12)]", className)}
+      />
+    );
+  return (
+    <span
+      style={{ ...style, background: a.bg }}
+      className={cn("relative block shrink-0 overflow-hidden rounded-[3px] shadow-[0_2px_5px_-1px_rgba(12,14,20,.35),inset_0_0.5px_0_rgba(255,255,255,.3)]", className)}
+    >
+      <span
+        className="absolute rounded-[1px]"
+        style={{ left: "14%", top: "38%", width: "18%", height: "24%", background: `linear-gradient(135deg, ${a.foil ?? "#e8d08a"}, #b89a4a 60%, ${a.foil ?? "#f3e3a8"})` }}
+      />
+    </span>
+  );
+}

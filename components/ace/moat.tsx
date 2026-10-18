@@ -22,7 +22,7 @@ const ROWS: [string, string, string, string][] = [
 const NOTES = [
   "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card.",
   "45% of cardholders carried a balance last year (Fed SHED, May 2026). For them, interest outweighs any reward, so a points-only ranking points the wrong way.",
-  "Issuers decide categories by merchant code and don't publish the map. Each merchant a user re-categorises improves the map for everyone.",
+  "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Purchases and every purchase there is replayed.",
 ];
 
 export function MoatSection() {

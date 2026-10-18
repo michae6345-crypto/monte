@@ -4,6 +4,7 @@
 // path section by section, with a one-line cue and a 4:00 clock. Esc leaves.
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { useAce } from "./store";
 
 type Step = { id: string; title: string; cue: string; tap?: string };
 
@@ -15,8 +16,11 @@ const STEPS: Step[] = [
   { id: "history", title: "Purchases", cue: "Every purchase, the card he used, the card Monte picks." },
   { id: "replay", title: "Replay", cue: "Flip it: same purchases, better cards, $104 back." },
   { id: "tap", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
-  { id: "keep", title: "Keep or cancel", cue: "Amex Gold: $325 fee buys less than it costs him. Downgrade." },
+  { id: "monte-card", title: "The Monte Card", cue: "One card, the engine picks at the tap. Simulated, and we say why it can't be real yet." },
+  { id: "keep", title: "Keep or cancel", cue: "Amex Gold: P[pays for itself] = 0.00 across 1,000 years. Downgrade." },
+  { id: "payoff", title: "Pay this first", cue: "$250 a month clears the Apple Card in 13 months; minimums take 12 years. Then 𝔼[net] goes to +$521." },
   { id: "foryou", title: "Apply", cue: "No new card while he carries a balance. After that, the odds." },
+  { id: "wrapped", title: "Wrapped", cue: "His year in eight cards, every figure from the engine." },
   { id: "how", title: "How it works", cue: "One purchase traced: merchant code, rule, cents, source. No model does the math." },
   { id: "real", title: "Real vs simulated", cue: "Card terms and engine are real. Jordan is synthetic. Plaid is sandbox." },
 ];
@@ -28,6 +32,12 @@ export function Presenter() {
   const urlOn = useSyncExternalStore(noop, fromUrl, () => false);
   const [toggled, setToggled] = useState<boolean | null>(null);
   const on = toggled ?? urlOn;
+  // the pitch always runs on the canonical numbers: no leftover store corrections
+  const { overrides, resetOverrides } = useAce();
+  const dirty = Object.keys(overrides).length > 0;
+  useEffect(() => {
+    if (on && dirty) resetOverrides();
+  }, [on, dirty, resetOverrides]);
   const [i, setI] = useState(0);
   const [t0, setT0] = useState<number | null>(null);
   const [now, setNow] = useState(0);

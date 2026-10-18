@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { receipt, setValuation, type Holding, type Receipt, type Txn, type Valuation } from "@/lib/engine";
 import { PERSONAS, yearOf, type Persona } from "@/lib/data/personas";
 
@@ -17,6 +17,10 @@ type Store = {
   txns: Txn[];
   /** Run everything on the user's own statement (parsed in the browser). */
   useStatement: (txns: Txn[], cardId: string) => void;
+  /** Merchant corrections: a merchant re-categorised once applies to every purchase there. */
+  overrides: Record<string, string>;
+  setOverride: (merchant: string, category: string | null) => void;
+  resetOverrides: () => void;
   /** Run everything on a linked bank's feed (Plaid sandbox): its purchases and its cards. */
   loadFeed: (txns: Txn[], wallet: Holding[], label: string) => void;
   r: Receipt;
@@ -37,7 +41,19 @@ export function AceProvider({ children }: { children: ReactNode }) {
       : PERSONAS.find((p) => p.id === personaId)!;
   const [wallet, setWallet] = useState<Holding[]>(PERSONAS[0].wallet);
   const [valuation, setVal] = useState<Valuation>("cash");
-  const txns = personaId === "you" && custom ? custom : YEARS.get(personaId) ?? YEARS.get(PERSONAS[0].id)!;
+  const base = personaId === "you" && custom ? custom : YEARS.get(personaId) ?? YEARS.get(PERSONAS[0].id)!;
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("monte-overrides") ?? "{}");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (saved && typeof saved === "object") setOverrides(saved);
+    } catch {}
+  }, []);
+  const txns = useMemo(
+    () => (Object.keys(overrides).length ? base.map((t) => (overrides[t.merchant] ? { ...t, category: overrides[t.merchant] } : t)) : base),
+    [base, overrides],
+  );
 
   setValuation(valuation);
   // valuation is read inside the engine, so it must re-run when it changes
@@ -68,6 +84,23 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setPersonaId("you");
       setWallet([{ cardId }]);
     },
+    overrides,
+    resetOverrides: () => {
+      setOverrides({});
+      try {
+        localStorage.removeItem("monte-overrides");
+      } catch {}
+    },
+    setOverride: (m, c) =>
+      setOverrides((o) => {
+        const next = { ...o };
+        if (c) next[m] = c;
+        else delete next[m];
+        try {
+          localStorage.setItem("monte-overrides", JSON.stringify(next));
+        } catch {}
+        return next;
+      }),
     loadFeed: (t, w, label) => {
       if (!t.length || !w.length) return;
       setCustom(t);

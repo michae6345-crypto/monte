@@ -34,7 +34,7 @@ export function RealSection() {
       tone: "text-ace-dim",
       items: [
         ["Bank linking", "Plaid in sandbox: transactions and balances in, no card numbers ever. Production needs Plaid's review."],
-        ["The merchant map", "Issuers don't publish which codes count as dining. Each correction a user makes fixes it for everyone."],
+        ["The merchant map", "Issuers don't publish which codes count as dining. Today a correction applies to every purchase at that store, in your browser; next, it improves the map for everyone."],
         ["At the register", `${b.name} in the phone's wallet, so the pick appears before you tap.`],
       ],
     },

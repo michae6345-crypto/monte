@@ -7,6 +7,7 @@ import { CARDS, card } from "@/lib/engine/catalog";
 import { PERSONAS } from "@/lib/data/personas";
 import { CardArt, shortName } from "./card-art";
 import { PaperReceipt } from "./paper-receipt";
+import { PERSONA_LINE, PersonaAvatar } from "./persona-avatar";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
@@ -32,19 +33,37 @@ export function ReceiptSection() {
       <div className="grid gap-10 lg:grid-cols-[1fr_440px]">
         {/* controls */}
         <div className="space-y-8">
-          <div className="flex flex-wrap gap-2">
-            {PERSONAS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setPersona(p.id)}
-                className={`rounded-[14px] bg-ace-panel px-4 py-2.5 text-left transition ${
-                  persona.id === p.id ? "shadow-[0_0_0_1.5px_var(--m-ink)]" : "shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
-                }`}
-              >
-                <div className="text-sm font-medium">{p.name}</div>
-                <div className="mono text-[10px] uppercase tracking-wider text-ace-dim">{p.blurb}</div>
-              </button>
-            ))}
+          <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Whose year">
+            {PERSONAS.map((p) => {
+              const on = persona.id === p.id;
+              return (
+                <button
+                  key={p.id}
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setPersona(p.id)}
+                  className={`m-who group ${on ? "m-who-on" : ""}`}
+                >
+                  <PersonaAvatar id={p.id} size={60} />
+                  <span className="min-w-0">
+                    <span className="block text-[17px] font-medium" style={{ fontFamily: "var(--m-font-display)" }}>
+                      {p.name}
+                    </span>
+                    <span className="m-note block text-[13px]">{p.blurb}</span>
+                  </span>
+                  {on && (
+                    <motion.span
+                      key={p.id}
+                      initial={{ opacity: 0, y: 6, rotate: -4 }}
+                      animate={{ opacity: 1, y: 0, rotate: -2 }}
+                      className="m-who-say"
+                    >
+                      &ldquo;{PERSONA_LINE[p.id]}&rdquo;
+                    </motion.span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           <div>
