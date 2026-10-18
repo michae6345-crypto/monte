@@ -107,7 +107,7 @@ export function HistorySection() {
                 className="grid grid-cols-2 gap-x-3 gap-y-1 border-b border-ace-line/60 py-2.5 text-sm md:grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] md:items-center"
               >
                 <span className="mono text-xs text-ace-dim">{new Date(x.t.date + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                <button onClick={() => setMerchant(x.t.merchant)} className="flex min-w-0 items-center gap-2 text-left font-medium hover:text-ace-gold">
+                <button onClick={() => setMerchant(x.t.merchant)} className="flex min-w-0 items-center gap-2 text-left font-medium hover:underline">
                   <MerchantLogo name={x.t.merchant} size={20} />
                   <span className="truncate">{x.t.merchant}</span>
                 </button>
@@ -119,7 +119,7 @@ export function HistorySection() {
                 <CardTag id={x.used} />
                 {x.best === x.used ? <span className="m-mono text-xs text-ace-dim">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
                 {x.miss > 0.005 ? (
-                  <span className="text-right text-ace-loss"><Bracketed>{money(-x.miss, { sign: true, cents: true })}</Bracketed></span>
+                  <span className="text-right text-ace-loss"><Bracketed state="rest">{money(-x.miss, { sign: true, cents: true })}</Bracketed></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (
                   <span className="text-right text-[11px] leading-tight text-ace-dim" title="This card carries a balance, so new purchases on it accrue interest from day one.">
                     no interest

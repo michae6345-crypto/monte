@@ -145,7 +145,7 @@ export function ReplaySection() {
                     cy: { type: "spring", stiffness: 70, damping: 13, delay: d.moved ? (i % 60) * 0.012 : 0 },
                     opacity: { delay: (d.x / W) * 1.2, duration: 0.3 },
                   }}
-                  fill={mode === "best" && d.moved ? "var(--ace-gain)" : card === "apple_card" ? "#d9d9de" : extractColor(card)}
+                  fill={mode === "best" ? (d.moved ? "var(--m-ink)" : "var(--m-mute)") : card === "apple_card" ? "#c9cbd1" : extractColor(card)}
                   fillOpacity={mode === "best" && !d.moved ? 0.35 : 0.85}
                 />
               );
@@ -170,7 +170,7 @@ export function ReplaySection() {
                 <span className="mono w-28 shrink-0 text-[11px] uppercase tracking-wider text-ace-dim">{cat.replace(/_/g, " ")}</span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-ace-line">
                   <motion.div
-                    className="h-full rounded-full bg-ace-gain"
+                    className="h-full rounded-full bg-ace-ink"
                     initial={{ width: 0 }}
                     animate={{ width: mode === "best" ? `${(v / byCat[0][1]) * 100}%` : 0 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}

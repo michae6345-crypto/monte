@@ -34,7 +34,7 @@ export const MCC: Record<string, string> = {
   everything_else: "····",
 };
 
-export const HATCH = "repeating-linear-gradient(135deg, color-mix(in oklab, var(--ace-loss) 26%, transparent) 0 2px, transparent 2px 7px)";
+export const HATCH = "repeating-linear-gradient(135deg, color-mix(in oklab, var(--m-mute) 45%, transparent) 0 2px, transparent 2px 7px)";
 const cap = (c: string) => label(c).replace(/^./, (x) => x.toUpperCase());
 
 type Cell = { cardId: string; cpd: number; rule: string; blocked?: string; best: boolean };
@@ -75,10 +75,10 @@ export function StrategyChart() {
         <span>Strategy chart · {persona.name}&apos;s wallet · cents back per dollar, Oct 2026</span>
         <span className="flex items-center gap-4 normal-case tracking-normal">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-sm border-2 border-ace-gold" /> the play
+            <span className="inline-block size-3 rounded-sm border-2 border-ace-ink" /> the play
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-sm border border-ace-loss/60" style={{ backgroundImage: HATCH }} /> off limits
+            <span className="inline-block size-3 rounded-sm border border-ace-line" style={{ backgroundImage: HATCH }} /> off limits
           </span>
         </span>
       </div>
@@ -113,13 +113,13 @@ export function StrategyChart() {
                       <button
                         onClick={() => setSel(on ? null : { cat: r.cat, cardId: c.cardId })}
                         className={`mono relative flex h-10 w-full items-center px-2 text-left tnum transition ${
-                          on ? "ring-2 ring-inset ring-ace-ink" : ""
+                          on ? "ring-2 ring-inset ring-ace-gold" : ""
                         }`}
-                        style={c.blocked ? { backgroundImage: HATCH } : { background: `color-mix(in oklab, var(--ace-gold) ${Math.round(heat * heat * 16)}%, transparent)` }}
+                        style={c.blocked ? { backgroundImage: HATCH } : { background: `color-mix(in oklab, var(--m-ink) ${Math.round(heat * heat * 7)}%, transparent)` }}
                         aria-label={`${shortName(c.cardId)} at ${label(r.cat)}: ${c.cpd.toFixed(1)} cents per dollar${c.best ? ", the play" : ""}${c.blocked ? ", off limits" : ""}`}
                       >
-                        {c.best && <span className="absolute inset-1 rounded-sm border-2 border-ace-gold" />}
-                        <span className={c.best ? "font-semibold text-ace-ink" : c.blocked ? "text-ace-loss/70 line-through" : "text-ace-dim"}>{c.cpd.toFixed(1)}¢</span>
+                        {c.best && <span className="absolute inset-1 rounded-sm border-2 border-ace-ink" />}
+                        <span className={c.best ? "font-semibold text-ace-ink" : c.blocked ? "text-ace-mute line-through" : "text-ace-dim"}>{c.cpd.toFixed(1)}¢</span>
                       </button>
                     </td>
                   );
@@ -136,12 +136,12 @@ export function StrategyChart() {
               {shortName(sel.cardId)} · {label(sel.cat)}: {detail.cpd.toFixed(2)}¢ per dollar
             </span>{" "}
             · rule: {detail.rule}
-            {detail.blocked ? <span className="text-ace-loss"> · {detail.blocked}</span> : null} · source:{" "}
+            {detail.blocked ? <span className="text-ace-ink"> · {detail.blocked}</span> : null} · source:{" "}
             <a href={detailCard.source_urls[0]} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-ace-ink">
               {hostOf(detailCard.source_urls[0])}
             </a>
             , checked {detailCard.checked ?? "17 Oct 2026"}
-            {detailCard.unverified ? <span className="text-ace-gold"> · UNVERIFIED</span> : null}
+            {detailCard.unverified ? <span className="text-ace-dim"> · UNVERIFIED</span> : null}
           </>
         ) : (
           <>Click any cell for the rule behind it and the issuer page it came from. Caps already used this quarter are counted.</>

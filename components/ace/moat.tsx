@@ -40,7 +40,7 @@ export function MoatSection() {
           <thead className="mono text-[11px] uppercase tracking-[0.15em] text-ace-dim">
             <tr className="border-b border-ace-line">
               <th className="px-5 py-3 font-normal"></th>
-              <th className="px-5 py-3 font-normal text-ace-gold">{b.name}</th>
+              <th className="px-5 py-3 font-normal text-ace-ink">{b.name}</th>
               <th className="px-5 py-3 font-normal">Uno Wallet</th>
               <th className="px-5 py-3 font-normal">Comparison sites</th>
             </tr>
@@ -49,7 +49,7 @@ export function MoatSection() {
             {ROWS.map((row, i) => (
               <tr key={row[0]} className="border-b border-ace-line/70 last:border-b-0">
                 {row.map((c, k) => (
-                  <td key={k} className={`px-5 py-3 ${k === 0 ? "text-ace-ink" : k === 1 ? "mono font-medium text-ace-gold" : "mono text-ace-dim"}`}>
+                  <td key={k} className={`px-5 py-3 ${k === 0 ? "text-ace-ink" : k === 1 ? "mono font-medium text-ace-ink" : "mono text-ace-dim"}`}>
                     {c}
                     {k === 0 && i < NOTES.length ? <sup className="mono ml-1 text-[10px] text-ace-dim">{i + 1}</sup> : null}
                   </td>
@@ -125,7 +125,7 @@ export function HowSection() {
         <div className="overflow-x-auto m-panel-ink text-[13px]">
           <div className="mono flex items-center justify-between border-b border-white/10 px-5 py-2.5 text-[11px] text-white/50">
             <span>
-              <span style={{ color: "var(--ace-gold)" }}>$</span> {b.name.toLowerCase()} trace {t.id}
+              <span className="text-white/50">$</span> {b.name.toLowerCase()} trace {t.id}
             </span>
             <span>deterministic · same input, same output</span>
           </div>
@@ -152,7 +152,7 @@ export function HowSection() {
                   paid on {trace.ha.cardId} → {money(trace.ha.reward, { cents: true })}
                 </Line>
                 <Line k="verdict">
-                  <span style={{ color: trace.hb.reward - trace.ha.reward > 0.004 ? "var(--ace-loss)" : "var(--ace-gain)" }}>
+                  <span className="text-white">
                     {trace.hb.cardId === trace.ha.cardId
                       ? "right card, nothing left on the table"
                       : trace.hb.reward - trace.ha.reward > 0.004

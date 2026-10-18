@@ -93,7 +93,7 @@ export function KeepSection() {
               </div>
               <div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className={`text-lg font-semibold ${verdict.tone === "gain" ? "text-ace-gain" : verdict.tone === "loss" ? "text-ace-loss" : "text-ace-ink"}`}>
+                  <span className="text-lg font-semibold text-ace-ink">
                     {verdict.label}
                   </span>
                   <span className={`mono text-sm tnum ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })} last yr</span>
@@ -140,7 +140,7 @@ function Bar({ label, v, span, tone }: { label: string; v: number; span: number;
       <span className="w-24 shrink-0 text-ace-dim">{label}</span>
       <div className="h-2.5 min-w-0 flex-1 bg-ace-line/60">
         <motion.div
-          className={`h-full ${tone === "gain" ? "bg-ace-gain" : "bg-ace-loss"}`}
+          className={`h-full ${tone === "gain" ? "bg-ace-ink" : "bg-[var(--m-mute)]"}`}
           initial={{ width: 0 }}
           whileInView={{ width: `${Math.min(100, (v / span) * 100)}%` }}
           viewport={{ once: true }}
@@ -329,7 +329,7 @@ export function ForYouSection() {
                       {x.perkValue ? ` · ${money(x.perkValue, { sign: true })} perks` : ""}
                     </div>
                     {x.bonus && (
-                      <div className={`mono mt-0.5 text-[10px] ${x.hits ? "text-ace-gain" : "text-ace-dim"}`}>
+                      <div className={`mono mt-0.5 text-[10px] ${x.hits ? "text-ace-ink" : "text-ace-dim"}`}>
                         bonus {x.bonus.label} ≈ {money(x.bonus.value)} ·{" "}
                         {x.hits
                           ? x.bonus.spend
@@ -368,7 +368,7 @@ export function ForYouSection() {
                   className="rounded-md border border-ace-line bg-ace-panel p-4"
                 >
                   <div
-                    className={`mono text-[10px] uppercase tracking-[0.2em] ${n.tone === "gain" ? "text-ace-gain" : n.tone === "loss" ? "text-ace-loss" : "text-ace-gold"}`}
+                    className="m-label"
                   >
                     {n.tag}
                   </div>

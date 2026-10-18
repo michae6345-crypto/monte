@@ -363,12 +363,11 @@ export function DropHero() {
                 ref={(el) => {
                   tagEls.current[i] = el;
                 }}
-                className={`mono pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-md border bg-ace-panel px-2.5 py-1 text-[12px] shadow-[0_6px_16px_-10px_rgba(12,14,20,.3)] transition-opacity duration-300 ${
-                  tags[id].tone === "gain" ? "border-ace-gain/40 text-ace-gain" : "border-ace-loss/40 text-ace-loss"
-                }`}
+                className="mono pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-full bg-ace-panel px-3 py-1 text-[12px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)] transition-opacity duration-300"
                 style={{ opacity: 0 }}
               >
-                <span className="text-ace-dim">{shortName(id)}</span> {tags[id].text}
+                <span className="text-ace-dim">{shortName(id)}</span>{" "}
+                <span className={tags[id].tone === "gain" ? "text-ace-gain" : "text-ace-loss"}>{tags[id].text.split(" ")[0]}</span> {tags[id].text.split(" ").slice(1).join(" ")}
               </div>
             ) : null,
           )}
