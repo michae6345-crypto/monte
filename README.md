@@ -120,6 +120,8 @@ workaround, one Monte card that charges your best card behind the scenes, breaks
    grocery store, and pay 1× instead of 4×.
 2. **It can count as a cash advance.** Some issuers treat loading another card as one: a fee
    up front and interest from day one.
+3. **The money runs backwards.** Monte would pay about 2–3% in card fees each time it charged
+   your real card and earn less than that on the Monte card side.
 
 ## Try it
 
