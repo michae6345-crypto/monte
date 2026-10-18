@@ -46,6 +46,17 @@ receipt's sourced lines add up to the engine's total, to the cent, for every dem
 
 ## How it works
 
+```mermaid
+flowchart LR
+  TX["Purchases<br/>demo people · statement CSV · Plaid"] --> MAP["Category map<br/>data/category_map.json"]
+  MAP --> ENG["Rules engine<br/>lib/engine"]
+  CAT["Card catalog<br/>data/cards.json"] --> ENG
+  ENG --> UI["Receipt · Replay · Tap<br/>Keep or cancel · Apply"]
+  ENG --> MC[Monte Carlo] --> UI
+  ENG --> LP[LP optimizer] --> UI
+  ENG --> PV[Provenance] --> UI
+```
+
 The engine is deterministic. **The AI never does the math.** Every dollar on screen traces
 to a published card rule in [`data/cards.json`](data/cards.json), each with the issuer's
 source URL and the date we checked it, and to the purchases behind it.
