@@ -70,7 +70,7 @@ export function ReplaySection() {
       }
       lede={`Each dot is one of ${persona.name}'s purchases, placed on the card that paid for it. Flip to ${b.name} and watch them move to the card that should have.`}
     >
-      <div ref={ref} className="rounded-lg border border-ace-line bg-ace-panel/70 p-5 md:p-8">
+      <div ref={ref} className="rounded-lg border border-ace-line bg-ace-panel p-5 md:p-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="inline-flex rounded-md border border-ace-line p-1">
             {(["actual", "best"] as const).map((m) => (

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Holding, Txn } from "@/lib/engine";
 import { draws, ledger, paths } from "./mc";
 import { money } from "./store";
+import { DriftToggle, useDrift } from "./odds";
 import { shortName } from "./card-art";
 
 export type Strategy = { id: string; label: string; short: string; wallet: Holding[]; policy: "actual" | "best" };
@@ -36,19 +37,20 @@ function cssVar(name: string, fallback: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
 
-export function useSolver(strategies: Strategy[], txns: Txn[], seed = 42) {
+export function useSolver(strategies: Strategy[], txns: Txn[], drift = 0, seed = 42) {
   return useMemo(() => {
-    const ds = draws(YEARS, seed);
+    const ds = draws(YEARS, seed, drift);
     return strategies.map((s) => {
       const finals = paths(ledger(s.wallet, txns, s.policy), ds).map((p) => p[11]);
       const sorted = [...finals].sort((a, b) => a - b);
       return { ...s, finals, p5: sorted[50], p50: sorted[500], p95: sorted[949] };
     });
-  }, [strategies, txns, seed]);
+  }, [strategies, txns, drift, seed]);
 }
 
 export function Solver({ strategies, txns, title }: { strategies: Strategy[]; txns: Txn[]; title: string }) {
-  const runs = useSolver(strategies, txns);
+  const drift = useDrift();
+  const runs = useSolver(strategies, txns, drift);
   const [k, setK] = useState(0);
   const [shown, setShown] = useState(YEARS);
   const [hover, setHover] = useState<{ lo: number; hi: number; n: number; x: number; w: number } | null>(null);
@@ -235,7 +237,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
   const gain = r.p50 - runs[0].p50;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-ace-line bg-ace-panel/80 shadow-[0_30px_80px_-30px_rgba(0,0,0,.7)]">
+    <div className="overflow-hidden rounded-lg border border-ace-line bg-ace-panel shadow-[0_1px_2px_rgba(12,14,20,.05),0_16px_40px_-24px_rgba(12,14,20,.22)]">
       <div className="mono flex items-center justify-between gap-3 border-b border-ace-line px-4 py-2.5 text-[11px] text-ace-dim">
         <span className="truncate">
           <span className="text-ace-gold">$</span> {title}
@@ -245,7 +247,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 border-b border-ace-line px-4 py-3" role="tablist" aria-label="Strategy">
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-ace-line px-4 py-3" role="tablist" aria-label="Strategy">
         {runs.map((s, i) => (
           <button
             key={s.id}
@@ -259,6 +261,9 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
             <span className="opacity-60">{String(i + 1).padStart(2, "0")}</span> {s.short}
           </button>
         ))}
+        <span className="ml-auto">
+          <DriftToggle />
+        </span>
       </div>
 
       <div
@@ -303,7 +308,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
         <div className="px-4 py-3">
           <dt className="text-ace-dim">{k === 0 ? "baseline" : `vs ${runs[0].short}`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
-            {beats === null ? "—" : `${money(gain, { sign: true })} · ${Math.round(beats * 100)}%`}
+            {beats === null ? "—" : `${money(gain, { sign: true })} · ${Math.round(beats * YEARS)}/${YEARS} yrs`}
           </dd>
         </div>
       </dl>

@@ -1,0 +1,208 @@
+/* Monte brand tokens. One file, imported from app/globals.css:
+ *   @import "../styles/brand.css";
+ * Everything here is prefixed `m-` so it can sit beside the older `ace-` tokens while the
+ * site moves over. See docs/BRAND.md for when to use what. */
+
+/* ---------- Fonts ---------- */
+/* Google Sans Flex: display, headlines, the wordmark. Variable 300-800. */
+@font-face {
+  font-family: "Google Sans Flex";
+  src: url("/fonts/google-sans-flex.woff2") format("woff2");
+  font-weight: 300 800;
+  font-display: swap;
+}
+/* Shantell Sans: hand annotations only. Never body copy, never numbers. */
+@font-face {
+  font-family: "Shantell Sans";
+  src: url("/fonts/shantell-sans.woff2") format("woff2");
+  font-weight: 300 800;
+  font-display: swap;
+}
+/* Geist and Geist Mono come from next/font in app/layout.tsx (--font-geist-sans, --font-geist-mono). */
+
+/* ---------- Colour ---------- */
+/* White and blue (Adrian, 18 Oct). Ink on white does the work; slate is the annotation colour;
+ * one blue accent marks a computed answer (the 𝔼 stem, the closing bracket once resolved, the
+ * primary action). No orange, no gradients. Green and red appear only on signed dollar figures. */
+:root {
+  --m-ground: #f7f8fa;      /* page */
+  --m-panel: #ffffff;       /* cards, panels */
+  --m-ink: #0e0f12;         /* text, the 𝔼 bars */
+  --m-accent: #2f45ff;      /* the one colour: 𝔼 stem, resolved ], primary button, focus ring */
+  --m-accent-wash: #eef0ff; /* accent tint: selected chip, highlighted row */
+  --m-slate: #6b6f78;       /* annotations (hand notes), secondary text, second half of a headline */
+  --m-mute: #a3a7af;        /* brackets at rest, axis labels, placeholders */
+  --m-line: #e4e6ea;        /* hairlines */
+  --m-line-strong: #d5d8de; /* hairlines that need to hold a shape (table rules, chart frames) */
+  --m-wash: #eef0f3;        /* hover fill, selected row, histogram bars at rest */
+  --m-gain: #1f7a4d;        /* +$ only */
+  --m-loss: #c2412d;        /* −$ only */
+  --m-on-ink: #f7f8fa;      /* text on an ink panel */
+
+  --m-font-display: "Google Sans Flex", var(--font-geist-sans), system-ui, sans-serif;
+  --m-font-body: var(--font-geist-sans), system-ui, sans-serif;
+  --m-font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --m-font-note: "Shantell Sans", "Comic Sans MS", cursive;
+
+  --m-radius: 18px;          /* panels */
+  --m-radius-sm: 10px;       /* chips, inputs */
+  --m-pill: 999px;           /* buttons */
+  --m-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --m-ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.dark,
+[data-theme="dark"] {
+  --m-ground: #0b0c0e;
+  --m-panel: #141518;
+  --m-ink: #f2f3f5;
+  --m-accent: #7d8bff;
+  --m-accent-wash: #1a1f45;
+  --m-slate: #9aa0aa;
+  --m-mute: #5d6270;
+  --m-line: #23252b;
+  --m-line-strong: #30333a;
+  --m-wash: #1b1d21;
+  --m-gain: #4fbf86;
+  --m-loss: #ef7a64;
+  --m-on-ink: #0b0c0e;
+}
+
+@theme inline {
+  --color-m-ground: var(--m-ground);
+  --color-m-panel: var(--m-panel);
+  --color-m-ink: var(--m-ink);
+  --color-m-accent: var(--m-accent);
+  --color-m-accent-wash: var(--m-accent-wash);
+  --color-m-slate: var(--m-slate);
+  --color-m-mute: var(--m-mute);
+  --color-m-line: var(--m-line);
+  --color-m-line-strong: var(--m-line-strong);
+  --color-m-wash: var(--m-wash);
+  --color-m-gain: var(--m-gain);
+  --color-m-loss: var(--m-loss);
+  --color-m-on-ink: var(--m-on-ink);
+  --font-display: var(--m-font-display);
+  --font-note: var(--m-font-note);
+}
+
+/* ---------- Type roles ---------- */
+/* `.ace .m-*` beats the site's `.ace h1/h2/h3` font rule. */
+.m-display,
+.ace .m-display {
+  font-family: var(--m-font-display);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+/* Two-tone headline: say it in ink, finish it in slate. <h2 class="m-display">Every card. <span class="m-second">Played right.</span></h2> */
+.m-second {
+  color: var(--m-slate);
+}
+.m-body,
+.ace .m-body {
+  font-family: var(--m-font-body);
+  letter-spacing: -0.005em;
+}
+.m-mono,
+.m-num,
+.ace .m-mono,
+.ace .m-num {
+  font-family: var(--m-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.m-label {
+  font-family: var(--m-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--m-slate);
+}
+.m-note,
+.ace .m-note {
+  font-family: var(--m-font-note);
+  font-variation-settings: "INFM" 100, "BNCE" 30;
+  color: var(--m-slate);
+  line-height: 1.25;
+}
+.m-gain { color: var(--m-gain); }
+.m-loss { color: var(--m-loss); }
+
+/* ---------- Surfaces ---------- */
+.m-panel {
+  background: var(--m-panel);
+  border-radius: var(--m-radius);
+  box-shadow: 0 0 0 1px var(--m-line);
+}
+.m-panel-ink {
+  background: var(--m-ink);
+  color: var(--m-on-ink);
+  border-radius: var(--m-radius);
+}
+.m-rule {
+  border-top: 1px solid var(--m-line);
+}
+
+/* ---------- Brackets ---------- */
+/* Every bracket on the site is one of these. The open bracket is always light (300) and mute;
+ * the close bracket carries the state. */
+.m-br {
+  font-family: var(--m-font-display);
+  font-weight: 300;
+  color: var(--m-mute);
+  transition: color 0.4s var(--m-ease);
+}
+.m-br-close[data-state="resolved"] {
+  color: var(--m-accent);
+}
+.m-br[data-state="computing"] {
+  animation: m-blink 0.9s steps(2, jump-none) infinite;
+}
+/* The wordmark breathes at rest: the gap between the brackets is the spread of the samples. */
+.m-breathe {
+  animation: m-breathe 3.2s ease-in-out infinite;
+}
+
+/* [···] — the loader. Three samples landing. */
+.m-dot {
+  display: inline-block;
+  animation: m-dot 1.2s ease-in-out infinite;
+}
+.m-dot:nth-child(2) { animation-delay: 0.15s; }
+.m-dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* Underline that draws itself under a computed number. */
+.m-tick {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  animation: m-tick 0.6s var(--m-ease) 0.2s forwards;
+}
+
+@keyframes m-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+@keyframes m-breathe {
+  0%, 100% { letter-spacing: -0.05em; }
+  50% { letter-spacing: 0.02em; }
+}
+@keyframes m-dot {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+  40% { transform: translateY(-0.28em); opacity: 1; }
+}
+@keyframes m-tick {
+  to { background-size: 100% 1px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-br[data-state="computing"],
+  .m-breathe,
+  .m-dot,
+  .m-tick {
+    animation: none;
+  }
+  .m-tick { background-size: 100% 1px; }
+}

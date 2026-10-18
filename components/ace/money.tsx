@@ -7,8 +7,6 @@ import { byCategory, byMonth, subscriptions, topMerchants } from "@/lib/engine/i
 import { parseStatement } from "@/lib/engine/statement";
 import { tap } from "@/lib/engine";
 import { CARDS } from "@/lib/engine/catalog";
-import { PERSONAS } from "@/lib/data/personas";
-import { useBrand } from "./brands";
 import { shortName } from "./card-art";
 import { Num } from "./num";
 import { R, Section } from "./section";
@@ -18,9 +16,9 @@ import { money, useAce } from "./store";
 // getting around, bills, and shopping in steps of ink.
 const TONE = {
   food: "var(--ace-gold)",
-  move: "color-mix(in oklab, var(--ace-ink) 78%, var(--ace-panel))",
-  bills: "color-mix(in oklab, var(--ace-ink) 48%, var(--ace-panel))",
-  shop: "color-mix(in oklab, var(--ace-ink) 26%, var(--ace-panel))",
+  move: "color-mix(in oklab, var(--ace-gold) 45%, var(--ace-panel))",
+  bills: "color-mix(in oklab, var(--ace-ink) 20%, var(--ace-panel))",
+  shop: "color-mix(in oklab, var(--ace-ink) 9%, var(--ace-panel))",
 };
 const GROUP: Record<string, keyof typeof TONE> = {
   dining: "food", groceries: "food", online_groceries: "food", wholesale_clubs: "food",
@@ -29,13 +27,12 @@ const GROUP: Record<string, keyof typeof TONE> = {
   online_retail: "shop", home_improvement: "shop", entertainment: "shop", everything_else: "shop", other: "shop",
 };
 export const CAT_COLOR: Record<string, string> = Object.fromEntries(Object.entries(GROUP).map(([c, g]) => [c, TONE[g]]));
-export const CAT_TEXT = (c: string) => (GROUP[c] === "shop" || GROUP[c] === "bills" ? "var(--ace-ink)" : "var(--ace-bg)");
+export const CAT_TEXT = (c: string) => (GROUP[c] === "food" ? "var(--ace-on-accent)" : "var(--ace-ink)");
 
 export const label = (c: string) => c.replace(/_/g, " ");
 
 export function MoneySection() {
-  const { txns, persona, setPersona, useStatement, wallet } = useAce();
-  const { brand: b } = useBrand();
+  const { txns, persona, useStatement, wallet } = useAce();
   const [hover, setHover] = useState<string | null>(null);
   const cats = useMemo(() => byCategory(txns), [txns]);
   const total = cats.reduce((a, c) => a + c.total, 0);
@@ -67,24 +64,15 @@ export function MoneySection() {
           <R>{txns.length}</R> purchases · <R>{cats.length}</R> categories · <R>{subs.length}</R> recurring
         </>
       }
-      lede={`${b.name} reads a year of purchases and shows you what you actually spend on, where, and what keeps charging you every month. Try a demo person, or drop in your own statement.`}
+      lede="A year of purchases by category, merchant and month, and the subscriptions still billing. Switch person in the bar above, or drop in your own statement."
     >
       <div className="mb-8 flex flex-wrap items-center gap-2">
-        {PERSONAS.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => setPersona(p.id)}
-            className={`rounded-md border px-4 py-2 text-sm transition ${persona.id === p.id ? "border-ace-gold bg-ace-gold/10" : "border-ace-line text-ace-dim hover:text-ace-ink"}`}
-          >
-            {p.name}
-          </button>
-        ))}
         <StatementUpload onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* treemap */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
           <div className="mb-4 flex items-baseline justify-between">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">By category · {txns.length} purchases</div>
             <div className="text-right">
@@ -140,7 +128,7 @@ export function MoneySection() {
         </div>
 
         {/* merchants */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
           <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">Top merchants</div>
           <div className="space-y-3">
             {merchants.map((m, i) => (
@@ -169,7 +157,7 @@ export function MoneySection() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* months */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Month by month</div>
             <div className="flex flex-wrap gap-3">
@@ -204,7 +192,7 @@ export function MoneySection() {
         </div>
 
         {/* subscriptions */}
-        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel p-5">
           <div className="mb-4 flex items-baseline justify-between">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Keeps charging you</div>
             <span className="mono text-sm">

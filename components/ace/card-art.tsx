@@ -84,7 +84,7 @@ export function CardArt({
   return (
     <div
       className={cn(
-        "relative aspect-[1.586/1] select-none overflow-hidden rounded-[7%/11%] shadow-[0_20px_40px_-12px_rgba(0,0,0,.6),inset_0_1px_0_rgba(255,255,255,.25)]",
+        "relative aspect-[1.586/1] select-none overflow-hidden rounded-[7%/11%] shadow-[0_18px_36px_-14px_rgba(12,14,20,.45),inset_0_1px_0_rgba(255,255,255,.25)]",
         pad,
         dim && "opacity-40 saturate-50",
         className,

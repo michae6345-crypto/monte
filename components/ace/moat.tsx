@@ -66,7 +66,7 @@ export function MoatSection() {
           </li>
         ))}
       </ol>
-      <p className="mono mt-5 text-[10px] uppercase tracking-wider text-ace-dim/70">
+      <p className="mono mt-5 text-[10px] uppercase tracking-wider text-ace-dim">
         Uno Wallet (YC Spring 2026) from what its site advertises; it is waitlist-only. Comparison sites means referral-funded sites such as NerdWallet.
       </p>
     </Section>

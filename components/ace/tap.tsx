@@ -1,6 +1,5 @@
 "use client";
 
-import { useBrand } from "./brands";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { tap } from "@/lib/engine";
@@ -27,7 +26,6 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 
 export function TapSection() {
   const { wallet, txns } = useAce();
-  const { brand: b } = useBrand();
   const [i, setI] = useState(0);
   // presenter mode jumps straight to a merchant
   useEffect(() => {
@@ -61,7 +59,7 @@ export function TapSection() {
           <R>{wallet.length}</R> cards · <R tone={wallet.some((h) => h.balance) ? "loss" : "ink"}>{wallet.filter((h) => h.balance).length}</R> off limits
         </>
       }
-      lede={`Walk into a store and ${b.name} already knows which card wins there, counting caps you've used, quarterly categories, perks about to expire, and which card you shouldn't touch.`}
+      lede="Pick a store. Monte ranks your cards for that purchase, counting caps already used, this quarter's categories, perks about to expire, and any card carrying a balance."
     >
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto_1fr]">
         <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-1">
@@ -84,9 +82,9 @@ export function TapSection() {
         </div>
 
         {/* phone */}
-        <div className="relative mx-auto h-[600px] w-[300px] rounded-[48px] border border-white/15 bg-gradient-to-b from-[#16161c] to-[#0b0b0f] p-3 shadow-[0_60px_120px_-30px_rgba(0,0,0,.9),inset_0_0_0_1px_rgba(255,255,255,.04)]">
-          <div className="absolute left-1/2 top-3 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
-          <div className="relative h-full overflow-hidden rounded-[38px] bg-[#0a0a0d] px-4 pt-12">
+        <div className="relative mx-auto h-[600px] w-[300px] rounded-[48px] border border-ace-line bg-[#e9ebef] p-3 shadow-[0_1px_2px_rgba(12,14,20,.06),0_30px_60px_-30px_rgba(12,14,20,.28)]">
+          <div className="absolute left-1/2 top-5 z-10 h-6 w-24 -translate-x-1/2 rounded-full bg-[#0c0e14]" />
+          <div className="relative h-full overflow-hidden rounded-[38px] bg-ace-panel px-4 pt-12 ring-1 ring-ace-line">
             <div className="mono text-center text-[10px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
             <AnimatePresence mode="wait">
               <motion.div key={spot.merchant} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
@@ -188,7 +186,7 @@ export function TapSection() {
                 </div>
               ))}
             </div>
-            <p className="mono mt-4 text-[10px] uppercase tracking-wider text-ace-dim/70">
+            <p className="mono mt-4 text-[10px] uppercase tracking-wider text-ace-dim">
               Source: {new URL(card(pick.cardId).source_urls[0] ?? "https://example.com").hostname}
             </p>
           </div>

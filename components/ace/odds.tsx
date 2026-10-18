@@ -4,34 +4,80 @@
 // a fan chart of cumulative net over the next 12 months, your wallet against one option.
 
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { monteCarlo, type MonteCarloResult, type Outcome } from "./mc";
 import { money, useAce } from "./store";
 import type { Holding, Txn } from "@/lib/engine";
 
 // One run per wallet state, shared by every section that shows odds.
-let last: { wallet: unknown; txns: unknown; valuation: string; out: MonteCarloResult } | null = null;
-function cachedRun(wallet: Holding[], txns: Txn[], valuation: string): MonteCarloResult {
-  if (last && last.wallet === wallet && last.txns === txns && last.valuation === valuation) return last.out;
-  const out = monteCarlo(wallet, txns, { years: 1000, seed: 42 });
-  last = { wallet, txns, valuation, out };
+let last: { wallet: unknown; txns: unknown; valuation: string; drift: number; out: MonteCarloResult } | null = null;
+function cachedRun(wallet: Holding[], txns: Txn[], valuation: string, drift: number): MonteCarloResult {
+  if (last && last.wallet === wallet && last.txns === txns && last.valuation === valuation && last.drift === drift) return last.out;
+  const out = monteCarlo(wallet, txns, { years: 1000, seed: 42, driftSd: drift });
+  last = { wallet, txns, valuation, drift, out };
   return out;
+}
+
+// Spending drift between years is a stated choice, shared by every chart that simulates.
+const driftSubs = new Set<() => void>();
+let DRIFT = 0;
+export const DRIFT_ON = 0.3;
+export function setDrift(v: number) {
+  DRIFT = v;
+  driftSubs.forEach((f) => f());
+}
+const subscribeDrift = (f: () => void) => {
+  driftSubs.add(f);
+  return () => driftSubs.delete(f);
+};
+export function useDrift() {
+  return useSyncExternalStore(subscribeDrift, () => DRIFT, () => 0);
+}
+
+export function DriftToggle() {
+  const d = useDrift();
+  return (
+    <div className="mono inline-flex items-center gap-1 rounded-md border border-ace-line bg-ace-panel p-0.5 text-[11px]" role="radiogroup" aria-label="Spending drift">
+      <span className="px-1.5 text-ace-dim">spending drift</span>
+      {[0, DRIFT_ON].map((v) => (
+        <button
+          key={v}
+          role="radio"
+          aria-checked={d === v}
+          onClick={() => setDrift(v)}
+          className={`rounded px-2 py-0.5 transition ${d === v ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
+          title={v ? "Each category drifts up or down by a log-normal factor (sd 0.3) each simulated year" : "Each simulated year redraws your real months, nothing else"}
+        >
+          {v ? "±30%" : "off"}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function useMonteCarlo(): MonteCarloResult {
   const { wallet, txns, valuation } = useAce();
-  return useMemo(() => cachedRun(wallet, txns, valuation), [wallet, txns, valuation]);
+  const drift = useDrift();
+  return useMemo(() => cachedRun(wallet, txns, valuation, drift), [wallet, txns, valuation, drift]);
 }
 
-export const winLine = (o: Outcome) => `${o.label.replace(/^Add /, "")} wins in ${Math.round(o.winShare * 100)}% of years`;
+/** "+$57/yr · ahead in all 1,000 years": dollars first, then how often. */
+export function oddsLine(o: Outcome, base: Outcome, years: number) {
+  const d = o.p50 - base.p50;
+  const n = Math.round(o.winShare * years);
+  const how = n >= years ? `ahead in all ${years.toLocaleString()} simulated years` : n === 0 ? `behind in every simulated year` : `ahead in ${n.toLocaleString()} of ${years.toLocaleString()} simulated years`;
+  return `${money(d, { sign: true })}/yr median · ${how}`;
+}
+
+export const winLine = (o: Outcome) => o.label.replace(/^Add /, "");
 
 const W = 640;
 const H = 280;
 const P = { l: 52, r: 16, t: 14, b: 26 };
 const MONTHS = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"];
 
-export function FanChart({ mc, pick }: { mc: MonteCarloResult; pick?: string }) {
-  const adds = mc.options.filter((o) => o.id.startsWith("add:"));
+export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pick?: string; kind?: "add" | "drop" }) {
+  const adds = mc.options.filter((o) => o.id.startsWith(`${kind}:`));
   const [sel, setSel] = useState<string | null>(null);
   const o = adds.find((x) => x.id === (sel ?? pick)) ?? adds[0];
 
@@ -49,7 +95,7 @@ export function FanChart({ mc, pick }: { mc: MonteCarloResult; pick?: string }) 
     return { y, ticks };
   })();
 
-  if (!o) return null;
+  if (!o) return <p className="mono text-[12px] text-ace-dim">No {kind === "add" ? "card to add" : "card worth cancelling"} for this wallet.</p>;
   const x = (m: number) => P.l + ((m - 0.5) / 12) * (W - P.l - P.r);
   const area = (out: Outcome, a: "p5" | "p25", b: "p95" | "p75") =>
     [
@@ -72,12 +118,12 @@ export function FanChart({ mc, pick }: { mc: MonteCarloResult; pick?: string }) 
               a.id === o.id ? "border-ace-gold bg-ace-gold/10 text-ace-ink" : "border-ace-line text-ace-dim hover:text-ace-ink"
             }`}
           >
-            {a.label.replace(/^Add /, "+ ").replace(/ Card| from American Express| Visa Signature/g, "")}
-            <span className="ml-1.5 opacity-70">{Math.round(a.winShare * 100)}%</span>
+            {a.label.replace(/^Add /, "+ ").replace(/^Cancel /, "− ").replace(/ Card| from American Express| Visa Signature/g, "")}
+            <span className="ml-1.5 opacity-70">{money(a.p50 - mc.current.p50, { sign: true })}</span>
           </button>
         ))}
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`${winLine(o)}. Median gain ${money(o.p50 - mc.current.p50)} a year.`}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`${winLine(o)}: ${oddsLine(o, mc.current, mc.years)}.`}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={P.l} x2={W - P.r} y1={y(t)} y2={y(t)} stroke="var(--ace-line)" strokeDasharray={t === 0 ? undefined : "2 5"} />
@@ -117,7 +163,7 @@ export function FanChart({ mc, pick }: { mc: MonteCarloResult; pick?: string }) 
       </svg>
       <div className="mono mt-2 flex flex-wrap justify-between gap-2 text-[11px] text-ace-dim">
         <span>
-          <span className="text-ace-gold">{winLine(o)}</span> · median {money(o.p50 - mc.current.p50, { sign: true })} a year
+          <span className="text-ace-gold">{winLine(o)}</span> · {oddsLine(o, mc.current, mc.years)}
         </span>
         <span>
           bands: middle 50% and 90% of {mc.years.toLocaleString()} years · seed {mc.seed}

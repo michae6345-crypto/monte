@@ -8,7 +8,7 @@ import { CARDS, card, creditPerYear, openToNewApplicants } from "@/lib/engine/ca
 import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
-import { FanChart, useMonteCarlo } from "./odds";
+import { DriftToggle, FanChart, oddsLine, useMonteCarlo } from "./odds";
 
 export function KeepSection() {
   const { wallet, txns, valuation } = useAce();
@@ -85,7 +85,7 @@ export function KeepSection() {
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
                 {drop && (
                   <p className="mono mt-2 text-[11px] text-ace-dim">
-                    Cancelling it comes out ahead in <span className="text-ace-ink">{Math.round(drop.winShare * 100)}%</span> of {mc.years.toLocaleString()} simulated years.
+                    Cancel it: <span className="text-ace-ink">{oddsLine(drop, mc.current, mc.years)}</span>
                   </p>
                 )}
               </div>
@@ -215,7 +215,7 @@ export function ForYouSection() {
       lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot on this list.`}
     >
       <div className="grid gap-8 lg:grid-cols-[320px_1fr] [&>*]:min-w-0">
-        <div className="space-y-6 rounded-lg border border-ace-line bg-ace-panel/70 p-6">
+        <div className="space-y-6 rounded-lg border border-ace-line bg-ace-panel p-6">
           <div>
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">What {b.name} learned</div>
             <ul className="mt-3 space-y-2 text-sm">
@@ -305,7 +305,7 @@ export function ForYouSection() {
                   <span className="text-right">
                     <span className={`mono block text-sm ${x.score >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.score, { sign: true })}</span>
                     <span className="mono block text-[10px] text-ace-dim">
-                      {odds.has(x.id) ? `wins ${Math.round(odds.get(x.id)! * 100)}% of yrs` : horizon === "first" ? "first year" : "per year"}
+                      {odds.has(x.id) ? `ahead ${Math.round(odds.get(x.id)! * mc.years).toLocaleString()}/${mc.years.toLocaleString()} yrs` : horizon === "first" ? "first year" : "per year"}
                     </span>
                   </span>
                   <button
@@ -328,7 +328,7 @@ export function ForYouSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: k * 0.08 }}
-                  className="rounded-md border border-ace-line bg-ace-panel/60 p-4"
+                  className="rounded-md border border-ace-line bg-ace-panel p-4"
                 >
                   <div
                     className={`mono text-[10px] uppercase tracking-[0.2em] ${n.tone === "gain" ? "text-ace-gain" : n.tone === "loss" ? "text-ace-loss" : "text-ace-gold"}`}
@@ -346,13 +346,19 @@ export function ForYouSection() {
       <div className="mt-10 rounded-lg border border-ace-line p-5 md:p-6">
         <div className="mono mb-1 flex flex-wrap items-baseline justify-between gap-2 text-[11px] uppercase tracking-[0.18em] text-ace-dim">
           <span>Next year, played {mc.years.toLocaleString()} times</span>
-          <span className="normal-case tracking-normal">cumulative net · your wallet dashed · with the new card in the accent</span>
+          <DriftToggle />
         </div>
         <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ace-dim">
-          Each simulated year redraws {persona.name}&apos;s months and lets each category drift up or down, the way real spending does. A card
-          with no fee can only help. A card with a fee has to earn it, and the odds say how often it does.
+          Each simulated year redraws twelve of {persona.name}&apos;s real months; turn drift on to let each category move up or down too. Your
+          wallet is dashed, the new card is in blue. A card with no fee can only help; a card with a fee has to earn it.
         </p>
-        <FanChart mc={mc} />
+        {wallet.some((h) => h.balance) && (
+          <p className="mb-4 rounded-md border border-ace-loss/30 bg-ace-loss/5 px-3 py-2 text-sm">
+            {persona.name} carries a balance, so {b.name} won&apos;t simulate a new card yet. Here is the one move that helps now: cancelling a card whose
+            fee outruns what it adds.
+          </p>
+        )}
+        <FanChart mc={mc} kind={wallet.some((h) => h.balance) ? "drop" : "add"} />
       </div>
     </Section>
   );
