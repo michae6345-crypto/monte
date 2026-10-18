@@ -3,7 +3,7 @@
 import { useBrand } from "./brands";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import { marginalValue, whatIf, interestFor } from "@/lib/engine";
+import { marginalValue, whatIf, interestFor, pointValue } from "@/lib/engine";
 import { CARDS, card, creditPerYear, openToNewApplicants } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { Num } from "./num";
@@ -21,7 +21,7 @@ export function KeepSection() {
   return (
     <Section
       id="keep"
-      index="04"
+      index="06"
       kicker="Keep or cancel"
       title={
         <>
@@ -103,6 +103,7 @@ export function ForYouSection() {
   const [noFee, setNoFee] = useState(false);
   const { brand: b } = useBrand();
   const [perks, setPerks] = useState<0 | 0.5 | 1>(0);
+  const [horizon, setHorizon] = useState<"year" | "first">("year");
 
   const spend = useMemo(() => {
     const m: Record<string, number> = {};
@@ -121,12 +122,29 @@ export function ForYouSection() {
       .map((c) => {
         const w = whatIf(wallet, txns, c.id)!;
         const perkValue = c.credits.reduce((a, cr) => a + creditPerYear(cr), 0) * perks;
-        return { id: c.id, ...w, perkValue, total: w.net + perkValue };
+        const sb = c.signup_bonus as { amount: number; unit: string; spend: number; months: number } | null | undefined;
+        const monthly = spend.total / 12;
+        const match = sb?.unit === "cashback_match";
+        const bonus = match
+          ? { value: Math.max(0, w.rewardsAdded), spend: 0, months: 12, need: 0, label: "Cashback Match" }
+          : sb && typeof sb.amount === "number" && typeof sb.spend === "number" && typeof sb.months === "number"
+          ? {
+              value: sb.unit === "dollars" ? sb.amount : (sb.amount * pointValue(c)) / 100,
+              spend: sb.spend,
+              months: sb.months,
+              need: monthly > 0 ? sb.spend / monthly : Infinity,
+              label: sb.unit === "dollars" ? `$${sb.amount}` : `${sb.amount.toLocaleString()} pts`,
+            }
+          : null;
+        const hits = bonus ? bonus.need <= bonus.months : false;
+        const total = w.net + perkValue;
+        const firstYear = total + (bonus && hits ? bonus.value : 0);
+        return { id: c.id, ...w, perkValue, total, bonus, hits, firstYear, score: horizon === "first" ? firstYear : total };
       })
-      .sort((a, b) => b.total - a.total)
+      .sort((a, b) => b.score - a.score)
       .slice(0, 5);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallet, txns, noFee, perks, valuation]);
+  }, [wallet, txns, noFee, perks, valuation, horizon, spend]);
 
   const nudges = useMemo(() => {
     const out: { tag: string; tone: "gain" | "loss" | "gold"; text: string }[] = [];
@@ -165,8 +183,8 @@ export function ForYouSection() {
   return (
     <Section
       id="foryou"
-      index="05"
-      kicker="Learns you"
+      index="07"
+      kicker="What to apply for"
       title={
         <>
           Recommendations from <span className="serif text-ace-gold">your</span> spending, not a sponsor.
@@ -208,6 +226,14 @@ export function ForYouSection() {
               never
             </Pill>
           </Pref>
+          <Pref label="Rank by">
+            <Pill on={horizon === "year"} onClick={() => setHorizon("year")}>
+              every year
+            </Pill>
+            <Pill on={horizon === "first"} onClick={() => setHorizon("first")}>
+              first year + bonus
+            </Pill>
+          </Pref>
           <Pref label="Perks I'd actually use">
             {([0, 0.5, 1] as const).map((v) => (
               <Pill key={v} on={perks === v} onClick={() => setPerks(v)}>
@@ -243,8 +269,21 @@ export function ForYouSection() {
                       {money(x.rewardsAdded, { sign: true })} rewards · {money(-x.fee, { sign: true })} fee
                       {x.perkValue ? ` · ${money(x.perkValue, { sign: true })} perks` : ""}
                     </div>
+                    {x.bonus && (
+                      <div className={`mono mt-0.5 text-[10px] ${x.hits ? "text-ace-gain" : "text-ace-dim"}`}>
+                        bonus {x.bonus.label} ≈ {money(x.bonus.value)} ·{" "}
+                        {x.hits
+                          ? x.bonus.spend
+                            ? `you'd hit $${x.bonus.spend.toLocaleString()} in ${x.bonus.need.toFixed(1)} of ${x.bonus.months} months ✓`
+                            : "first-year cash back matched, no minimum ✓"
+                          : `needs $${x.bonus.spend.toLocaleString()} in ${x.bonus.months} months, you'd take ${x.bonus.need.toFixed(1)}`}
+                      </div>
+                    )}
                   </div>
-                  <span className={`mono text-sm ${x.total >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.total, { sign: true })}/yr</span>
+                  <span className="text-right">
+                    <span className={`mono block text-sm ${x.score >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.score, { sign: true })}</span>
+                    <span className="mono block text-[10px] text-ace-dim">{horizon === "first" ? "first year" : "per year"}</span>
+                  </span>
                   <button
                     onClick={() => addCard(x.id)}
                     className="rounded-full border border-ace-line px-2.5 py-1 text-xs text-ace-dim transition hover:border-ace-gold hover:text-ace-gold"

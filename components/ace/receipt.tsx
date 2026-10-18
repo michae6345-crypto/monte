@@ -30,7 +30,7 @@ export function ReceiptSection() {
   return (
     <Section
       id="receipt"
-      index="01"
+      index="02"
       kicker="The Receipt"
       title={
         <>

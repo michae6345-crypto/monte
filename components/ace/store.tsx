@@ -15,6 +15,8 @@ type Store = {
   valuation: Valuation;
   setValuationMode: (v: Valuation) => void;
   txns: Txn[];
+  /** Run everything on the user's own statement (parsed in the browser). */
+  useStatement: (txns: Txn[], cardId: string) => void;
   r: Receipt;
   version: number;
 };
@@ -25,10 +27,14 @@ const YEARS = new Map(PERSONAS.map((p) => [p.id, yearOf(p)]));
 
 export function AceProvider({ children }: { children: ReactNode }) {
   const [personaId, setPersonaId] = useState(PERSONAS[0].id);
-  const persona = PERSONAS.find((p) => p.id === personaId)!;
-  const [wallet, setWallet] = useState<Holding[]>(persona.wallet);
+  const [custom, setCustom] = useState<Txn[] | null>(null);
+  const persona: Persona =
+    personaId === "you"
+      ? { id: "you", name: "You", blurb: "your own statement", wallet: [], habit: () => "", lines: [], seed: 0 }
+      : PERSONAS.find((p) => p.id === personaId)!;
+  const [wallet, setWallet] = useState<Holding[]>(PERSONAS[0].wallet);
   const [valuation, setVal] = useState<Valuation>("cash");
-  const txns = YEARS.get(personaId)!;
+  const txns = personaId === "you" && custom ? custom : YEARS.get(personaId) ?? YEARS.get(PERSONAS[0].id)!;
 
   setValuation(valuation);
   // valuation is read inside the engine, so it must re-run when it changes
@@ -53,6 +59,11 @@ export function AceProvider({ children }: { children: ReactNode }) {
     valuation,
     setValuationMode: setVal,
     txns,
+    useStatement: (t, cardId) => {
+      setCustom(t);
+      setPersonaId("you");
+      setWallet([{ cardId }]);
+    },
     r,
     version: wallet.length * 100 + (valuation === "cash" ? 0 : 1),
   };

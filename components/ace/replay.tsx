@@ -60,7 +60,7 @@ export function ReplaySection() {
   return (
     <Section
       id="replay"
-      index="02"
+      index="04"
       kicker="Replay"
       title={
         <>

@@ -43,7 +43,7 @@ export function TapSection() {
   return (
     <Section
       id="tap"
-      index="03"
+      index="05"
       kicker="Tap"
       title={
         <>

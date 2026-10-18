@@ -34,7 +34,7 @@ export function MoatSection() {
   return (
     <Section
       id="moat"
-      index="06"
+      index="08"
       kicker={`Why ${b.name} wins`}
       title={
         <>
@@ -110,7 +110,7 @@ export function HowSection() {
   return (
     <Section
       id="how"
-      index="07"
+      index="09"
       kicker="How it works"
       title={
         <>

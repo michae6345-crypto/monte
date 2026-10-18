@@ -2,6 +2,8 @@ import { AceProvider } from "@/components/ace/store";
 import { BrandProvider, BrandSwitcher } from "@/components/ace/brands";
 import { Hero, Nav } from "@/components/ace/hero";
 import { ReceiptSection } from "@/components/ace/receipt";
+import { MoneySection } from "@/components/ace/money";
+import { HistorySection } from "@/components/ace/history";
 import { ReplaySection } from "@/components/ace/replay";
 import { TapSection } from "@/components/ace/tap";
 import { ForYouSection, KeepSection } from "@/components/ace/keep";
@@ -15,7 +17,9 @@ export default function Home() {
           <Nav />
           <main>
             <Hero />
+            <MoneySection />
             <ReceiptSection />
+            <HistorySection />
             <ReplaySection />
             <TapSection />
             <KeepSection />

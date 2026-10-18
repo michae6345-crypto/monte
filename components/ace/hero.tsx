@@ -28,13 +28,14 @@ export function Nav() {
           <span className="text-xl font-bold leading-none tracking-tight" style={{ fontFamily: "var(--brand-head)" }}>{b.wordmark}</span>
         </a>
         <nav className="mono hidden gap-6 text-[11px] uppercase tracking-[0.18em] text-ace-dim md:flex">
+          <a href="#money" className="hover:text-ace-ink">Money</a>
           <a href="#receipt" className="hover:text-ace-ink">Receipt</a>
-          <a href="#replay" className="hover:text-ace-ink">Replay</a>
+          <a href="#history" className="hover:text-ace-ink">Purchases</a>
           <a href="#tap" className="hover:text-ace-ink">Tap</a>
-          <a href="#keep" className="hover:text-ace-ink">Keep or cancel</a>
+          <a href="#foryou" className="hover:text-ace-ink">Apply</a>
           <a href="#moat" className="hover:text-ace-ink">Why {b.name}</a>
         </nav>
-        <a href="#receipt" className="rounded-full bg-ace-ink px-4 py-1.5 text-sm font-medium text-ace-bg transition hover:bg-ace-gold">
+        <a href="#money" className="rounded-full bg-ace-ink px-4 py-1.5 text-sm font-medium text-ace-bg transition hover:bg-ace-gold">
           Audit a wallet
         </a>
       </div>
