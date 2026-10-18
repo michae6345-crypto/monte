@@ -17,6 +17,8 @@ type Store = {
   txns: Txn[];
   /** Run everything on the user's own statement (parsed in the browser). */
   useStatement: (txns: Txn[], cardId: string) => void;
+  /** Run everything on a linked bank's feed (Plaid sandbox): its purchases and its cards. */
+  loadFeed: (txns: Txn[], wallet: Holding[], label: string) => void;
   r: Receipt;
   version: number;
 };
@@ -28,9 +30,10 @@ const YEARS = new Map(PERSONAS.map((p) => [p.id, yearOf(p)]));
 export function AceProvider({ children }: { children: ReactNode }) {
   const [personaId, setPersonaId] = useState(PERSONAS[0].id);
   const [custom, setCustom] = useState<Txn[] | null>(null);
+  const [customLabel, setCustomLabel] = useState("your own statement");
   const persona: Persona =
     personaId === "you"
-      ? { id: "you", name: "You", blurb: "your own statement", wallet: [], habit: () => "", lines: [], seed: 0 }
+      ? { id: "you", name: "You", blurb: customLabel, wallet: [], habit: () => "", lines: [], seed: 0 }
       : PERSONAS.find((p) => p.id === personaId)!;
   const [wallet, setWallet] = useState<Holding[]>(PERSONAS[0].wallet);
   const [valuation, setVal] = useState<Valuation>("cash");
@@ -61,8 +64,16 @@ export function AceProvider({ children }: { children: ReactNode }) {
     txns,
     useStatement: (t, cardId) => {
       setCustom(t);
+      setCustomLabel("your own statement");
       setPersonaId("you");
       setWallet([{ cardId }]);
+    },
+    loadFeed: (t, w, label) => {
+      if (!t.length || !w.length) return;
+      setCustom(t);
+      setCustomLabel(label);
+      setPersonaId("you");
+      setWallet(w);
     },
     r,
     version: wallet.length * 100 + (valuation === "cash" ? 0 : 1),

@@ -8,7 +8,9 @@ import { CARDS, card, creditPerYear, openToNewApplicants } from "@/lib/engine/ca
 import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
-import { DriftToggle, FanChart, oddsLine, useMonteCarlo } from "./odds";
+import { DriftToggle, FanChart, useMonteCarlo } from "./odds";
+import { Estimator, Expect } from "@/components/brand";
+import { monteCarloSamples } from "@/lib/engine/montecarlo";
 
 export function KeepSection() {
   const { wallet, txns, valuation } = useAce();
@@ -19,6 +21,20 @@ export function KeepSection() {
     [wallet, txns, valuation],
   );
   const span = Math.max(60, ...rows.flatMap(({ m, interest }) => [m.fee + interest, m.rewardsAdded + m.credits]));
+
+  // The biggest fee in the wallet, played both ways over the engine's 1,000 resampled years:
+  // each sample is next year's net with the card minus without it.
+  const keepCase = useMemo(() => {
+    const fee = rows.filter((x) => x.m.fee > 0).sort((a, b) => b.m.fee - a.m.fee)[0];
+    if (!fee) return null;
+    const s = monteCarloSamples(wallet, txns, { years: 1000, seed: 42 });
+    const cur = s.options.find((o) => o.id === "current");
+    const drop = s.options.find((o) => o.id === `drop:${fee.h.cardId}`);
+    if (!cur || !drop) return null;
+    const diff = Array.from(cur.net, (v, i) => v - drop.net[i]);
+    return { cardId: fee.h.cardId, diff, p: diff.filter((d) => d > 0).length / diff.length };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, wallet, txns, valuation]);
 
   return (
     <Section
@@ -80,12 +96,17 @@ export function KeepSection() {
                   <span className={`text-lg font-semibold ${verdict.tone === "gain" ? "text-ace-gain" : verdict.tone === "loss" ? "text-ace-loss" : "text-ace-ink"}`}>
                     {verdict.label}
                   </span>
-                  <span className={`mono text-sm tnum ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })}/yr</span>
+                  <span className={`mono text-sm tnum ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })} last yr</span>
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
                 {drop && (
-                  <p className="mono mt-2 text-[11px] text-ace-dim">
-                    Cancel it: <span className="text-ace-ink">{oddsLine(drop, mc.current, mc.years)}</span>
+                  <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+                    <Expect op="P" of="pays for itself">
+                      {(1 - drop.winShare).toFixed(2)}
+                    </Expect>
+                    <Expect of="net of keeping" tone={mc.current.p50 - drop.p50 >= 0 ? "gain" : "loss"}>
+                      {money(mc.current.p50 - drop.p50, { sign: true })}
+                    </Expect>
                   </p>
                 )}
               </div>
@@ -93,6 +114,22 @@ export function KeepSection() {
           );
         })}
       </div>
+      {keepCase && (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <div>
+            <p className="m-label">the {shortName(keepCase.cardId)}, played both ways</p>
+            <h3 className="mt-3 text-3xl md:text-4xl">
+              Keep it or cancel it?
+              <span className="m-second block">1,000 years say {keepCase.p >= 0.5 ? "keep it" : "cancel it"}.</span>
+            </h3>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-ace-dim">
+              Each sample is one simulated year of {shortName(keepCase.cardId)} in the wallet minus the same year without it, fee and perks
+              included. The engine replays every purchase through the card rules both ways.
+            </p>
+          </div>
+          <Estimator of="net of keeping" samples={keepCase.diff} bins={28} />
+        </div>
+      )}
     </Section>
   );
 }
@@ -269,9 +306,9 @@ export function ForYouSection() {
           <div>
             <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">Best next card for {persona.name}</div>
             {wallet.some((h) => h.balance) && (
-              <div className="mb-3 rounded-md border border-ace-loss/40 bg-ace-loss/10 p-4 text-sm leading-relaxed">
-                <span className="font-semibold text-ace-loss">{b.name}&apos;s advice: no new card yet.</span> {persona.name} carries a balance, and
-                the interest outweighs any card below. Pay it down first; this list is what to apply for after.
+              <div className="mb-3 rounded-[10px] bg-[var(--m-wash)] p-4 text-sm leading-relaxed">
+                <span className="m-mono text-ace-dim">[ no new card yet ]</span> {persona.name} carries a balance, and the interest outweighs any card
+                below. Pay it down first; this list is what to apply for after.
               </div>
             )}
             <div className="space-y-3">
@@ -353,7 +390,7 @@ export function ForYouSection() {
           wallet is dashed, the new card is in blue. A card with no fee can only help; a card with a fee has to earn it.
         </p>
         {wallet.some((h) => h.balance) && (
-          <p className="mb-4 rounded-md border border-ace-loss/30 bg-ace-loss/5 px-3 py-2 text-sm">
+          <p className="mb-4 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-sm">
             {persona.name} carries a balance, so {b.name} won&apos;t simulate a new card yet. Here is the one move that helps now: cancelling a card whose
             fee outruns what it adds.
           </p>

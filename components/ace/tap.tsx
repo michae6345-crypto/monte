@@ -1,7 +1,9 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Bracketed, HandNote } from "@/components/brand";
+import { MerchantLogo } from "./merchant-logo";
 import { tap } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
@@ -27,11 +29,20 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 export function TapSection() {
   const { wallet, txns } = useAce();
   const [i, setI] = useState(0);
+  // brackets blink while the engine ranks the cards, then resolve on the winner
+  const [solving, setSolving] = useState(false);
+  const timer = useRef(0);
+  const choose = (k: number) => {
+    setI(k);
+    setSolving(true);
+    clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setSolving(false), 650);
+  };
   // presenter mode jumps straight to a merchant
   useEffect(() => {
     const on = (e: Event) => {
       const k = SPOTS.findIndex((s) => s.merchant === (e as CustomEvent<string>).detail);
-      if (k >= 0) setI(k);
+      if (k >= 0) choose(k);
     };
     window.addEventListener("monte:tap", on);
     return () => window.removeEventListener("monte:tap", on);
@@ -66,12 +77,13 @@ export function TapSection() {
           {SPOTS.map((s, k) => (
             <button
               key={s.merchant}
-              onClick={() => setI(k)}
-              className={`flex items-center gap-3 rounded-md border px-4 py-3 text-left transition ${
-                k === i ? "border-ace-gold bg-ace-gold/10" : "border-ace-line hover:border-ace-ink/30"
+              onClick={() => choose(k)}
+              className={`flex items-center gap-3 rounded-[10px] px-4 py-3 text-left transition ${
+                k === i ? "bg-ace-panel shadow-[0_0_0_1.5px_var(--m-ink)]" : "bg-ace-panel shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
               }`}
             >
-              <span className={`mono w-10 shrink-0 text-[11px] tnum ${k === i ? "text-ace-gold" : "text-ace-dim"}`} title="Merchant category code: what the issuer sees">{s.mcc}</span>
+              <span className={`m-num w-10 shrink-0 text-[11px] ${k === i ? "text-ace-ink" : "text-ace-dim"}`} title="Merchant category code: what the issuer sees">{s.mcc}</span>
+              <MerchantLogo name={s.merchant} size={26} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{s.merchant}</span>
                 <span className="mono block text-[10px] uppercase tracking-wider text-ace-dim">{s.where}</span>
@@ -88,7 +100,10 @@ export function TapSection() {
             <div className="mono text-center text-[10px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
             <AnimatePresence mode="wait">
               <motion.div key={spot.merchant} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <div className="mt-1 text-center text-2xl font-semibold">{spot.merchant}</div>
+                <div className="mt-3 flex justify-center">
+                  <MerchantLogo name={spot.merchant} size={44} className="rounded-[12px]" />
+                </div>
+                <div className="mt-2 text-center text-2xl font-semibold">{spot.merchant}</div>
                 <div className="mono text-center text-xs text-ace-dim">
                   MCC {spot.mcc} · {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
                 </div>
@@ -125,15 +140,17 @@ export function TapSection() {
 
             <AnimatePresence mode="wait">
               <motion.div
-                key={spot.merchant + pick.cardId}
+                key={spot.merchant + pick.cardId + (solving ? "s" : "")}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-x-4 bottom-5 rounded-2xl border border-ace-gain/30 bg-ace-gain/10 p-3.5"
+                className="absolute inset-x-4 bottom-5 rounded-2xl bg-ace-panel p-3.5 shadow-[0_0_0_1px_var(--m-line-strong)]"
               >
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-semibold">{shortName(pick.cardId)}</span>
-                  <span className="mono text-lg text-ace-gain">+{money(pick.reward, { cents: true })}</span>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="truncate text-sm font-semibold">{solving ? "ranking your cards" : shortName(pick.cardId)}</span>
+                  <span className={`text-lg ${solving ? "text-ace-dim" : "text-ace-gain"}`}>
+                    <Bracketed state={solving ? "computing" : "resolved"}>{solving ? "···" : `+${money(pick.reward, { cents: true })}`}</Bracketed>
+                  </span>
                 </div>
                 <div className="mono mt-0.5 text-[11px] text-ace-dim">{pick.rule}</div>
                 {runner && (
@@ -155,26 +172,31 @@ export function TapSection() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="rounded-md border border-ace-loss/40 bg-ace-loss/10 p-5"
+                className="m-panel relative p-5"
               >
-                <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-loss">Not this one</div>
-                <div className="mt-2 text-lg font-medium">{shortName(blocked.cardId)} would earn {money(blocked.reward, { cents: true })}</div>
+                <div className="m-label">Not this one</div>
+                <div className="mt-2 text-lg font-medium">
+                  {shortName(blocked.cardId)} would earn <span className="m-num text-ace-dim line-through">{money(blocked.reward, { cents: true })}</span>
+                </div>
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">{blocked.blocked}</p>
+                <HandNote dir="up-left" className="mt-3 hidden lg:flex" delay={0.2}>
+                  {`${blocked.mult % 1 ? blocked.mult.toFixed(1) : blocked.mult}× here, but the balance charges interest from today`}
+                </HandNote>
               </motion.div>
             )}
             {showHint && (
-              <motion.div key="hint" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="rounded-md border border-ace-gold/40 bg-ace-gold/10 p-5">
-                <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-gold">Perk first</div>
+              <motion.div key="hint" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="m-panel p-5">
+                <div className="m-label">Perk first</div>
                 <p className="mt-2 text-sm leading-relaxed">{hint.note}</p>
               </motion.div>
             )}
             {res.capNotes.map((n) => (
-              <motion.div key={n} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-md border border-ace-line p-5 text-sm text-ace-dim">
+              <motion.div key={n} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="m-panel p-5 text-sm text-ace-dim">
                 {n}
               </motion.div>
             ))}
           </AnimatePresence>
-          <div className="rounded-md border border-ace-line p-5">
+          <div className="m-panel p-5">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Every card, ranked</div>
             <div className="mt-3 space-y-2">
               {res.ranked.map((x) => (

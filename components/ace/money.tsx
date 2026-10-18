@@ -9,7 +9,10 @@ import { tap } from "@/lib/engine";
 import { CARDS } from "@/lib/engine/catalog";
 import { shortName } from "./card-art";
 import { Num } from "./num";
+import { Bracketed, HandNote } from "@/components/brand";
+import { MerchantLogo } from "./merchant-logo";
 import { R, Section } from "./section";
+import { LinkBank } from "./link-bank";
 import { money, useAce } from "./store";
 
 // Four tones, grouped by what the money is for, not a rainbow: food in the accent, then
@@ -58,7 +61,12 @@ export function MoneySection() {
       id="money"
       index="01"
       kicker="Where your money goes"
-      title={<>Where {money(total)} went.</>}
+      title={
+        <>
+          {persona.id === "you" ? "You" : persona.name} spent <Bracketed>{money(total)}</Bracketed> last year.
+          <span className="m-second block">Here is where it went.</span>
+        </>
+      }
       readout={
         <>
           <R>{txns.length}</R> purchases · <R>{cats.length}</R> categories · <R>{subs.length}</R> recurring
@@ -68,13 +76,19 @@ export function MoneySection() {
     >
       <div className="mb-8 flex flex-wrap items-center gap-2">
         <StatementUpload onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
+        <LinkBank />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* treemap */}
-        <div className="m-panel p-5">
+        <div className="m-panel relative p-5">
+          {cats[0] && (
+            <HandNote dir="down-left" className="absolute -top-9 right-28 hidden md:flex" delay={0.4}>
+              {label(cats[0].category)} is {Math.round(cats[0].share * 100)}% of everything
+            </HandNote>
+          )}
           <div className="mb-4 flex items-baseline justify-between">
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">By category · {txns.length} purchases</div>
+            <div className="m-label">By category · {txns.length} purchases</div>
             <div className="text-right">
               <Num value={total} className="text-3xl font-semibold tnum" />
               <span className="mono ml-2 text-xs text-ace-dim">in a year</span>
@@ -134,7 +148,10 @@ export function MoneySection() {
             {merchants.map((m, i) => (
               <motion.div key={m.merchant} initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
                 <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="truncate font-medium">{m.merchant}</span>
+                  <span className="flex min-w-0 items-center gap-2 font-medium">
+                    <MerchantLogo name={m.merchant} size={20} />
+                    <span className="truncate">{m.merchant}</span>
+                  </span>
                   <span className="mono shrink-0 text-ace-dim">
                     {m.count}× · <span className="text-ace-ink">{money(m.total)}</span>
                   </span>
@@ -194,7 +211,7 @@ export function MoneySection() {
         {/* subscriptions */}
         <div className="m-panel p-5">
           <div className="mb-4 flex items-baseline justify-between">
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Keeps charging you</div>
+            <div className="m-label">Keeps charging you</div>
             <span className="mono text-sm">
               <Num value={subs.reduce((a, s) => a + s.perYear, 0)} />
               <span className="text-ace-dim">/yr</span>
@@ -206,7 +223,8 @@ export function MoneySection() {
               const best = tap(wallet, { date: "2026-10-18", merchant: s.merchant, category: s.category, amount: s.amount }).pick;
               return (
                 <div key={s.merchant} className="flex items-center justify-between gap-3 text-sm">
-                  <div className="min-w-0">
+                  <MerchantLogo name={s.merchant} size={24} />
+                  <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">
                       {s.merchant}
                       {s.priceHike && <span className="mono ml-2 rounded bg-ace-loss/15 px-1.5 py-0.5 text-[10px] uppercase text-ace-loss">price up</span>}

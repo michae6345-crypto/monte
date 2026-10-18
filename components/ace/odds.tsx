@@ -118,7 +118,7 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
               a.id === o.id ? "border-ace-gold bg-ace-gold/10 text-ace-ink" : "border-ace-line text-ace-dim hover:text-ace-ink"
             }`}
           >
-            {a.label.replace(/^Add /, "+ ").replace(/^Cancel /, "− ").replace(/ Card| from American Express| Visa Signature/g, "")}
+            {a.label.replace(/^Add /, "+ ").replace(/^(Cancel|Drop) /, "− ").replace(/ Card| from American Express| Visa Signature/g, "")}
             <span className="ml-1.5 opacity-70">{money(a.p50 - mc.current.p50, { sign: true })}</span>
           </button>
         ))}

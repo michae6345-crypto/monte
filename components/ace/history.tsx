@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { useBrand } from "./brands";
 import { cardArt, shortName } from "./card-art";
 import { CAT_COLOR, label } from "./money";
+import { Bracketed } from "@/components/brand";
+import { MerchantLogo } from "./merchant-logo";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
@@ -43,7 +45,12 @@ export function HistorySection() {
       id="history"
       index="03"
       kicker="Every purchase, judged"
-      title={<>Every purchase, with a verdict.</>}
+      title={
+        <>
+          <Bracketed>{rows.filter((x) => x.used !== x.best).length}</Bracketed> of {rows.length} purchases
+          <span className="m-second block">went on the wrong card.</span>
+        </>
+      }
       readout={
         <>
           <R tone="loss">{rows.filter((x) => x.used !== x.best).length}</R> of <R>{rows.length}</R> not on {b.name}&apos;s pick · <R tone="loss">{money(r.leftOnTable)}</R> left on the table
@@ -100,8 +107,9 @@ export function HistorySection() {
                 className="grid grid-cols-2 gap-x-3 gap-y-1 border-b border-ace-line/60 py-2.5 text-sm md:grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] md:items-center"
               >
                 <span className="mono text-xs text-ace-dim">{new Date(x.t.date + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                <button onClick={() => setMerchant(x.t.merchant)} className="truncate text-left font-medium hover:text-ace-gold">
-                  {x.t.merchant}
+                <button onClick={() => setMerchant(x.t.merchant)} className="flex min-w-0 items-center gap-2 text-left font-medium hover:text-ace-gold">
+                  <MerchantLogo name={x.t.merchant} size={20} />
+                  <span className="truncate">{x.t.merchant}</span>
                 </button>
                 <span className="flex items-center gap-1.5 text-xs capitalize text-ace-dim">
                   <span className="size-2 rounded-full" style={{ background: CAT_COLOR[x.t.category] }} />
@@ -109,9 +117,9 @@ export function HistorySection() {
                 </span>
                 <span className="mono text-right">{money(x.t.amount, { cents: true })}</span>
                 <CardTag id={x.used} />
-                {x.best === x.used ? <span className="text-xs text-ace-gain">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
+                {x.best === x.used ? <span className="m-mono text-xs text-ace-dim">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
                 {x.miss > 0.005 ? (
-                  <span className="mono text-right text-ace-loss">−{money(x.miss, { cents: true })}</span>
+                  <span className="text-right text-ace-loss"><Bracketed>{money(-x.miss, { sign: true, cents: true })}</Bracketed></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (
                   <span className="text-right text-[11px] leading-tight text-ace-dim" title="This card carries a balance, so new purchases on it accrue interest from day one.">
                     no interest

@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
 import { cardArt, shortName } from "./card-art";
 import { Num } from "./num";
+import { Bracketed, HandNote } from "@/components/brand";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
@@ -62,7 +63,12 @@ export function ReplaySection() {
       id="replay"
       index="04"
       kicker="Replay"
-      title={<>Same purchases. Better cards.</>}
+      title={
+        <>
+          {persona.id === "you" ? "You" : persona.name} left <Bracketed>{money(r.leftOnTable)}</Bracketed> on the table.
+          <span className="m-second block">Same purchases, better cards.</span>
+        </>
+      }
       readout={
         <>
           <R>{moved}</R> of <R>{txns.length}</R> purchases move · <R tone="gain">{money(r.leftOnTable, { sign: true })}</R> back from the table
@@ -72,20 +78,25 @@ export function ReplaySection() {
     >
       <div ref={ref} className="m-panel p-5 md:p-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="inline-flex rounded-md border border-ace-line p-1">
+          <div className="inline-flex rounded-full p-1" style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}>
             {(["actual", "best"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`rounded-md px-5 py-2 text-sm transition ${mode === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
+                className={`rounded-full px-5 py-2 text-sm transition ${mode === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
               >
                 {m === "actual" ? `What ${persona.name} did` : `What ${b.name} would do`}
               </button>
             ))}
           </div>
+          {mode === "actual" && (
+            <HandNote dir="left" className="hidden lg:flex" delay={0.3}>
+              flip it and watch the dots move
+            </HandNote>
+          )}
           <div className="text-right">
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">{mode === "best" ? "Rewards, played right" : "Rewards, as played"}</div>
-            <div className="text-5xl font-semibold tracking-tight tnum">
+            <div className="m-label">{mode === "best" ? "Rewards, played right" : "Rewards, as played"}</div>
+            <div className="m-num text-5xl">
               <Num value={mode === "best" ? r.best.total : r.actual.total} />
             </div>
             <div className={`mono mt-1 text-xs transition-opacity ${mode === "best" ? "text-ace-gain opacity-100" : "opacity-0"}`}>
