@@ -9,3 +9,4 @@ its working.
 | `jordan-check.ts` | Jordan's −$427.03 receipt and $104.14 left on the table, line by line |
 | `mc.ts` | Monte Carlo odds for each demo person |
 | `mc-method.ts` | Measures why each drawn year is re-simulated instead of resampling monthly rewards |
+| `lp-vs-greedy.ts` | LP against greedy routing, with a worked cap trap |
