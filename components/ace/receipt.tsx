@@ -4,15 +4,13 @@ import { useBrand } from "./brands";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { CARDS, card } from "@/lib/engine/catalog";
-import { PERSONAS } from "@/lib/data/personas";
 import { CardArt, shortName } from "./card-art";
 import { PaperReceipt } from "./paper-receipt";
-import { PERSONA_LINE, PersonaAvatar } from "./persona-avatar";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function ReceiptSection() {
-  const { persona, setPersona, held: wallet, addCard, removeCard, toggleBalance, valuation, setValuationMode, r, txns } = useAce();
+  const { persona, held: wallet, addCard, removeCard, toggleBalance, valuation, setValuationMode, r, txns } = useAce();
   const [picker, setPicker] = useState(false);
   const { brand: b } = useBrand();
 
@@ -33,39 +31,6 @@ export function ReceiptSection() {
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_440px] [&>*]:min-w-0">
         {/* controls */}
         <div className="space-y-8">
-          <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Whose year">
-            {PERSONAS.map((p) => {
-              const on = persona.id === p.id;
-              return (
-                <button
-                  key={p.id}
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => setPersona(p.id)}
-                  className={`m-who group ${on ? "m-who-on" : ""}`}
-                >
-                  <PersonaAvatar id={p.id} size={60} />
-                  <span className="min-w-0">
-                    <span className="block text-[17px] font-medium" style={{ fontFamily: "var(--m-font-display)" }}>
-                      {p.name}
-                    </span>
-                    <span className="m-note block text-[13px]">{p.blurb}</span>
-                  </span>
-                  {on && (
-                    <motion.span
-                      key={p.id}
-                      initial={{ opacity: 0, y: 6, rotate: -4 }}
-                      animate={{ opacity: 1, y: 0, rotate: -2 }}
-                      className="m-who-say"
-                    >
-                      &ldquo;{PERSONA_LINE[p.id]}&rdquo;
-                    </motion.span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
           <div>
             <div className="mono mb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-ace-dim">
               <span>Wallet · {wallet.length} card{wallet.length === 1 ? "" : "s"} · {txns.length} purchases · ${Math.round(r.spend).toLocaleString()} spent</span>

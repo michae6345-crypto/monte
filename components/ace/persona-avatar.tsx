@@ -116,7 +116,7 @@ export function PersonaAvatar({ id, size = 56 }: { id: string; size?: number }) 
 export const PERSONA_LINE: Record<string, string> = {
   jordan: "three cards, no idea which one to use",
   maya: "I want the points to pay for flights",
-  parks: "one card for all four of us",
+  parks: "two cards, and a balance we keep meaning to pay",
   sam: "one card. is that enough?",
   rosa: "some months are great, some aren't",
 };
