@@ -65,7 +65,7 @@ export function ReplaySection() {
       title={<>Same purchases. Better cards.</>}
       readout={
         <>
-          <R>{txns.length}</R> purchases re-routed · <R tone="gain">{money(r.leftOnTable, { sign: true })}</R> left on the table
+          <R>{moved}</R> of <R>{txns.length}</R> purchases move · <R tone="gain">{money(r.leftOnTable, { sign: true })}</R> back from the table
         </>
       }
       lede={`Each dot is one of ${persona.name}'s purchases, placed on the card that paid for it. Flip to ${b.name} and watch them move to the card that should have.`}

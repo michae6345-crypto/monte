@@ -46,7 +46,7 @@ export function HistorySection() {
       title={<>Every purchase, with a verdict.</>}
       readout={
         <>
-          <R tone="loss">{rows.filter((x) => x.miss > 0.005).length}</R> of <R>{rows.length}</R> on the wrong card · <R tone="loss">{money(-r.leftOnTable)}</R>
+          <R tone="loss">{rows.filter((x) => x.used !== x.best).length}</R> of <R>{rows.length}</R> not on {b.name}&apos;s pick · <R tone="loss">{money(r.leftOnTable)}</R> left on the table
         </>
       }
       lede={`Every purchase you made, the card you paid with, and the card ${b.name} would have picked, with what the difference cost you. Search it, or click a merchant to see every visit.`}

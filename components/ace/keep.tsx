@@ -150,11 +150,11 @@ export function ForYouSection() {
           ? { value: Math.max(0, w.rewardsAdded), spend: 0, months: 12, need: 0, label: "Cashback Match" }
           : sb && typeof sb.amount === "number" && typeof sb.spend === "number" && typeof sb.months === "number"
           ? {
-              value: sb.unit === "dollars" ? sb.amount : (sb.amount * pointValue(c)) / 100,
+              value: sb.unit === "dollars" || sb.unit === "cash" ? sb.amount : (sb.amount * pointValue(c)) / 100,
               spend: sb.spend,
               months: sb.months,
               need: monthly > 0 ? sb.spend / monthly : Infinity,
-              label: sb.unit === "dollars" ? `$${sb.amount}` : `${sb.amount.toLocaleString()} pts`,
+              label: sb.unit === "dollars" || sb.unit === "cash" ? `$${sb.amount}` : `${sb.amount.toLocaleString()} pts`,
             }
           : null;
         const hits = bonus ? bonus.need <= bonus.months : false;

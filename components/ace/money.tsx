@@ -196,7 +196,8 @@ export function MoneySection() {
                     m.parts[c] ? <div key={c} style={{ height: `${(m.parts[c] / m.total) * 100}%`, background: CAT_COLOR[c] }} /> : null,
                   )}
                 </motion.div>
-                <div className="mono mt-1.5 text-center text-[10px] text-ace-dim">{new Date(m.month + "-15").toLocaleString("en-US", { month: "short" })}</div>
+                <div className="mono mt-1.5 text-center text-[10px] text-ace-dim">{new Date(m.month + "-15").toLocaleString("en-US", { month: "short" })}
+                  {i === 0 || i === months.length - 1 ? ` ’${m.month.slice(2, 4)}` : ""}</div>
               </div>
             ))}
           </div>

@@ -31,7 +31,7 @@ export const MCC: Record<string, string> = {
   phone: "4814",
   online_retail: "5999",
   wholesale_clubs: "5300",
-  everything_else: "5999",
+  everything_else: "····",
 };
 
 export const HATCH = "repeating-linear-gradient(135deg, color-mix(in oklab, var(--ace-loss) 26%, transparent) 0 2px, transparent 2px 7px)";

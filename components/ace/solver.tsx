@@ -50,7 +50,7 @@ export function useSolver(strategies: Strategy[], txns: Txn[], seed = 42) {
 export function Solver({ strategies, txns, title }: { strategies: Strategy[]; txns: Txn[]; title: string }) {
   const runs = useSolver(strategies, txns);
   const [k, setK] = useState(0);
-  const [shown, setShown] = useState(0);
+  const [shown, setShown] = useState(YEARS);
   const [hover, setHover] = useState<{ lo: number; hi: number; n: number; x: number; w: number } | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -335,7 +335,7 @@ export function jordanStrategies(wallet: Holding[], name: string): Strategy[] {
     out.push({
       id: "cleared",
       short: `+ clear the ${shortName(carried[0].cardId)}`,
-      label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance paid off first: no interest.`,
+      label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" below.)`,
       wallet: cleared,
       policy: "best",
     });
