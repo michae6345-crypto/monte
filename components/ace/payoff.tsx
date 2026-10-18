@@ -12,6 +12,7 @@ import { CardArt, shortName } from "./card-art";
 import { Section } from "./section";
 import { Stage } from "./stage";
 import { money, nameOf, useAce, v } from "./store";
+import { addMedians, addShortlist } from "./adds";
 
 type Debt = { cardId: string; balance: number; apr: number };
 type Path = { months: number; interest: number; series: number[]; paid: number[] };
@@ -89,9 +90,10 @@ export function PayoffSection() {
   const proj = useMemo(() => {
     if (!debts.length) return null;
     const now = monteCarlo(wallet, txns, { years: 1000, seed: 42 });
-    const after = monteCarlo(wallet, txns, { years: 1000, seed: 42, assumePaidOff: true });
+    // the same shortlist and run as What to apply for, so the first card matches its list
+    const { mc: after } = addMedians(wallet, txns, addShortlist(wallet, txns).slice(0, 5).map((x) => x.c.id));
     if (!after.hypothetical) return null;
-    const add = after.options.find((o) => o.id.startsWith("add:"));
+    const add = after.options.filter((o) => o.id.startsWith("add:")).sort((a, b) => b.p50 - a.p50)[0];
     return { now, after, add };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet, txns, valuation]);

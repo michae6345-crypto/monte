@@ -156,7 +156,7 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
           {money(o.bands[11].p50)}
         </text>
         <text x={x(12) - 4} y={y(mc.current.bands[11].p50) + 16} textAnchor="end" fontSize={11} className="mono" style={{ fill: "var(--ace-dim)" }}>
-          {money(mc.current.bands[11].p50)} now
+          {money(mc.current.bands[11].p50)} {mc.hypothetical ? "your cards, paid off" : "your cards"}
         </text>
       </svg>
       <div className="mono mt-2 flex flex-wrap justify-between gap-2 text-[11px] text-ace-dim">

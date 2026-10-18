@@ -3,14 +3,15 @@
 import { useBrand } from "./brands";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import { marginalValue, whatIf, interestFor, pointValue } from "@/lib/engine";
-import { CARDS, card, creditPerYear, openToNewApplicants } from "@/lib/engine/catalog";
+import { marginalValue, interestFor, pointValue } from "@/lib/engine";
+import { CARDS, card, creditPerYear } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { money, nameOf, useAce, v } from "./store";
 import { DriftToggle, FanChart, useMonteCarlo } from "./odds";
+import { addMedians, addShortlist } from "./adds";
 import { Estimator } from "@/components/brand";
-import { monteCarlo, monteCarloSamples } from "@/lib/engine/montecarlo";
+import { monteCarloSamples } from "@/lib/engine/montecarlo";
 
 export function KeepSection() {
   const { wallet, txns, valuation, r } = useAce();
@@ -180,13 +181,6 @@ export function ForYouSection() {
   const [perks, setPerks] = useState<0 | 0.5 | 1>(0);
   const [horizon, setHorizon] = useState<"year" | "first">("year");
   const mc = useMonteCarlo();
-  const odds = new Map(mc.options.map((o) => [o.id.replace(/^add:/, ""), o.winShare]));
-  // a wallet carrying a balance gets the engine's paid-off projection, clearly labelled
-  const paidOff = useMemo(
-    () => (wallet.some((h) => h.balance) ? monteCarlo(wallet, txns, { years: 1000, seed: 42, assumePaidOff: true }) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [wallet, txns, valuation],
-  );
 
   const spend = useMemo(() => {
     const m: Record<string, number> = {};
@@ -198,15 +192,11 @@ export function ForYouSection() {
     return { top: Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 3), total };
   }, [txns]);
 
-  const recs = useMemo(() => {
-    const base = wallet.some((h) => h.balance) ? wallet.map((h) => ({ ...h, balance: 0 })) : wallet;
-    const thin = wallet.length === 1;
-    return CARDS.filter((c) => !wallet.some((h) => h.cardId === c.id))
-      .filter((c) => !noFee || c.annual_fee === 0)
-      // a one-card wallet keeps student cards in view; secured cards stay out
-      .filter((c) => !/secured/i.test(c.id) && (thin || !/student/i.test(c.id)) && openToNewApplicants(c))
-      .map((c) => {
-        const w = whatIf(base, txns, c.id)!;
+  // ranked on last year's purchases, then priced with 1,000 simulated years (the same run
+  // Pay this first and the fan chart use), so every view shows one value per card
+  const pre = useMemo(() => {
+    return addShortlist(wallet, txns, noFee)
+      .map(({ c, w }) => {
         const perkValue = c.credits.reduce((a, cr) => a + creditPerYear(cr), 0) * perks;
         const sb = c.signup_bonus as { amount: number; unit: string; spend: number; months: number } | null | undefined;
         const monthly = spend.total / 12;
@@ -223,14 +213,29 @@ export function ForYouSection() {
             }
           : null;
         const hits = bonus ? bonus.need <= bonus.months : false;
-        const total = w.net + perkValue;
-        const firstYear = total + (bonus && hits ? bonus.value : 0);
-        return { id: c.id, ...w, perkValue, total, bonus, hits, firstYear, score: horizon === "first" ? firstYear : total };
+        const lastYear = w.net + perkValue + (horizon === "first" && bonus && hits ? bonus.value : 0);
+        return { id: c.id, ...w, perkValue, bonus, hits, lastYear };
       })
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => b.lastYear - a.lastYear)
       .slice(0, 5);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet, txns, noFee, perks, valuation, horizon, spend]);
+  const ids = pre.map((x) => x.id).join(",");
+  const priced = useMemo(
+    () => addMedians(wallet, txns, ids ? ids.split(",") : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [wallet, txns, ids, valuation],
+  );
+  const recs = pre
+    .map((x) => {
+      const g = priced.gain.get(x.id);
+      const total = (g?.gain ?? x.net) + x.perkValue;
+      const firstYear = total + (x.bonus && x.hits ? x.bonus.value : 0);
+      return { ...x, total, firstYear, win: g?.win, score: horizon === "first" ? firstYear : total };
+    })
+    .sort((a, b) => b.score - a.score);
+  // a wallet carrying a balance gets the engine's paid-off projection, clearly labelled
+  const paidOff = wallet.some((h) => h.balance) ? priced.mc : null;
 
   const nudges = useMemo(() => {
     const out: { tag: string; tone: "gain" | "loss" | "gold"; text: string }[] = [];
@@ -397,7 +402,8 @@ export function ForYouSection() {
                   <span className="sm:text-right">
                     <span className={`mono block text-sm ${x.score >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.score, { sign: true })}</span>
                     <span className="mono block text-[11px] text-ace-dim">
-                      {odds.has(x.id) ? `ahead ${Math.round(odds.get(x.id)! * mc.years).toLocaleString()}/${mc.years.toLocaleString()} yrs` : horizon === "first" ? "first year" : "per year"}
+                      {horizon === "first" ? "first year, median" : "a year, median"}
+                      {x.win !== undefined ? ` · ahead ${Math.round(x.win * priced.mc.years).toLocaleString()}/${priced.mc.years.toLocaleString()}` : ""}
                     </span>
                   </span>
                   <button
