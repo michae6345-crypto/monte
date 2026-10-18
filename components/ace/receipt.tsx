@@ -92,7 +92,7 @@ export function ReceiptSection() {
                         {h.balance ? `$${h.balance.toLocaleString()} balance` : "paid in full"}
                       </button>
                       {wallet.length > 1 && (
-                        <button onClick={() => removeCard(h.cardId)} className="text-ace-dim opacity-0 transition hover:text-ace-loss group-hover:opacity-100">
+                        <button onClick={() => removeCard(h.cardId)} className="text-ace-dim transition hover:text-ace-loss lg:opacity-0 lg:group-hover:opacity-100">
                           remove
                         </button>
                       )}

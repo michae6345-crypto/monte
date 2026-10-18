@@ -15,12 +15,21 @@ import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function HistorySection() {
-  const { txns, r, wallet, overrides, setOverride, resetOverrides } = useAce();
+  const { txns, r, wallet, overrides, setOverride, resetOverrides, persona } = useAce();
   const { brand: b } = useBrand();
   const [q, setQ] = useState("");
   const [onlyMiss, setOnlyMiss] = useState(false);
   const [merchant, setMerchant] = useState<string | null>(null);
   const [limit, setLimit] = useState(14);
+  // a new person starts with a clean table
+  const [shownFor, setShownFor] = useState(persona.id);
+  if (shownFor !== persona.id) {
+    setShownFor(persona.id);
+    setQ("");
+    setOnlyMiss(false);
+    setMerchant(null);
+    setLimit(14);
+  }
 
   const rows = useMemo(() => {
     const a = new Map(r.actual.hits.map((h) => [h.txnId, h]));
