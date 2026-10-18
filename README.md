@@ -89,6 +89,12 @@ Two rules the engine keeps:
 1. It never recommends a card that carries a balance.
 2. It never shows a number it cannot source.
 
+## Tap to pay
+
+The tap demo plays one purchase at the register, on the engine's real `tap()` and the
+selected person's wallet. Open it from the nav, the floating *Try tap to pay* button,
+[`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) or `?tap`.
+
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
