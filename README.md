@@ -125,6 +125,11 @@ transactions are synthetic. Tap is a web demo, not NFC. Plaid runs against the s
 **Flagged:** cards marked `UNVERIFIED` in the catalog are badged in the UI. Jordan's wallet
 is fully verified.
 
+## Repo map
+
+| Path | What's there |
+|---|---|
+
 ## Layout
 
 ```
