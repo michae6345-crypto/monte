@@ -35,9 +35,12 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
     return [...m.values()];
   }, [txns]);
 
-  const monthKeys = useMemo(() => [...new Set(txns.map((t) => t.date.slice(0, 7)))].sort().slice(-12), [txns]);
+  // the year spans 13 calendar months (18 Oct to 17 Oct): the partial first one rides with month 1,
+  // so month 12 is every purchase and matches the receipt
+  const monthKeys = useMemo(() => [...new Set(txns.map((t) => t.date.slice(0, 7)))].sort(), [txns]);
+  const extra = Math.max(0, monthKeys.length - 12);
   const upTo = useMemo(() => {
-    const keep = new Set(monthKeys.slice(0, month));
+    const keep = new Set(monthKeys.slice(0, month + extra));
     const m = new Map<string, number>();
     let total = 0;
     for (const t of txns)
@@ -45,8 +48,8 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
         m.set(t.merchant, (m.get(t.merchant) ?? 0) + t.amount);
         total += t.amount;
       }
-    return { m, total, label: monthKeys[Math.max(0, month - 1)] };
-  }, [txns, monthKeys, month]);
+    return { m, total, label: monthKeys[Math.max(0, month - 1 + extra)] };
+  }, [txns, monthKeys, month, extra]);
 
   const layout = useMemo(() => {
     const byCat = new Map<string, Store[]>();

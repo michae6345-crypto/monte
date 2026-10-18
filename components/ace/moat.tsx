@@ -27,7 +27,7 @@ const ROWS: [string, string, string, string][] = [
 
 // each note hangs on the row it explains
 const NOTES: [string, string][] = [
-  ["Best card at the register", "Card companies decide categories by store code and don't publish the map. Fix a store's category once in Every purchase and every purchase there is replayed."],
+  ["Best card at the register", "Card companies decide categories by store code and don't publish the map. Fix a store's category once (Spend › Every purchase) and every purchase there is replayed."],
   ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Federal Reserve survey, May 2026). When a balance carries over, a ranking by points alone can pick a card whose interest costs more than it earns."],
   ["Paid by card referrals", "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card."],
 ];
@@ -331,7 +331,7 @@ export function HowSection() {
                   {money(o.reward, { cents: true })}
                 </span>
                 {o.blocked ? <span style={{ color: "#c3cbff" }}> · off limits: carries a balance</span> : null}
-                <span className="text-white"> · source {hostOf(card(o.cardId).source_urls[0])}, checked {card(o.cardId).checked ?? "2026-10-17"}</span>
+                <span className="text-white"> · source {hostOf(card(o.cardId).source_urls[0])}, checked <span className="whitespace-nowrap">{card(o.cardId).checked ?? "2026-10-17"}</span></span>
               </Line>
             ))}
             {trace.ha && trace.hb && (

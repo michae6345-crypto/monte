@@ -186,13 +186,16 @@ export function LeaksSection() {
             className="grid items-center gap-4 p-5 md:grid-cols-[minmax(0,1fr)_8rem_11rem] md:gap-8"
           >
             <div className="flex min-w-0 items-center gap-4">
-              {l.art?.card ? (
-                <CardArt id={l.art.card} size="sm" className="w-14 shrink-0" />
-              ) : l.art?.merchant ? (
-                <MerchantLogo name={l.art.merchant} size={36} className="rounded-[10px]" />
-              ) : (
-                <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-[var(--m-wash)] m-num text-sm">↯</span>
-              )}
+              {/* one art column, so every title starts at the same x */}
+              <span className="grid w-14 shrink-0 place-items-center">
+                {l.art?.card ? (
+                  <CardArt id={l.art.card} size="sm" className="w-14" />
+                ) : l.art?.merchant ? (
+                  <MerchantLogo name={l.art.merchant} size={36} className="rounded-[10px]" />
+                ) : (
+                  <span className="grid size-9 place-items-center rounded-[10px] bg-[var(--m-wash)] m-num text-sm">↯</span>
+                )}
+              </span>
               <div className="min-w-0">
                 <div className="text-lg font-medium">{l.title}</div>
                 <p className="text-sm leading-relaxed">{l.why}</p>

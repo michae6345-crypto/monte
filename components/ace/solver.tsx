@@ -366,11 +366,11 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
             {hover.n} years net {money(hover.lo)} to {money(hover.hi)}
           </div>
         )}
-        {/* the one thing to know to read the chart */}
-        <HandNote dir="down-left" className="absolute right-4 top-2 hidden md:flex" delay={0.4}>
-          each dot is one simulated year
-        </HandNote>
       </div>
+      {/* the one thing to know to read the chart, under it so it never crosses a line */}
+      <HandNote dir="up" className="mx-auto -mt-1 mb-2 hidden md:flex" delay={0.4}>
+        each dot is one simulated year
+      </HandNote>
 
       <dl className="mono grid grid-cols-3 border-t border-ace-line text-[11px]">
         <div className="border-r border-ace-line px-4 py-3">

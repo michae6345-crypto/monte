@@ -121,11 +121,11 @@ export function Estimator({
 
   return (
     <div ref={box} className={cn("m-panel flex flex-col gap-5 p-6", className)}>
-      <div className="flex items-baseline justify-between gap-4">
-        <Expect of={of} state={done ? "resolved" : "computing"} tone={done ? (runMean >= 0 ? "gain" : "loss") : undefined} className="text-3xl">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <Expect of={of} state={done ? "resolved" : "computing"} tone={done ? (runMean >= 0 ? "gain" : "loss") : undefined} className="whitespace-nowrap text-3xl">
           {usd(runMean)}
         </Expect>
-        <span className="m-num text-xs" style={{ color: "var(--m-slate)" }}>
+        <span className="m-num whitespace-nowrap text-xs" style={{ color: "var(--m-slate)" }}>
           {k.toLocaleString("en-US")} of {total.toLocaleString("en-US")} years
         </span>
       </div>
@@ -155,7 +155,7 @@ export function Estimator({
             setK(0);
             setRoll((s) => ((s * 1103515245 + 12345) >>> 8) || 1);
           }}
-          disabled={!done || !!samples}
+          disabled={!done}
           className="m-mono rounded-full px-4 py-2 text-xs disabled:opacity-40"
           style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}
         >
@@ -163,7 +163,7 @@ export function Estimator({
         </button>
       </div>
       <p className="sr-only" aria-live="polite">
-        {done ? `Expected ${of}: ${usd(runMean)} over ${total} samples.` : ""}
+        {done ? `Typical ${of}: ${usd(runMean)}, averaged over ${total.toLocaleString("en-US")} simulated years.` : ""}
       </p>
     </div>
   );

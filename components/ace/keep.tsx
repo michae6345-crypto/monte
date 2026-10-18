@@ -129,8 +129,7 @@ export function KeepSection() {
             <motion.div
               key={h.cardId}
               initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1 }}
               transition={{ delay: i * 0.08 }}
               className="grid gap-4 border-b border-ace-line px-5 py-5 last:border-b-0 [&>*]:min-w-0 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.4fr)] md:items-center md:gap-6"
             >
@@ -218,7 +217,7 @@ export function KeepSection() {
               </span>
             </h3>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ace-dim">
-              Each sample is one simulated year with the {shortName(keepCase.cardId)}{" "}
+              Each bar counts simulated years: the year with the {shortName(keepCase.cardId)}{" "}
               in the wallet minus the same year without it, fee and perks
               included. The engine replays every purchase through the card rules
               both ways.
@@ -543,9 +542,9 @@ export function ForYouSection() {
                         ·{" "}
                         {x.hits
                           ? x.bonus.spend
-                            ? `${nameOf(persona).Who} would hit $${x.bonus.spend.toLocaleString()} in ${x.bonus.need.toFixed(1)} of ${x.bonus.months} months ✓`
+                            ? `${nameOf(persona).Who} would reach $${x.bonus.spend.toLocaleString()} in ${spanOf(x.bonus.need)} (${x.bonus.months} months allowed) ✓`
                             : "first-year cash back matched, no minimum ✓"
-                          : `needs $${x.bonus.spend.toLocaleString()} in ${x.bonus.months} months; at ${nameOf(persona).whose} pace it takes ${x.bonus.need.toFixed(1)}`}
+                          : `needs $${x.bonus.spend.toLocaleString()} in ${x.bonus.months} months; at ${nameOf(persona).whose} pace it takes ${spanOf(x.bonus.need)}`}
                       </div>
                     )}
                   </div>
@@ -639,6 +638,9 @@ export function ForYouSection() {
     </Section>
   );
 }
+
+/** 0.3 months → "about 9 days", 2.4 → "about 2.4 months" */
+const spanOf = (months: number) => (months < 1 ? `about ${Math.max(1, Math.round(months * 30))} days` : `about ${months.toFixed(1)} months`);
 
 function Cycle({
   value,

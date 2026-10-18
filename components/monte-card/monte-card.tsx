@@ -117,7 +117,7 @@ export function MonteCardDemo() {
             </AnimatePresence>
           </div>
 
-          <p className="m-mono mt-4 text-center text-[11px] text-m-slate">one card in Apple Pay · charges your best card</p>
+          <p className="m-mono mt-12 text-center text-[11px] text-m-slate">one card in Apple Pay · charges your best card</p>
           <div>
             <div className="m-label mb-2">the store</div>
             <div className="flex flex-wrap gap-2">

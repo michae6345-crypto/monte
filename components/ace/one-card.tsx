@@ -9,7 +9,7 @@ import { CARDS, card, openToNewApplicants } from "@/lib/engine/catalog";
 import { Bracketed } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
 import { money, nameOf, useAce, v } from "./store";
-import { cached } from "./adds";
+import { addMedians, cached } from "./adds";
 
 export function bestSecondCard(wallet: ReturnType<typeof useAce>["wallet"], txns: ReturnType<typeof useAce>["txns"]) {
   return cached(txns, `second|${JSON.stringify(wallet)}`, () => secondCard(wallet, txns));
@@ -28,6 +28,12 @@ export function OneCardView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const best = useMemo(() => bestSecondCard(wallet, txns), [wallet, txns, valuation]);
   const carrying = (only?.balance ?? 0) > 0;
+  // the same card over 1,000 simulated next years (shared run, cached per person)
+  const sim = useMemo(
+    () => (best && !carrying ? addMedians(wallet, txns, [best.id]).gain.get(best.id) : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [best, wallet, txns, carrying, valuation],
+  );
   if (!only) return null;
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -73,6 +79,12 @@ export function OneCardView() {
                 On last year&apos;s purchases it would have added <Bracketed>{money(best.w.net, { sign: true })}</Bracketed>{card(best.id).annual_fee ? " after its fee" : ""}, used only
                 where it beats the {shortName(only.cardId)}.
               </p>
+              {sim && (
+                <p className="mt-2 text-sm">
+                  About <span className="m-num">{money(sim.gain, { sign: true })}</span> in a typical next year, better in{" "}
+                  {Math.round(sim.win * 1000).toLocaleString()} of 1,000 simulated years.
+                </p>
+              )}
               <p className="mt-2 text-xs">Only if both are paid in full each month. A carried balance costs more than this earns.</p>
             </div>
           </div>
