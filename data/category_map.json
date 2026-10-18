@@ -1,0 +1,1816 @@
+{
+  "vocabulary": [
+    "dining",
+    "groceries",
+    "online_groceries",
+    "gas",
+    "ev_charging",
+    "transit",
+    "rideshare",
+    "travel_portal",
+    "airfare",
+    "hotels",
+    "streaming",
+    "drugstores",
+    "home_improvement",
+    "entertainment",
+    "rent",
+    "utilities",
+    "phone",
+    "online_retail",
+    "wholesale_clubs",
+    "everything_else"
+  ],
+  "taxonomy_source": {
+    "url": "https://plaid.com/documents/pfc-taxonomy-all.csv",
+    "version": "PFCv2 (superset of PFCv1); every PFCv1 detailed category from https://plaid.com/documents/transactions-personal-finance-category-taxonomy.csv is also mapped",
+    "fetched": "2026-10-17",
+    "default_version_note": "Plaid teams enabled for Transactions on or after 3 Dec 2025 get PFCv2 only (Sandbox and Production alike); older teams get v1 unless they send options.personal_finance_category_version='v2'. Each transaction's personal_finance_category.version says which it is.",
+    "counts": {
+      "v1_detailed": 104,
+      "v2_detailed": 127,
+      "mapped_detailed": 130
+    }
+  },
+  "note_on_how_issuers_decide": "Rewards categories are decided by merchant category codes (MCCs), not by what you bought. When a merchant signs up to accept cards, it (or its acquirer/processor) is assigned a 4-digit MCC under the card networks' rules, based on what the business primarily sells. Every purchase reaches the issuer carrying that merchant's MCC, and the issuer groups MCCs into its bonus categories. Chase: merchants are 'assigned a merchant code, which is determined by the merchant or its processor in accordance with Visa/Mastercard procedures based on the kinds of products and services they primarily sell. We group similar merchant codes into categories'; if 'the merchant may not have a merchant code in that category', 'purchases with that merchant won't qualify'. Citi: 'We don't control the assignment of these codes... When you use your card to make a purchase, we're provided an MCC for that purchase.' Amex: 'Merchants are assigned codes based on what they primarily sell. A purchase will not qualify for additional points if the merchant's code is not eligible'. Consequences: buying groceries at Target or Walmart (5310/5311 superstores) or Costco (5300 warehouse club) does not earn a supermarket bonus (Amex: 'Superstores, convenience stores, warehouse clubs, and meal-kit delivery services are NOT considered supermarkets'; Chase and Citi say the same); fuel bought at a warehouse club or superstore is not 'gas' at Amex ('Superstores, supermarkets, and warehouse clubs that sell gasoline are NOT considered gas stations') or at Citi unless coded with the gas-station MCC; a restaurant inside a hotel, stadium or store can carry the host's code; a purchase through PayPal or another aggregator can carry the aggregator's code. Some categories are named merchant lists rather than MCC sets (Chase and Amex streaming, Amex drugstores), and 'online retail' has no MCC at all (issuers rely on the merchant's internet-transaction flag). Plaid's personal_finance_category is Plaid's own model output, inferred from the transaction description, merchant and amount, with a confidence_level; Plaid's Transactions API does not return the MCC. So a PFC can disagree with the MCC the issuer sees (e.g. Plaid calls a Walmart grocery run FOOD_AND_DRINK_GROCERIES or GENERAL_MERCHANDISE_SUPERSTORES, while the issuer sees 5310). Treat any category this map produces as an estimate of what the issuer will pay, and prefer the issuer's statement category when available.",
+  "how_to_apply": [
+    "1. Skip transactions with a negative amount on a credit account (Plaid: positive = money out, negative = refunds/payments).",
+    "2. Run merchant_overrides (first match wins) against merchant_name, then against name/original_description, after stripping descriptor_prefixes.",
+    "3. Else use detailed_map[personal_finance_category.detailed]; else primary_map[primary]; else everything_else.",
+    "4. exclude: true means not reward-eligible spend (income, transfers, payments, fees).",
+    "5. Entries with merchant_dependent or review flags are low-confidence; show them to the user."
+  ],
+  "primary_map": {
+    "INCOME": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards."
+    },
+    "TRANSFER_IN": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards."
+    },
+    "TRANSFER_OUT": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards."
+    },
+    "LOAN_PAYMENTS": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards."
+    },
+    "LOAN_DISBURSEMENTS": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "BANK_FEES": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards."
+    },
+    "ENTERTAINMENT": {
+      "category": "entertainment",
+      "note": "Fallback only; TV/movies and music detailed categories go to streaming."
+    },
+    "FOOD_AND_DRINK": {
+      "category": "dining",
+      "note": "Fallback only; groceries and liquor stores differ at the detailed level."
+    },
+    "GENERAL_MERCHANDISE": {
+      "category": "everything_else",
+      "note": "Fallback only; online marketplaces -> online_retail, superstores -> merchant name."
+    },
+    "HOME_IMPROVEMENT": {
+      "category": "home_improvement",
+      "note": "Fallback only; furniture and services are everything_else at the detailed level."
+    },
+    "MEDICAL": {
+      "category": "everything_else",
+      "note": "Fallback only; pharmacies -> drugstores at the detailed level."
+    },
+    "PERSONAL_CARE": {
+      "category": "everything_else"
+    },
+    "GENERAL_SERVICES": {
+      "category": "everything_else"
+    },
+    "GOVERNMENT_AND_NON_PROFIT": {
+      "category": "everything_else"
+    },
+    "TRANSPORTATION": {
+      "category": "everything_else",
+      "note": "Fallback only; always use the detailed category (gas, transit, rideshare split there)."
+    },
+    "TRAVEL": {
+      "category": "everything_else",
+      "note": "Fallback only; flights -> airfare, lodging -> hotels at the detailed level."
+    },
+    "RENT_AND_UTILITIES": {
+      "category": "utilities",
+      "note": "Fallback only; rent and telephone split at the detailed level."
+    },
+    "OTHER": {
+      "category": "everything_else",
+      "note": "PFCv2 only; see OTHER_OTHER.",
+      "review": true,
+      "pfc_versions": [
+        "v2"
+      ]
+    }
+  },
+  "detailed_map": {
+    "BANK_FEES_ATM_FEES": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "BANK_FEES_CASH_ADVANCE": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards. Cash-advance fee (PFCv2 only).",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "BANK_FEES_FOREIGN_TRANSACTION_FEES": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards. Useful to show what a no-FX-fee card would have saved.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "BANK_FEES_INSUFFICIENT_FUNDS": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "BANK_FEES_INTEREST_CHARGE": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards. Useful as an input for APR/interest-cost features, never as spend.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "BANK_FEES_LATE_FEES": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards. Late-payment fee (PFCv2 only).",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "BANK_FEES_OTHER_BANK_FEES": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "BANK_FEES_OVERDRAFT_FEES": {
+      "category": null,
+      "exclude": true,
+      "note": "Bank or card fee/interest; issuers exclude fees and interest from rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "ENTERTAINMENT_CASINOS_AND_GAMBLING": {
+      "category": "everything_else",
+      "note": "Betting codes MCC 7995, which issuers generally exclude from entertainment and often treat as a cash advance. Consider exclude for reward estimates.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "ENTERTAINMENT_MUSIC_AND_AUDIO": {
+      "category": "streaming",
+      "note": "Plaid includes in-person music purchases here too. Use merchant_overrides: subscription services (Spotify, Apple Music, Pandora, SiriusXM...) are streaming; concert tickets (Ticketmaster, Live Nation) are entertainment. Issuers' streaming categories are usually a named merchant list (Chase, Amex).",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "ENTERTAINMENT_OTHER_ENTERTAINMENT": {
+      "category": "entertainment",
+      "note": "Includes nightlife; bars usually code MCC 5813 and earn as dining at many issuers, so a dining override by merchant name may fit better.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "ENTERTAINMENT_SPORTING_EVENTS_AMUSEMENT_PARKS_AND_MUSEUMS": {
+      "category": "entertainment",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "ENTERTAINMENT_TV_AND_MOVIES": {
+      "category": "streaming",
+      "note": "Plaid puts in-home streaming AND movie theaters here. Default to streaming; merchant name decides: theaters (AMC, Regal, Cinemark, Fandango) are entertainment (MCC 7832).",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "ENTERTAINMENT_VIDEO_GAMES": {
+      "category": "everything_else",
+      "note": "Digital game purchases code MCC 5816 (Digital Goods - Games), which issuer entertainment and streaming categories generally do not include.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "FOOD_AND_DRINK_BEER_WINE_AND_LIQUOR": {
+      "category": "everything_else",
+      "note": "Liquor stores code MCC 5921; issuers exclude them from supermarkets (Amex) and dining.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "FOOD_AND_DRINK_COFFEE": {
+      "category": "dining",
+      "note": "Coffee shops code as restaurants/fast food (5812/5814) at most issuers; a cafe inside a grocery store or retailer takes that store's code.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "FOOD_AND_DRINK_FAST_FOOD": {
+      "category": "dining",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "FOOD_AND_DRINK_GROCERIES": {
+      "category": "groceries",
+      "note": "Superstores (Target, Walmart) and warehouse clubs are a separate PFC (GENERAL_MERCHANDISE_SUPERSTORES); online grocery delivery has no PFC, see merchant_overrides.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "FOOD_AND_DRINK_OTHER_FOOD_AND_DRINK": {
+      "category": "dining",
+      "note": "Desserts, juice bars, delis. Bakeries (5462) and candy stores (5441) are excluded from both dining and supermarkets by Citi and Amex, so this is optimistic.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "FOOD_AND_DRINK_RESTAURANT": {
+      "category": "dining",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "FOOD_AND_DRINK_VENDING_MACHINES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_BOOKSTORES_AND_NEWSSTANDS": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_CLOTHING_AND_ACCESSORIES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_CONVENIENCE_STORES": {
+      "category": "everything_else",
+      "note": "If the store also sells fuel and codes 5541/5542 it earns as gas (Amex: 'You may earn additional rewards if the gas station is also a convenience store').",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_DEPARTMENT_STORES": {
+      "category": "everything_else",
+      "note": "MCC 5311.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_DISCOUNT_STORES": {
+      "category": "everything_else",
+      "note": "MCC 5310.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_ELECTRONICS": {
+      "category": "everything_else",
+      "note": "Online electronics stores may count as online_retail at issuers with an online-retail category; Plaid does not say whether the purchase was online (check payment_channel == 'online').",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_GIFTS_AND_NOVELTIES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_OFFICE_SUPPLIES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES": {
+      "category": "online_retail",
+      "note": "Amazon, eBay, Etsy. There is no MCC for 'online retail': Amex, Capital One and others decide from the merchant's own online/card-not-present flag and their own lists.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_OTHER_GENERAL_MERCHANDISE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_PET_SUPPLIES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_SPORTING_GOODS": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_SUPERSTORES": {
+      "category": "everything_else",
+      "note": "Plaid lumps superstores (Target, Walmart; MCC 5310/5311) with warehouse clubs (Costco, Sam's Club, BJ's; MCC 5300). Merchant name decides: a club match in merchant_overrides gives wholesale_clubs, otherwise everything_else. Issuers exclude both from groceries (Amex, Chase, Citi).",
+      "merchant_dependent": true,
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_MERCHANDISE_TOBACCO_AND_VAPE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_ACCOUNTING_AND_FINANCIAL_PLANNING": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_AUTOMOTIVE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_CHILDCARE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_CONSULTING_AND_LEGAL": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_EDUCATION": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_INSURANCE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_OTHER_GENERAL_SERVICES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_POSTAGE_AND_SHIPPING": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GENERAL_SERVICES_STORAGE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GOVERNMENT_AND_NON_PROFIT_DONATIONS": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GOVERNMENT_AND_NON_PROFIT_GOVERNMENT_DEPARTMENTS_AND_AGENCIES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GOVERNMENT_AND_NON_PROFIT_OTHER_GOVERNMENT_AND_NON_PROFIT": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "GOVERNMENT_AND_NON_PROFIT_TAX_PAYMENT": {
+      "category": "everything_else",
+      "note": "Tax payments (MCC 9311) usually go through a processor that charges about 2%; the fee usually outweighs base rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "HOME_IMPROVEMENT_FURNITURE": {
+      "category": "everything_else",
+      "note": "Furniture stores code MCC 5712, which home-improvement categories (5200/5211/5231/5251/5261) usually exclude.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "HOME_IMPROVEMENT_HARDWARE": {
+      "category": "home_improvement",
+      "note": "Home Depot/Lowe's code 5200; hardware stores 5251; lumber 5211.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "HOME_IMPROVEMENT_OTHER_HOME_IMPROVEMENT": {
+      "category": "everything_else",
+      "note": "Pool installation, pest control: services, not store MCCs.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "HOME_IMPROVEMENT_REPAIR_AND_MAINTENANCE": {
+      "category": "home_improvement",
+      "note": "Low confidence: garden centers (5261) qualify, but plumbers, roofers and other contractors code as contractor MCCs (e.g. 1711, 1761) that issuer home-improvement categories generally exclude.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "HOME_IMPROVEMENT_SECURITY": {
+      "category": "everything_else",
+      "note": "Alarm/security services are not home-improvement-store MCCs.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "INCOME_CHILD_SUPPORT": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "INCOME_CONTRACTOR": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "INCOME_DIVIDENDS": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "INCOME_GIG_ECONOMY": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "INCOME_INTEREST_EARNED": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "INCOME_LONG_TERM_DISABILITY": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "INCOME_MILITARY": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "INCOME_OTHER": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ],
+      "v1_equivalent": "INCOME_OTHER_INCOME"
+    },
+    "INCOME_OTHER_INCOME": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1"
+      ],
+      "v2_equivalent": "INCOME_OTHER"
+    },
+    "INCOME_RENTAL": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "INCOME_RETIREMENT_PENSION": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "INCOME_SALARY": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ],
+      "v1_equivalent": "INCOME_WAGES"
+    },
+    "INCOME_TAX_REFUND": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "INCOME_UNEMPLOYMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "INCOME_WAGES": {
+      "category": null,
+      "exclude": true,
+      "note": "Money coming in, not a card purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1"
+      ],
+      "v2_equivalent": "INCOME_SALARY"
+    },
+    "LOAN_DISBURSEMENTS_AUTO": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_DISBURSEMENTS_CASH_ADVANCES": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_DISBURSEMENTS_EWA": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_DISBURSEMENTS_MORTGAGE": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_DISBURSEMENTS_OTHER_DISBURSEMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ],
+      "v1_equivalent": "TRANSFER_IN_CASH_ADVANCES_AND_LOANS"
+    },
+    "LOAN_DISBURSEMENTS_PERSONAL": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_DISBURSEMENTS_STUDENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_BNPL": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_CAR_PAYMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_CASH_ADVANCES": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_EWA": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_MORTGAGE_PAYMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_OTHER_PAYMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT": {
+      "category": null,
+      "exclude": true,
+      "note": "Debt repayment (including paying the credit card itself); not a purchase, earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "MEDICAL_DENTAL_CARE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "MEDICAL_EYE_CARE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "MEDICAL_NURSING_CARE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "MEDICAL_OTHER_MEDICAL": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "MEDICAL_PHARMACIES_AND_SUPPLEMENTS": {
+      "category": "drugstores",
+      "note": "Drugstores are MCC 5912. Plaid also puts nutrition/supplement shops here, which code 5499 and don't earn as drugstores; a pharmacy counter inside Walmart/Target/Costco takes the host store's code. Amex's drugstore bonus is a named list (CVS, Duane Reade, Rite Aid, Walgreens).",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "MEDICAL_PRIMARY_CARE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "MEDICAL_VETERINARY_SERVICES": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "OTHER_OTHER": {
+      "category": "everything_else",
+      "note": "PFCv2 only. Plaid's own v2->v1 mapping sends it to TRANSFER_IN/OUT_OTHER_*, so treat as exclude when the amount is negative (money in) or the counterparty type is financial_institution or payment_app.",
+      "review": true,
+      "pfc_versions": [
+        "v2"
+      ],
+      "v1_equivalent": "TRANSFER_IN_OTHER_TRANSFER_IN / TRANSFER_OUT_OTHER_TRANSFER_OUT"
+    },
+    "PERSONAL_CARE_GYMS_AND_FITNESS_CENTERS": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "PERSONAL_CARE_HAIR_AND_BEAUTY": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "PERSONAL_CARE_LAUNDRY_AND_DRY_CLEANING": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "PERSONAL_CARE_OTHER_PERSONAL_CARE": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "RENT_AND_UTILITIES_GAS_AND_ELECTRICITY": {
+      "category": "utilities",
+      "note": "MCC 4900.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "RENT_AND_UTILITIES_INTERNET_AND_CABLE": {
+      "category": "utilities",
+      "note": "Cable TV shares MCC 4899 with streaming services; internet providers often code 4814/4816. Issuers that bonus 'streaming' by MCC can therefore pay out on cable.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "RENT_AND_UTILITIES_OTHER_UTILITIES": {
+      "category": "utilities",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "RENT_AND_UTILITIES_RENT": {
+      "category": "rent",
+      "note": "Most landlords don't take cards, or charge a fee via a processor; rent rewards realistically come from Bilt's own payment rails. Paying rent from a bank account (ACH) is not card spend at all.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT": {
+      "category": "utilities",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "RENT_AND_UTILITIES_TELEPHONE": {
+      "category": "phone",
+      "note": "MCC 4814 (and 4812 for phone sales).",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "RENT_AND_UTILITIES_WATER": {
+      "category": "utilities",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_IN_ACCOUNT_TRANSFER": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_IN_CASH_ADVANCES_AND_LOANS": {
+      "category": null,
+      "exclude": true,
+      "note": "Loan or advance deposited to the user; not a purchase. Credit-card cash advances are not purchases and accrue the cash APR.",
+      "pfc_versions": [
+        "v1"
+      ],
+      "v2_equivalent": "LOAN_DISBURSEMENTS_OTHER_DISBURSEMENT"
+    },
+    "TRANSFER_IN_DEPOSIT": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_IN_OTHER_TRANSFER_IN": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_IN_SAVINGS": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_IN_TRANSFER_IN_FROM_APPS": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "TRANSFER_IN_WIRE": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_ACCOUNT_TRANSFER": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_CRYPTO": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards. Crypto purchases on a card usually code 6051 and are treated as cash advances by many issuers.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_OTHER_TRANSFER_OUT": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_SAVINGS": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_TRANSFER_OUT_FROM_APPS": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_WIRE": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v2"
+      ]
+    },
+    "TRANSFER_OUT_WITHDRAWAL": {
+      "category": null,
+      "exclude": true,
+      "note": "Movement of money between accounts, not a purchase; earns no rewards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSPORTATION_BIKES_AND_SCOOTERS": {
+      "category": "transit",
+      "note": "Low confidence: bike/scooter share coding varies (4111, 4121, 4789 or 7999); not every issuer's transit list includes it.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSPORTATION_GAS": {
+      "category": "gas",
+      "note": "Plaid may also put EV charging here; Tesla Supercharger/ChargePoint/Electrify America/EVgo are ev_charging via merchant_overrides (MCC 5552). Fuel at warehouse clubs and superstores is excluded from gas by Amex and Citi.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSPORTATION_OTHER_TRANSPORTATION": {
+      "category": "everything_else",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSPORTATION_PARKING": {
+      "category": "transit",
+      "note": "Parking (MCC 7523) is inside Chase's travel/transit definition and some others; issuers differ.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSPORTATION_PUBLIC_TRANSIT": {
+      "category": "transit",
+      "note": "MCC 4111 commuter transport/ferries, 4112 passenger rail, 4131 bus lines.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSPORTATION_TAXIS_AND_RIDE_SHARES": {
+      "category": "rideshare",
+      "note": "Uber/Lyft/taxis code MCC 4121. Uber Eats is food delivery, not rideshare: merchant_overrides puts it in dining.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRANSPORTATION_TOLLS": {
+      "category": "transit",
+      "note": "Tolls (MCC 4784) count as transit/travel at Chase and some others; issuers differ.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRAVEL_FLIGHTS": {
+      "category": "airfare",
+      "note": "Airlines code 3000-3350 or 4511. If booked through an issuer portal it earns travel_portal; Plaid can't tell (booking channel).",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRAVEL_LODGING": {
+      "category": "hotels",
+      "note": "Hotels code 3501-3999 or 7011. Airbnb/VRBO coding varies by processor. Portal bookings: see travel_portal note.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRAVEL_OTHER_TRAVEL": {
+      "category": "everything_else",
+      "note": "Travel agencies/tour operators (4722) and cruise lines; counts as 'travel' on general travel cards, not airfare or hotels.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    },
+    "TRAVEL_RENTAL_CARS": {
+      "category": "everything_else",
+      "note": "No rental-car slot in the app vocabulary; rental agencies code 3351-3500 or 7512 and earn as 'travel' on general travel cards.",
+      "pfc_versions": [
+        "v1",
+        "v2"
+      ]
+    }
+  },
+  "merchant_overrides": [
+    {
+      "pattern": "\\buber\\s*eats\\b|\\bubereats\\b",
+      "category": "dining",
+      "note": "Food delivery. Usually codes as a restaurant (5812/5814); Chase's 'dining' counts delivery only if it codes as a restaurant, and some issuers exclude delivery platforms."
+    },
+    {
+      "pattern": "\\bdoordash\\b|\\bdd\\s*\\*?\\s*doordash\\b|\\bgrubhub\\b|\\bpostmates\\b|\\bseamless\\b|\\bcaviar\\b",
+      "category": "dining",
+      "note": "Food delivery; same caveat as Uber Eats. DoorDash/Grubhub orders from grocery stores may code differently."
+    },
+    {
+      "pattern": "\\binstacart\\b",
+      "category": "online_groceries",
+      "note": "No PFC exists for online grocery. Instacart codes as a grocery store at many issuers but not all; Chase's online grocery excludes Target, Walmart and wholesale clubs."
+    },
+    {
+      "pattern": "\\bamazon\\s*fresh\\b|\\bamzn\\s*fresh\\b",
+      "category": "online_groceries"
+    },
+    {
+      "pattern": "\\bshipt\\b|\\bfreshdirect\\b|\\bfresh\\s*direct\\b|\\bpeapod\\b|\\bweee!?\\b|\\bthrive\\s*market\\b|\\bgopuff\\b",
+      "category": "online_groceries",
+      "note": "Amex lists FreshDirect as a U.S. supermarket; treatment varies by issuer."
+    },
+    {
+      "pattern": "\\bwhole\\s*foods\\b|\\bwfm\\b",
+      "category": "groceries",
+      "note": "Codes 5411."
+    },
+    {
+      "pattern": "\\bnetflix\\b",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\bspotify\\b",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\bhulu\\b",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\bdisney\\s*(\\+|plus\\b)|\\bdisneyplus\\b",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\bhbo\\s*max\\b|\\bmax\\.com\\b|\\bhbomax\\b",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\bparamount\\s*(\\+|plus\\b)",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\bpeacock\\b",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\byoutube\\s*(premium|tv|music)\\b|\\bgoogle\\s*\\*\\s*youtube\\b",
+      "category": "streaming"
+    },
+    {
+      "pattern": "\\bapple\\s*(tv|music)\\b",
+      "category": "streaming",
+      "note": "Apple bills many services on one descriptor (APPLE.COM/BILL); only TV+/Music subscriptions are streaming."
+    },
+    {
+      "pattern": "\\bprime\\s*video\\b|\\bamazon\\s*music\\b|\\baudible\\b|\\bkindle\\s*unlimited\\b",
+      "category": "streaming",
+      "note": "On Amex's Select U.S. Streaming list; Chase's list differs. Check each issuer's named list."
+    },
+    {
+      "pattern": "\\bsiriusxm\\b|\\bsirius\\s*xm\\b|\\bpandora\\b|\\bsling\\b|\\bfubo\\b|\\bespn\\s*(\\+|plus\\b)|\\bstarz\\b|\\bdiscovery\\s*(\\+|plus\\b)|\\btidal\\b|\\bpeloton\\b",
+      "category": "streaming",
+      "note": "Peloton is on some issuers' lists only; verify."
+    },
+    {
+      "pattern": "\\bamc\\s*(theatres|theaters)?\\b|\\bregal\\b|\\bcinemark\\b|\\bfandango\\b|\\balamo\\s*drafthouse\\b",
+      "category": "entertainment",
+      "note": "Movie theaters code 7832; Fandango may code as a ticket agency (7922)."
+    },
+    {
+      "pattern": "\\bticketmaster\\b|\\blive\\s*nation\\b|\\bstubhub\\b|\\bseatgeek\\b|\\baxs\\b",
+      "category": "entertainment",
+      "note": "Ticket agencies code 7922."
+    },
+    {
+      "pattern": "\\bcostco\\s*(gas|fuel)\\b|\\bsam'?s\\s*club\\s*(gas|fuel)\\b|\\bbj'?s\\s*(gas|fuel)\\b",
+      "category": "gas",
+      "note": "Issuer-dependent: Amex says warehouse clubs that sell gasoline 'are NOT considered gas stations', and Citi excludes gas at warehouse clubs unless coded with the gas station MCC. Club fuel often codes 5542 on Visa, so Visa/Mastercard gas categories may still pay."
+    },
+    {
+      "pattern": "\\bcostco\\b",
+      "category": "wholesale_clubs",
+      "note": "MCC 5300. Costco in the U.S. takes only Visa credit cards in-warehouse."
+    },
+    {
+      "pattern": "\\bsam'?s\\s*club\\b|\\bsamsclub\\b",
+      "category": "wholesale_clubs",
+      "note": "MCC 5300."
+    },
+    {
+      "pattern": "\\bbj'?s\\s*(wholesale)?\\b",
+      "category": "wholesale_clubs",
+      "note": "MCC 5300. Pattern can also match unrelated 'BJ's' restaurants (BJ's Restaurant & Brewhouse codes 5812): check PFC is not FOOD_AND_DRINK first."
+    },
+    {
+      "pattern": "\\bwal-?mart\\b|\\bwm\\s*supercenter\\b",
+      "category": "everything_else",
+      "note": "Superstore (5310/5411 varies); excluded from groceries by Amex, Chase and Citi. Walmart.com orders may count as online_retail at issuers with that category."
+    },
+    {
+      "pattern": "\\btarget\\b",
+      "category": "everything_else",
+      "note": "Superstore (5310/5311); excluded from groceries by Amex, Chase and Citi. A CVS inside Target codes as Target."
+    },
+    {
+      "pattern": "\\bamazon\\b|\\bamzn\\b",
+      "category": "online_retail",
+      "note": "Amazon Marketplace. Amazon Prime membership fees also land here."
+    },
+    {
+      "pattern": "\\bcvs\\b",
+      "category": "drugstores",
+      "note": "MCC 5912. Excludes CVS inside Target."
+    },
+    {
+      "pattern": "\\bwalgreens\\b|\\brite\\s*aid\\b|\\bduane\\s*reade\\b",
+      "category": "drugstores",
+      "note": "MCC 5912."
+    },
+    {
+      "pattern": "\\bhome\\s*depot\\b|\\bthe\\s*home\\s*depot\\b",
+      "category": "home_improvement",
+      "note": "MCC 5200."
+    },
+    {
+      "pattern": "\\blowe'?s\\b",
+      "category": "home_improvement",
+      "note": "MCC 5200."
+    },
+    {
+      "pattern": "\\bmenards\\b|\\bace\\s*hardware\\b|\\btrue\\s*value\\b|\\bharbor\\s*freight\\b",
+      "category": "home_improvement",
+      "note": "MCC 5200/5251."
+    },
+    {
+      "pattern": "\\btesla\\s*supercharg\\w*|\\bsupercharger\\b",
+      "category": "ev_charging",
+      "note": "MCC 5552 (Electric Vehicle Charging). A plain 'TESLA' descriptor may be a car payment or service; don't match it."
+    },
+    {
+      "pattern": "\\bchargepoint\\b|\\belectrify\\s*america\\b|\\bevgo\\b|\\bblink\\s*charging\\b|\\bshell\\s*recharge\\b|\\bev\\s*connect\\b",
+      "category": "ev_charging",
+      "note": "MCC 5552."
+    },
+    {
+      "pattern": "\\buber\\b(?!\\s*eats)",
+      "category": "rideshare",
+      "note": "MCC 4121. Uber One membership also bills as Uber."
+    },
+    {
+      "pattern": "\\blyft\\b",
+      "category": "rideshare",
+      "note": "MCC 4121. Lyft bikes/scooters bill as Lyft too."
+    },
+    {
+      "pattern": "\\bmta\\b|\\bnyct\\b|\\bomny\\b|\\bbart\\b|\\bclipper\\b|\\bwmata\\b|\\bsmartrip\\b|\\bsepta\\b|\\bventra\\b|\\bla\\s*metro\\b|\\btap\\s*card\\b|\\bmbta\\b|\\bcharlie\\s*card\\b|\\bamtrak\\b|\\bnj\\s*transit\\b|\\bcaltrain\\b|\\bmetrolink\\b",
+      "category": "transit",
+      "note": "Commuter transport 4111, rail 4112 (Amtrak), bus 4131."
+    },
+    {
+      "pattern": "\\bbilt\\b",
+      "category": "rent",
+      "note": "Bilt rent payments run on Bilt's own rails (since 2026 largely ACH from the user's bank, per secondary sources), so they may not appear as a card transaction at all; rent points are a Bilt-card feature."
+    },
+    {
+      "pattern": "\\bverizon\\s*wireless\\b|\\bt-?mobile\\b|\\bmint\\s*mobile\\b|\\bgoogle\\s*fi\\b|\\bcricket\\s*wireless\\b|\\bvisible\\b|\\bmetro\\s*by\\s*t-?mobile\\b|\\bat&t\\s*(mobility|wireless)\\b|\\bus\\s*mobile\\b",
+      "category": "phone",
+      "note": "MCC 4814. Verizon and AT&T also sell home internet, which a utilities/cable category may treat differently."
+    },
+    {
+      "pattern": "\\bcomcast\\b|\\bxfinity\\b|\\bspectrum\\b|\\bcharter\\s*comm\\w*\\b|\\bcox\\s*comm\\w*\\b|\\boptimum\\b|\\bfrontier\\s*comm\\w*\\b",
+      "category": "utilities",
+      "note": "Internet/cable; cable codes 4899 like streaming."
+    },
+    {
+      "pattern": "\\bstarbucks\\b|\\bdunkin\\b",
+      "category": "dining"
+    },
+    {
+      "pattern": "\\bshell\\s*oil\\b|\\bchevron\\b|\\bexxon\\b|\\bmobil\\b|\\barco\\b|\\bspeedway\\b|\\bsunoco\\b|\\bvalero\\b|\\bmarathon\\s*petro\\w*\\b|\\bcircle\\s*k\\b|\\bwawa\\b|\\bsheetz\\b|\\bquiktrip\\b",
+      "category": "gas",
+      "note": "MCC 5541/5542. Wawa, Sheetz, Circle K and QuikTrip are convenience stores with fuel; in-store purchases may code 5499."
+    }
+  ],
+  "descriptor_prefixes": [
+    {
+      "prefix": "SQ *",
+      "meaning": "Square seller; the real merchant follows. MCC is set per Square seller."
+    },
+    {
+      "prefix": "TST*",
+      "meaning": "Toast POS (restaurants)."
+    },
+    {
+      "prefix": "PAYPAL *",
+      "meaning": "PayPal; the MCC the issuer sees can be PayPal's rather than the seller's, which often breaks category bonuses."
+    },
+    {
+      "prefix": "SP ",
+      "meaning": "Shopify Payments store."
+    },
+    {
+      "prefix": "DD *",
+      "meaning": "DoorDash (DD *DOORDASH ...)."
+    },
+    {
+      "prefix": "APPLE.COM/BILL",
+      "meaning": "Apple subscriptions of all kinds on one descriptor."
+    },
+    {
+      "prefix": "GOOGLE *",
+      "meaning": "Google Play / Google services; the service name follows."
+    }
+  ],
+  "mcc": {
+    "dining": {
+      "codes": [
+        {
+          "code": "5811",
+          "name": "Caterers"
+        },
+        {
+          "code": "5812",
+          "name": "Eating Places and Restaurants"
+        },
+        {
+          "code": "5813",
+          "name": "Drinking Places (Alcoholic Beverages) - Bars, Taverns, Nightclubs, Cocktail Lounges, and Discotheques"
+        },
+        {
+          "code": "5814",
+          "name": "Fast Food Restaurants"
+        }
+      ],
+      "note": "Citi excludes caterers and bakeries from restaurants; Amex excludes bars, nightclubs, caterers and restaurants inside other venues. 5813 is dining at some issuers only."
+    },
+    "groceries": {
+      "codes": [
+        {
+          "code": "5411",
+          "name": "Grocery Stores and Supermarkets"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "5422",
+          "name": "Freezer and Locker Meat Provisioners"
+        },
+        {
+          "code": "5441",
+          "name": "Candy, Nut, and Confectionery Stores"
+        },
+        {
+          "code": "5451",
+          "name": "Dairy Products Stores"
+        },
+        {
+          "code": "5462",
+          "name": "Bakeries"
+        },
+        {
+          "code": "5499",
+          "name": "Miscellaneous Food Stores - Convenience Stores and Specialty Markets"
+        }
+      ],
+      "note": "Only 5411 is reliably 'supermarket'. Citi's supermarket definition explicitly excludes freezer/meat locker provisioners, dairy product stores, misc food/convenience stores, bakeries, and candy/nut/confectionery stores."
+    },
+    "online_groceries": {
+      "codes": [
+        {
+          "code": "5411",
+          "name": "Grocery Stores and Supermarkets"
+        }
+      ],
+      "note": "No dedicated MCC. Online grocery earns only if the delivery merchant codes as a grocery store (Chase: 'delivery service merchants that classify as grocery store merchants'; Citi: online supermarkets 'do not qualify if the merchant does not classify itself as a supermarket'). Decide by merchant name."
+    },
+    "gas": {
+      "codes": [
+        {
+          "code": "5541",
+          "name": "Service Stations (With or without Ancillary Services)"
+        },
+        {
+          "code": "5542",
+          "name": "Automated Fuel Dispensers"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "5983",
+          "name": "Fuel Dealers - Fuel Oil, Wood, Coal, and Liquefied Petroleum"
+        }
+      ],
+      "note": "5983 is home heating fuel, not gas stations; most gas categories exclude it. Fuel at warehouse clubs and superstores is excluded by Amex and (unless coded 5541/5542) Citi."
+    },
+    "ev_charging": {
+      "codes": [
+        {
+          "code": "5552",
+          "name": "Electric Vehicle Charging"
+        }
+      ],
+      "note": "Visa's manual lists 5552 'Merchants classified with this MCC sell electricity for the purpose of fueling an automobile'. Citi now names 'Gas Stations and Electric Vehicle (EV) Charging' together."
+    },
+    "transit": {
+      "codes": [
+        {
+          "code": "4111",
+          "name": "Local and Suburban Commuter Passenger Transportation, Including Ferries"
+        },
+        {
+          "code": "4112",
+          "name": "Passenger Railways"
+        },
+        {
+          "code": "4131",
+          "name": "Bus Lines"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "4784",
+          "name": "Tolls and Bridge Fees"
+        },
+        {
+          "code": "7523",
+          "name": "Parking Lots, Parking Meters and Garages"
+        },
+        {
+          "code": "4789",
+          "name": "Transportation Services (Not Elsewhere Classified)"
+        }
+      ],
+      "note": "Tolls, parking and misc transportation count at some issuers (Chase's travel definition is broad); not universal."
+    },
+    "rideshare": {
+      "codes": [
+        {
+          "code": "4121",
+          "name": "Taxicabs and Limousines"
+        }
+      ],
+      "note": "Uber and Lyft code 4121. Food delivery from the same companies codes as restaurants."
+    },
+    "travel_portal": {
+      "codes": [],
+      "note": "No MCC or PFC identifies an issuer travel portal; the bonus depends on the booking channel (Chase Travel, Amex Travel, Capital One Travel, Citi Travel). The app must ask the user or match portal descriptors it has verified."
+    },
+    "airfare": {
+      "codes": [
+        {
+          "code": "4511",
+          "name": "Airlines and Air Carriers (Not Elsewhere Classified)"
+        }
+      ],
+      "ranges": [
+        {
+          "range": "3000-3350",
+          "name": "Individual airline MCCs (e.g. 3000 United Airlines)"
+        }
+      ],
+      "note": "Visa's 4511 entry lists '3000-3350 - individual airline MCCs' under similar merchants."
+    },
+    "hotels": {
+      "codes": [
+        {
+          "code": "7011",
+          "name": "Lodging - Hotels, Motels, Resorts, Central Reservation Services (Not Elsewhere Classified)"
+        }
+      ],
+      "ranges": [
+        {
+          "range": "3501-3999",
+          "name": "Individual lodging chain MCCs (e.g. 3501 Holiday Inns)"
+        }
+      ],
+      "note": "3351-3500 are car rental chains, not hotels. Airbnb/VRBO coding varies."
+    },
+    "streaming": {
+      "codes": [
+        {
+          "code": "4899",
+          "name": "Cable, Satellite and Other Pay Television/Radio/Streaming Services"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "5815",
+          "name": "Digital Goods Media - Books, Movies, Digital artwork/images, Music"
+        },
+        {
+          "code": "5816",
+          "name": "Digital Goods - Games"
+        },
+        {
+          "code": "5817",
+          "name": "Digital Goods - Applications (Excludes Games)"
+        },
+        {
+          "code": "5818",
+          "name": "Digital Goods - Large Digital Goods Merchant"
+        },
+        {
+          "code": "5968",
+          "name": "Direct Marketing - Continuity/Subscription Merchant"
+        }
+      ],
+      "note": "Visa's 2026 manual says merchants 'offering online streaming of digital media content on a subscription basis should use MCC 4899' (the same code as cable TV). Chase and Amex define streaming by a named merchant list, not by MCC."
+    },
+    "drugstores": {
+      "codes": [
+        {
+          "code": "5912",
+          "name": "Drug Stores and Pharmacies"
+        }
+      ],
+      "note": "5122 (Drugs, Drug Proprietaries, and Druggist Sundries) is a wholesale code, not a drugstore. Chase excludes warehouse clubs, discount stores and grocery stores that sell drugs."
+    },
+    "home_improvement": {
+      "codes": [
+        {
+          "code": "5200",
+          "name": "Home Supply Warehouse Stores"
+        },
+        {
+          "code": "5211",
+          "name": "Lumber and Building Materials Stores"
+        },
+        {
+          "code": "5251",
+          "name": "Hardware Stores"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "5231",
+          "name": "Glass, Paint, and Wallpaper Stores"
+        },
+        {
+          "code": "5261",
+          "name": "Nurseries and Lawn and Garden Supply Stores"
+        }
+      ]
+    },
+    "wholesale_clubs": {
+      "codes": [
+        {
+          "code": "5300",
+          "name": "Wholesale Clubs"
+        }
+      ],
+      "note": "Visa: 'sell a full range of goods (often in bulk) and services in warehouse-style stores'. Chase's wholesale-club category excludes 'Gas, fuel, wholesale specialty service purchases such as travel, insurance, cell phone and home improvement'."
+    },
+    "superstores": {
+      "codes": [
+        {
+          "code": "5310",
+          "name": "Discount Stores"
+        },
+        {
+          "code": "5311",
+          "name": "Department Stores"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "5331",
+          "name": "Variety Stores"
+        },
+        {
+          "code": "5399",
+          "name": "Miscellaneous General Merchandise"
+        }
+      ],
+      "note": "Not an app category (they map to everything_else). Target and Walmart typically code here, which is why they don't earn grocery bonuses even though they sell groceries."
+    },
+    "entertainment": {
+      "codes": [
+        {
+          "code": "7832",
+          "name": "Motion Picture Theaters"
+        },
+        {
+          "code": "7922",
+          "name": "Ticket Agencies and Theatrical Producers (Except Motion Pictures)"
+        },
+        {
+          "code": "7941",
+          "name": "Commercial Sports, Professional Sports Clubs, Athletic Fields, and Sports Promoters"
+        },
+        {
+          "code": "7991",
+          "name": "Tourist Attractions and Exhibits"
+        },
+        {
+          "code": "7996",
+          "name": "Amusement Parks, Circuses, Carnivals, and Fortune Tellers"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "7929",
+          "name": "Bands, Orchestras, and Miscellaneous Entertainers (Not Elsewhere Classified)"
+        },
+        {
+          "code": "7999",
+          "name": "Recreation Services (Not Elsewhere Classified)"
+        }
+      ],
+      "never": [
+        {
+          "code": "7995",
+          "name": "Betting, including Lottery Tickets, Casino Gaming Chips, Off-Track Betting, Wagers at Race Tracks"
+        }
+      ]
+    },
+    "utilities": {
+      "codes": [
+        {
+          "code": "4900",
+          "name": "Utilities - Electric, Gas, Water, and Sanitary"
+        }
+      ],
+      "sometimes": [
+        {
+          "code": "4899",
+          "name": "Cable, Satellite and Other Pay Television/Radio/Streaming Services"
+        },
+        {
+          "code": "4816",
+          "name": "Computer Network/Information Services"
+        }
+      ],
+      "note": "Internet and cable may code 4899/4814/4816 rather than 4900."
+    },
+    "phone": {
+      "codes": [
+        {
+          "code": "4814",
+          "name": "Telecommunication Services, including Local and Long-Distance Calls, Credit Card Calls, ..."
+        },
+        {
+          "code": "4812",
+          "name": "Telecommunication Equipment and Telephone Sales"
+        }
+      ]
+    },
+    "online_retail": {
+      "codes": [],
+      "note": "No MCC means 'online'. Issuers use their own rules: Amex says 'To identify eligible online retail purchases, we rely on information provided to us by the merchant' and requires payment to be 'categorized as an internet transaction by the merchant'. Capital One and Citi use their own merchant lists and card-not-present flags. Plaid's payment_channel ('online', 'in store', 'other') is the nearest signal."
+    },
+    "rent": {
+      "codes": [],
+      "sometimes": [
+        {
+          "code": "6513",
+          "name": "Real Estate Agents and Managers (Stripe: 'Real Estate Agents and Managers - Rentals')"
+        }
+      ],
+      "note": "There is no rent MCC. Property managers that take cards often code 6513 (or go through a bill-pay processor with its own code and a fee); rarely bonused. Bilt pays landlords on its own rails."
+    },
+    "everything_else": {
+      "codes": [],
+      "note": "Base rate."
+    },
+    "never_rewarded": {
+      "codes": [
+        {
+          "code": "4829",
+          "name": "Money Transfer"
+        },
+        {
+          "code": "6012",
+          "name": "Financial Institutions - Merchandise, Services, and Debt Repayment"
+        },
+        {
+          "code": "6051",
+          "name": "Non-Financial Institutions - Foreign Currency, ... Cryptocurrency, Money Orders"
+        },
+        {
+          "code": "7995",
+          "name": "Betting, including Lottery Tickets, Casino Gaming Chips, ..."
+        },
+        {
+          "code": "9311",
+          "name": "Tax Payments"
+        }
+      ],
+      "note": "Not an app category: codes commonly treated as cash-like (cash advance) or excluded from rewards. Issuer terms vary."
+    }
+  },
+  "sources": [
+    {
+      "what": "Plaid PFCv1 taxonomy CSV (104 detailed categories)",
+      "url": "https://plaid.com/documents/transactions-personal-finance-category-taxonomy.csv"
+    },
+    {
+      "what": "Plaid PFCv2 vs PFCv1 taxonomy CSV (PFCv2 superset, 127 detailed categories incl. OTHER_OTHER)",
+      "url": "https://plaid.com/documents/pfc-taxonomy-all.csv"
+    },
+    {
+      "what": "Plaid PFC migration guide (PFCv2 released Dec 2025; new customers after 3 Dec 2025 opted in by default)",
+      "url": "https://plaid.com/docs/transactions/pfc-migration/"
+    },
+    {
+      "what": "Plaid /transactions/sync options.personal_finance_category_version ('If you enabled Transactions or Enrich on or after December 3, 2025, you may only receive the v2 taxonomy.')",
+      "url": "https://plaid.com/docs/api/products/transactions/#transactions-sync-request-options-personal-finance-category-version"
+    },
+    {
+      "what": "Visa Merchant Data Standards Manual (April 2026 PDF): MCC titles; 4511 lists 3000-3350 airline MCCs (p.55); 4899 streaming (p.57); 5300/5310/5311 (p.64); 5552 EV charging (p.69); 5815 says subscription streaming should use 4899 (p.77)",
+      "url": "https://usa.visa.com/content/dam/VCOM/download/merchants/visa-merchant-data-standards-manual.pdf"
+    },
+    {
+      "what": "Stripe MCC list (cross-check of every code used here)",
+      "url": "https://docs.stripe.com/connect/setting-mcc"
+    },
+    {
+      "what": "Chase Rewards Category FAQ (merchant codes, grocery/online grocery/wholesale club/drugstore/streaming definitions)",
+      "url": "https://www.chase.com/personal/credit-cards/rewards-category-faq"
+    },
+    {
+      "what": "American Express Consumer Categories (supermarkets, gas stations, restaurants, online retail, select streaming, select drugstores)",
+      "url": "https://www.americanexpress.com/us/rewards-info/retail.html"
+    },
+    {
+      "what": "Citi Strata Premier terms: 'Merchant Classification for Rewards Categories', supermarket and gas/EV exclusions",
+      "url": "https://www.citi.com/credit-cards/citi-strata-premier-credit-card"
+    },
+    {
+      "what": "Citi Custom Cash product page (closed to new applications as of 28 May 2026; category terms no longer shown there)",
+      "url": "https://www.citi.com/credit-cards/citi-custom-cash-credit-card"
+    },
+    {
+      "what": "Bilt rent via ACH since 2026 (secondary source)",
+      "url": "https://thepointsguy.com/credit-cards/bilt-rewards-rent-payment-setup/"
+    }
+  ]
+}

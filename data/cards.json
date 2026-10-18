@@ -1,0 +1,2553 @@
+{
+  "title": "US consumer credit cards: earn rules, fees, credits (TrojanHacks finance data foundation)",
+  "as_of": "2026-10-17",
+  "schema_notes": [
+    "multiplier = points per dollar, or percent cash back for cash cards (3% = 3). Value per dollar = multiplier * point_value_cents / 100.",
+    "earn_rules[].category uses only category_vocabulary. A purchase takes the best matching rule whose conditions hold; otherwise base_multiplier.",
+    "merchants (optional): when present, the rule applies ONLY at those merchants (e.g. Apple Card 3% at Uber, Exxon, Walgreens with Apple Pay; Sapphire Preferred 5x on Lyft). Match on the transaction merchant_name before falling back to the category rules.",
+    "cap: {amount (dollars of spend), period}; after the cap the rule earns after_cap_multiplier (default base_multiplier). A cap shared by several rules is described in conditions and, where present, a shared_cap_group key.",
+    "choice_group (optional): rules sharing a choice_group are pick-one (e.g. BofA Customized Cash 3% choice, Bilt Obsidian dining-or-grocery). The user picks one; the others don't apply.",
+    "rotating.q4_2026 lists vocabulary categories for Oct-Dec 2026; q4_2026_labels (when present) gives the issuer's own wording, including categories with no vocabulary match.",
+    "credits: amount is dollars per period; how_to_use says whether it is a statement credit, a discount or a free subscription.",
+    "point_value_cents: The Points Guy October 2026 valuations unless a card says otherwise. Freedom, Double Cash and Custom Cash are recorded as cash at 1.0; their points are worth the transferable value only when pooled with a premium card in the same program (see notes).",
+    "unverified: true means at least one field could not be confirmed on an issuer page on 2026-10-17; unverified_fields says which and notes names the secondary source.",
+    "travel_portal is the issuer's own portal (Chase Travel, Amex Travel, Capital One Travel, Citi Travel, Bilt Travel); merchants/conditions name it.",
+    "base_multiplier 0 means the card earns no rewards (Capital One Platinum Secured)."
+  ],
+  "category_vocabulary": [
+    "dining",
+    "groceries",
+    "online_groceries",
+    "gas",
+    "ev_charging",
+    "transit",
+    "rideshare",
+    "travel_portal",
+    "airfare",
+    "hotels",
+    "streaming",
+    "drugstores",
+    "home_improvement",
+    "entertainment",
+    "rent",
+    "utilities",
+    "phone",
+    "online_retail",
+    "wholesale_clubs",
+    "everything_else"
+  ],
+  "point_valuations": {
+    "source": "The Points Guy, October 2026 monthly valuations (cents per point)",
+    "url": "https://thepointsguy.com/guide/monthly-valuations/",
+    "month": "2026-10",
+    "checked": "2026-10-17",
+    "values": {
+      "UR": 2.05,
+      "MR": 2.0,
+      "TYP": 1.9,
+      "C1": 1.85,
+      "Bilt": 2.2,
+      "WF": 1.75,
+      "Aeromexico Rewards": 0.8,
+      "Air Canada Aeroplan": 1.5,
+      "Alaska Atmos Rewards": 1.55,
+      "American AAdvantage": 1.45,
+      "ANA Mileage Club": 1.4,
+      "Avianca LifeMiles": 1.6,
+      "Avios": 1.4,
+      "Cathay Asia Miles": 1.3,
+      "Delta SkyMiles": 1.2,
+      "Emirates Skywards": 1.2,
+      "Etihad Guest": 1.2,
+      "Flying Blue": 1.4,
+      "Frontier Miles": 1.3,
+      "JetBlue TrueBlue": 1.35,
+      "Qantas Frequent Flyer": 1.25,
+      "Singapore KrisFlyer": 1.3,
+      "Southwest Rapid Rewards": 1.25,
+      "Turkish Miles&Smiles": 1.1,
+      "United MileagePlus": 1.2,
+      "Virgin Atlantic Flying Club": 1.5,
+      "Accor Live Limitless": 2.3,
+      "Best Western Rewards": 0.6,
+      "Choice Privileges": 0.85,
+      "Hilton Honors": 0.4,
+      "IHG One Rewards": 0.6,
+      "Marriott Bonvoy": 0.75,
+      "World of Hyatt": 1.65,
+      "Wyndham Rewards": 0.55
+    },
+    "notes": "TPG's October 2026 page (dated 1 Oct 2026) does not value U.S. Bank, Bank of America or Discover points; treat those as fixed-value cash (1.0). Airline values marked * on TPG use Points Path data, hotel values ** use Gondola data.",
+    "nerdwallet": {
+      "url": "https://www.nerdwallet.com/travel/learn/airline-miles-and-hotel-points-valuations",
+      "month": "2026-10",
+      "page_updated": "2026-10-13",
+      "method": "median real-world redemption value; 'baseline' is the cash/fixed value, 'value' is NerdWallet's estimate via the named best transfer partner",
+      "values": {
+        "UR_sapphire_reserve": 1.8,
+        "UR_sapphire_preferred_ink_preferred": 1.4,
+        "UR_baseline": 1.0,
+        "MR": 1.3,
+        "TYP_strata_elite_premier": 1.7,
+        "TYP_other_citi": 1.2,
+        "C1": 1.3,
+        "Bilt": 1.8,
+        "Bilt_baseline": 1.25,
+        "WF": 1.4,
+        "WF_baseline": 1.0,
+        "BofA": 1.0,
+        "Discover": 1.0
+      },
+      "notes": "NerdWallet's UR value depends on the card because Chase moved non-Reserve cards to a 4:3 Hyatt transfer ratio in 2026; Sapphire Reserve keeps 1:1. U.S. Bank not listed."
+    }
+  },
+  "cards": [
+    {
+      "id": "chase_sapphire_preferred",
+      "name": "Chase Sapphire Preferred",
+      "issuer": "Chase",
+      "network": "Visa",
+      "annual_fee": 95,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        19.49,
+        27.74
+      ],
+      "currency": "UR",
+      "point_value_cents": 2.05,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (published 1 Oct 2026)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "travel purchased through Chase Travel; FROSCH / Valerie Wilson Travel by Chase Travel purchases excluded; the first $100 of Chase Travel hotel purchases each anniversary year (the hotel-credit spend) earns no points"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 5,
+          "merchants": [
+            "Lyft"
+          ],
+          "conditions": "5x total on Lyft rides through 9/30/2027; gift cards, car rentals and some Lyft products excluded"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "conditions": "restaurants incl. takeout and eligible delivery"
+        },
+        {
+          "category": "gas",
+          "multiplier": 3,
+          "conditions": "gas stations (new in the 2026 refresh)"
+        },
+        {
+          "category": "ev_charging",
+          "multiplier": 3,
+          "conditions": "EV charging (new in the 2026 refresh)"
+        },
+        {
+          "category": "streaming",
+          "multiplier": 3,
+          "conditions": "select top streaming services (chase.com/RewardsCategoryFAQs)"
+        },
+        {
+          "category": "online_groceries",
+          "multiplier": 3,
+          "conditions": "online grocery, excluding Target, Walmart and wholesale clubs"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 2,
+          "conditions": "other travel (not via Chase Travel)"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 2,
+          "conditions": "other travel (not via Chase Travel); vacation homes at select top brands earn 3x"
+        },
+        {
+          "category": "transit",
+          "multiplier": 2,
+          "conditions": "Chase travel category includes transit, taxis, tolls, parking"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 2,
+          "conditions": "non-Lyft rideshare codes as travel"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Chase Travel hotel credit",
+          "amount": 100,
+          "period": "year",
+          "how_to_use": "hotel stays booked through Chase Travel; per account anniversary year"
+        },
+        {
+          "name": "Global Entry / TSA PreCheck / NEXUS fee credit",
+          "amount": 120,
+          "period": "every_4_years",
+          "how_to_use": "pay the application fee with the card"
+        },
+        {
+          "name": "DoorDash non-restaurant promo",
+          "amount": 10,
+          "period": "month",
+          "how_to_use": "order discount (not a statement credit) on one non-restaurant DoorDash order per month; needs the complimentary DashPass (12 months, $120 value, activate by 12/31/2029)"
+        },
+        {
+          "name": "Apple TV subscription",
+          "amount": 180,
+          "period": "year",
+          "how_to_use": "complimentary subscription valued at $180; activate by 12/31/2026"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 75000,
+        "unit": "points",
+        "spend": 5000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred",
+        "https://sites.chase.com/services/creatives/pricingandterms.html/content/dam/pricingandterms/LGC65222.html",
+        "https://thepointsguy.com/guide/monthly-valuations/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Refreshed: page flags NEW 5x Chase Travel and NEW 3x gas stations, EV charging and vacation homes at select top brands; online grocery and streaming stay 3x. No 10% anniversary points boost appears on the page any more. Peloton: 5x total on equipment/accessory purchases over $150 through 12/31/2027, capped at $5,000 in purchases (no matching category). Redemption value through Chase Travel varies (Points Boost), not a fixed 1.25c."
+    },
+    {
+      "id": "chase_sapphire_reserve",
+      "name": "Chase Sapphire Reserve",
+      "issuer": "Chase",
+      "network": "Visa",
+      "annual_fee": 795,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        19.74,
+        28.24
+      ],
+      "currency": "UR",
+      "point_value_cents": 2.05,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (published 1 Oct 2026)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 8,
+          "conditions": "Chase Travel purchases, including The Edit; FROSCH / Valerie Wilson Travel by Chase Travel excluded; purchases covered by the $300 travel credit earn no points"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 4,
+          "conditions": "flights booked directly with the airline"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 4,
+          "conditions": "hotels booked directly with the hotel"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 5,
+          "merchants": [
+            "Lyft"
+          ],
+          "conditions": "qualifying Lyft purchases in the Lyft app through 9/30/2027 (4 extra points on top of base 1x)"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "conditions": "restaurants worldwide incl. takeout and eligible delivery"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Annual travel credit",
+          "amount": 300,
+          "period": "year",
+          "how_to_use": "any travel-category purchase; per account anniversary year; those purchases earn no points"
+        },
+        {
+          "name": "The Edit hotel credit",
+          "amount": 500,
+          "period": "year",
+          "how_to_use": "up to $250 per prepaid booking with The Edit via Chase Travel, 2-night minimum, max $500 per calendar year (from 1/1/2026)"
+        },
+        {
+          "name": "Dining credit (Sapphire Reserve Exclusive Tables)",
+          "amount": 150,
+          "period": "half_year",
+          "how_to_use": "participating OpenTable Exclusive Tables restaurants; Jan-Jun and Jul-Dec"
+        },
+        {
+          "name": "StubHub / viagogo credit",
+          "amount": 150,
+          "period": "half_year",
+          "how_to_use": "Jan-Jun and Jul-Dec, through 12/31/2027; activation required"
+        },
+        {
+          "name": "Lyft credit",
+          "amount": 10,
+          "period": "month",
+          "how_to_use": "Lyft in-app, through 9/30/2027"
+        },
+        {
+          "name": "Peloton credit",
+          "amount": 10,
+          "period": "month",
+          "how_to_use": "Peloton membership, through 12/31/2027; activation required"
+        },
+        {
+          "name": "DoorDash promos",
+          "amount": 35,
+          "period": "month",
+          "how_to_use": "order discounts, not statement credits: a $15 promo on any qualifying order plus two $10 grocery/essentials promos each month ($420/yr) for DashPass members, through 12/31/2029; DashPass itself complimentary for 12 months ($120 value, activate by 12/31/2029)"
+        },
+        {
+          "name": "Apple TV + Apple Music",
+          "amount": 324,
+          "period": "year",
+          "how_to_use": "complimentary subscriptions (value $324/yr); activate by 6/22/2027"
+        },
+        {
+          "name": "Global Entry / TSA PreCheck / NEXUS fee credit",
+          "amount": 120,
+          "period": "every_4_years",
+          "how_to_use": "pay the application fee with the card"
+        },
+        {
+          "name": "The Shops at Chase credit ($75k spend)",
+          "amount": 250,
+          "period": "year",
+          "how_to_use": "only after $75,000 in calendar-year spend"
+        },
+        {
+          "name": "Southwest Chase Travel credit ($75k spend)",
+          "amount": 500,
+          "period": "year",
+          "how_to_use": "only after $75,000 in calendar-year spend; Southwest flights via Chase Travel"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 100000,
+        "unit": "points",
+        "spend": 6000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve",
+        "https://sites.chase.com/services/creatives/pricingandterms.html/content/dam/pricingandterms/LGC64842.html",
+        "https://thepointsguy.com/guide/monthly-valuations/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "2025 refresh: fee $795 (was $550), authorized users $195 each; other (non-portal, non-direct) travel now earns only 1x; 8x Chase Travel, 4x direct flights/hotels. $75k calendar-year spend also unlocks Hyatt Explorist, IHG Diamond and Southwest A-List; IHG Platinum Elite through 12/31/2027 for all. Peloton: 10x on equipment/accessories over $150 through 12/31/2027, capped at $5,000 in purchases (no matching category). Lounges: Chase Sapphire Lounges + Priority Pass."
+    },
+    {
+      "id": "chase_freedom_unlimited",
+      "name": "Chase Freedom Unlimited",
+      "issuer": "Chase",
+      "network": "Visa",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 3,
+      "purchase_apr_range": [
+        18.49,
+        27.99
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back (earned as Ultimate Rewards points at 1c each); TPG Oct 2026 values UR at 2.05c if pooled with a Sapphire card",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "travel purchased through Chase Travel"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "conditions": "restaurants incl. takeout and eligible delivery"
+        },
+        {
+          "category": "drugstores",
+          "multiplier": 3
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 2,
+          "merchants": [
+            "Lyft"
+          ],
+          "conditions": "Lyft purchases in the Lyft app through 9/30/2027 (0.5% extra on top of 1.5%)"
+        }
+      ],
+      "base_multiplier": 1.5,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 200,
+        "unit": "dollars",
+        "spend": 500,
+        "months": 3
+      },
+      "source_urls": [
+        "https://creditcards.chase.com/cash-back-credit-cards/freedom/unlimited",
+        "https://sites.chase.com/services/creatives/pricingandterms.html/content/dam/pricingandterms/LGC61498.html"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "0% intro APR 15 months on purchases and balance transfers. Foreign transaction fee 3% per the pricing & terms page (the product page shows a 'No Foreign Transaction Fees' tile, which appears to be site navigation, not this card). Bonus shown as $200 (20,000 points); not for current cardmembers or anyone who got this bonus in the past 24 months; no first-year extra 1.5% offer shown. Points convert to full UR transferable points when combined with a Sapphire Preferred/Reserve."
+    },
+    {
+      "id": "chase_freedom_flex",
+      "name": "Chase Freedom Flex",
+      "issuer": "Chase",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        18.49,
+        27.99
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back (earned as Ultimate Rewards points at 1c each); TPG Oct 2026 values UR at 2.05c if pooled with a Sapphire card",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "travel purchased through Chase Travel"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "conditions": "restaurants incl. takeout and eligible delivery"
+        },
+        {
+          "category": "drugstores",
+          "multiplier": 3
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 2,
+          "merchants": [
+            "Lyft"
+          ],
+          "conditions": "Lyft rides through 9/30/2027 (1% on top of base 1%); gift cards, car rentals excluded"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": {
+        "q4_2026": [
+          "groceries",
+          "dining"
+        ],
+        "q4_2026_labels": [
+          "Grocery Stores (excluding Walmart and Target)",
+          "Dining",
+          "American Red Cross"
+        ],
+        "period": "2026-10-01 to 2026-12-31",
+        "multiplier": 5,
+        "after_cap_multiplier": 1,
+        "cap": 1500,
+        "cap_period": "quarter",
+        "activation_required": true,
+        "activation_opens": "2026-09-15",
+        "activation_deadline": "2026-12-14",
+        "detail": "5% on up to $1,500 in combined purchases in the quarter's categories once activated (activation open since 15 Sept 2026), then 1%. Grocery excludes Walmart and Target. American Red Cross (donations) has no category in the vocabulary. Dining normally earns 3%: secondary sources (InsideFlyer, 15 Sept 2026) say dining stacks to 7% in Q4, which the issuer page doesn't state. Next quarter (Jan-Mar 2027): Grocery Stores (excluding Walmart/Target) and Top Streaming Services, activation from 15 Dec 2026. Previous (Jul-Sep 2026): gas stations, public transit, EV charging, select live entertainment, United Way."
+      },
+      "credits": [
+        {
+          "name": "DoorDash non-restaurant promo",
+          "amount": 10,
+          "period": "quarter",
+          "how_to_use": "order discount (not a statement credit) for DashPass members on non-restaurant DoorDash orders through 12/31/2027; card includes 6 months of complimentary DashPass (activate by 12/31/2027)"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 250,
+        "unit": "dollars",
+        "spend": 500,
+        "months": 3
+      },
+      "source_urls": [
+        "https://creditcards.chase.com/cash-back-credit-cards/freedom/flex",
+        "https://sites.chase.com/services/creatives/pricingandterms.html/content/dam/pricingandterms/LGC65280.html",
+        "https://www.insideflyer.com/posts/chase-freedom-q4-2026-bonus-categories-announced/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "rotating.activation_deadline",
+        "rotating.detail (dining 7% stacking)"
+      ],
+      "notes": "Now no foreign transaction fee: the product page ('Now enjoy all this with no foreign transaction fee') and the pricing & terms page ('Foreign Transactions: None') both say so; it used to be 3%. World Elite Mastercard per the page's offer details. 0% intro APR 15 months. Bonus shown as $250 with $200 struck through (elevated offer); not for current cardmembers or anyone who got it in the past 24 months. Activation deadline 14 Dec 2026 is from InsideFlyer, not the Chase page."
+    },
+    {
+      "id": "amex_gold",
+      "name": "American Express Gold Card",
+      "issuer": "American Express",
+      "network": "American Express",
+      "annual_fee": 325,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        19.74,
+        28.74
+      ],
+      "currency": "MR",
+      "point_value_cents": 2.0,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (published 1 Oct 2026)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "dining",
+          "multiplier": 4,
+          "cap": {
+            "amount": 50000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "restaurants worldwide; first $50,000 per calendar year, then 1x"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 4,
+          "cap": {
+            "amount": 25000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "U.S. supermarkets only; superstores, convenience stores, warehouse clubs and meal-kit delivery are not supermarkets; first $25,000 per calendar year, then 1x"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "prepaid hotels booked through American Express Travel (AmexTravel.com / app); prepaid car rentals and cruises via AmexTravel.com earn 2x"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 3,
+          "conditions": "scheduled flights booked directly with airlines or through American Express Travel; charter/private jets excluded"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Uber Cash",
+          "amount": 10,
+          "period": "month",
+          "how_to_use": "add the Gold Card to Uber; U.S. Uber rides and Uber Eats when an Amex card is selected"
+        },
+        {
+          "name": "Dining credit",
+          "amount": 10,
+          "period": "month",
+          "how_to_use": "Grubhub (incl. Seamless), Buffalo Wild Wings, Five Guys, The Cheesecake Factory, Wonder; enrollment required"
+        },
+        {
+          "name": "Resy credit",
+          "amount": 50,
+          "period": "half_year",
+          "how_to_use": "qualifying U.S. Resy restaurants; Jan-Jun and Jul-Dec; enrollment required"
+        },
+        {
+          "name": "Dunkin' credit",
+          "amount": 7,
+          "period": "month",
+          "how_to_use": "U.S. Dunkin' locations; enrollment required"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 100000,
+        "unit": "points",
+        "spend": 8000,
+        "months": 6,
+        "note": "'as high as' 100,000; Amex shows the actual (personalized) offer after applying"
+      },
+      "source_urls": [
+        "https://www.americanexpress.com/us/credit-cards/card/gold-card/",
+        "https://www.americanexpress.com/en-us/credit-cards/apply/terms/personal/gold-card/25330-10-0/",
+        "https://thepointsguy.com/guide/monthly-valuations/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Charge card: the APR is the Pay Over Time APR on eligible charges (19.74%-28.74% variable). Prepaid hotels via Amex Travel now earn 5x (the terms say 4 additional points; previously 2x). The Hotel Collection: $100 on-property credit per stay of 2+ nights booked via AmexTravel.com (property credit, not a statement credit, so not listed above). Hertz Five Star status with enrollment."
+    },
+    {
+      "id": "amex_platinum",
+      "name": "The Platinum Card from American Express",
+      "issuer": "American Express",
+      "network": "American Express",
+      "annual_fee": 895,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        19.74,
+        28.74
+      ],
+      "currency": "MR",
+      "point_value_cents": 2.0,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (published 1 Oct 2026)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "airfare",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "scheduled flights booked directly with airlines or through American Express Travel; up to $500,000 per calendar year"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "prepaid hotels booked through American Express Travel; prepaid vacation rentals via AmexTravel.com"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Hotel credit (FHR / The Hotel Collection)",
+          "amount": 300,
+          "period": "half_year",
+          "how_to_use": "prepaid Fine Hotels + Resorts or The Hotel Collection bookings via Amex Travel (THC needs 2+ nights); Jan-Jun and Jul-Dec; $600/yr"
+        },
+        {
+          "name": "Resy credit",
+          "amount": 100,
+          "period": "quarter",
+          "how_to_use": "qualifying U.S. Resy restaurants; enrollment required; $400/yr"
+        },
+        {
+          "name": "Digital entertainment credit",
+          "amount": 25,
+          "period": "month",
+          "how_to_use": "Disney+, Disney+ bundle, ESPN streaming, Hulu, NYTimes, Paramount+, Peacock, WSJ, YouTube Premium, YouTube TV; enrollment required; $300/yr"
+        },
+        {
+          "name": "lululemon credit",
+          "amount": 75,
+          "period": "quarter",
+          "how_to_use": "U.S. lululemon stores (not outlets) and lululemon.com; enrollment required; $300/yr"
+        },
+        {
+          "name": "Uber Cash",
+          "amount": 15,
+          "period": "month",
+          "how_to_use": "U.S. Uber rides/Uber Eats with an Amex card selected; plus a $20 bonus in December ($200/yr total)"
+        },
+        {
+          "name": "Uber One credit",
+          "amount": 120,
+          "period": "year",
+          "how_to_use": "auto-renewing Uber One membership paid with the card"
+        },
+        {
+          "name": "Airline fee credit",
+          "amount": 200,
+          "period": "year",
+          "how_to_use": "incidental fees on one selected airline; enrollment required"
+        },
+        {
+          "name": "Oura Ring credit",
+          "amount": 200,
+          "period": "year",
+          "how_to_use": "Oura Ring bought at ouraring.com; enrollment required"
+        },
+        {
+          "name": "Equinox credit",
+          "amount": 300,
+          "period": "year",
+          "how_to_use": "Equinox club membership or Equinox+ digital; enrollment required"
+        },
+        {
+          "name": "CLEAR+ credit",
+          "amount": 219,
+          "period": "year",
+          "how_to_use": "annual CLEAR+ membership"
+        },
+        {
+          "name": "Walmart+ credit",
+          "amount": 12.95,
+          "period": "month",
+          "how_to_use": "one Walmart+ monthly membership fee (plus applicable taxes); Plus Ups excluded"
+        },
+        {
+          "name": "Global Entry / TSA PreCheck fee credit",
+          "amount": 120,
+          "period": "every_4_years",
+          "how_to_use": "$120 Global Entry every 4 years, or up to $85 TSA PreCheck every 4.5 years"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 175000,
+        "unit": "points",
+        "spend": 12000,
+        "months": 6,
+        "note": "'as high as' 175,000; personalized, shown after applying"
+      },
+      "source_urls": [
+        "https://www.americanexpress.com/us/credit-cards/card/platinum/",
+        "https://www.americanexpress.com/en-us/credit-cards/apply/terms/personal/platinum-card/25330-10-0/",
+        "https://www.thepointsguy.com/news/amex-platinum-saks-credit-ending-2026/",
+        "https://thepointsguy.com/guide/monthly-valuations/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Charge card: the APR is the Pay Over Time APR (19.74%-28.74% variable). Fee $895 since the 2025 refresh (was $695); additional Platinum cards $195. The $100/yr Saks credit is gone: Amex ended it 1 July 2026 after Saks Global's Chapter 11 filing (not on the current terms page). Lounges: Global Lounge Collection (1,550+). Hilton Gold and Marriott Gold Elite status with enrollment."
+    },
+    {
+      "id": "amex_blue_cash_preferred",
+      "name": "Blue Cash Preferred Card from American Express",
+      "issuer": "American Express",
+      "network": "American Express",
+      "annual_fee": 95,
+      "intro_annual_fee": {
+        "amount": 0,
+        "years": 1
+      },
+      "foreign_tx_fee_pct": 2.7,
+      "purchase_apr_range": [
+        19.74,
+        28.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Reward Dollars = cash (statement credit or Amazon.com checkout at the same value)",
+        "url": "https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/"
+      },
+      "earn_rules": [
+        {
+          "category": "groceries",
+          "multiplier": 6,
+          "cap": {
+            "amount": 6000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "U.S. supermarkets only; superstores, convenience stores, warehouse clubs and meal-kit delivery are not supermarkets; first $6,000 per calendar year"
+        },
+        {
+          "category": "streaming",
+          "multiplier": 6,
+          "conditions": "select U.S. streaming subscriptions (list at americanexpress.com/rewards-info); bundled or third-party-billed subscriptions may not count"
+        },
+        {
+          "category": "transit",
+          "multiplier": 3,
+          "conditions": "trains, taxis, ferries, tolls, parking, buses, subways; airfare, car rental and cruises excluded"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 3,
+          "conditions": "ride share services count as transit"
+        },
+        {
+          "category": "gas",
+          "multiplier": 3,
+          "conditions": "U.S. gas stations; superstores, supermarkets and warehouse clubs selling gas excluded"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Disney Streaming credit",
+          "amount": 10,
+          "period": "month",
+          "how_to_use": "subscription (incl. bundle) at DisneyPlus.com, Hulu.com or Stream.ESPN.com U.S. sites; enrollment required; $120/yr"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 300,
+        "unit": "dollars",
+        "spend": 3000,
+        "months": 6
+      },
+      "source_urls": [
+        "https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/",
+        "https://www.americanexpress.com/en-us/credit-cards/apply/terms/personal/blue-cash-preferred-credit-card/25200-10-0?introAprVariant=var-a"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "0% intro APR on purchases and balance transfers for 6 to 18 months (set by creditworthiness), then 19.74%-28.74% variable. Foreign transaction fee 2.7%. Bonus earned as Reward Dollars."
+    },
+    {
+      "id": "amex_blue_cash_everyday",
+      "name": "Blue Cash Everyday Card from American Express",
+      "issuer": "American Express",
+      "network": "American Express",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 2.7,
+      "purchase_apr_range": [
+        19.74,
+        28.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Reward Dollars = cash (statement credit or Amazon.com checkout at the same value)",
+        "url": "https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/"
+      },
+      "earn_rules": [
+        {
+          "category": "groceries",
+          "multiplier": 3,
+          "cap": {
+            "amount": 6000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "U.S. supermarkets only; superstores, convenience stores, warehouse clubs and meal-kit delivery excluded; first $6,000 per calendar year"
+        },
+        {
+          "category": "online_retail",
+          "multiplier": 3,
+          "cap": {
+            "amount": 6000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "U.S. online retail purchases; first $6,000 per calendar year"
+        },
+        {
+          "category": "gas",
+          "multiplier": 3,
+          "cap": {
+            "amount": 6000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "U.S. gas stations; superstores, supermarkets and warehouse clubs selling gas excluded; first $6,000 per calendar year"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Disney Streaming credit",
+          "amount": 7,
+          "period": "month",
+          "how_to_use": "subscription (incl. bundle) at DisneyPlus.com, Hulu.com or Stream.ESPN.com U.S. sites; enrollment required; $84/yr"
+        },
+        {
+          "name": "Home Chef credit",
+          "amount": 15,
+          "period": "month",
+          "how_to_use": "Home Chef meal-kit subscription bought at homechef.com/blue-cash-everyday; enrollment required; $180/yr"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 200,
+        "unit": "dollars",
+        "spend": 2000,
+        "months": 6
+      },
+      "source_urls": [
+        "https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/",
+        "https://www.americanexpress.com/en-us/credit-cards/apply/terms/personal/blue-cash-everyday-credit-card/25200-10-0?introAprVariant=var-a"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "0% intro APR on purchases and balance transfers for up to 18 months (may be as short as 6), then 19.74%-28.74% variable. Foreign transaction fee 2.7%. Each 3% category has its own $6,000 calendar-year cap."
+    },
+    {
+      "id": "capital_one_savor",
+      "name": "Capital One Savor Cash Rewards",
+      "issuer": "Capital One",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        18.74,
+        28.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back, fixed 1 cent per percent",
+        "url": "https://www.capitalone.com/credit-cards/savor/"
+      },
+      "earn_rules": [
+        {
+          "category": "entertainment",
+          "multiplier": 8,
+          "conditions": "Capital One Entertainment ticketing platform only; excludes cardholder-exclusive pre-sales and tickets bought directly through Capital One Hall or Capital One Arena"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "hotels, vacation rentals and rental cars booked through Capital One Travel"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "conditions": "restaurants, cafes, bars, lounges, fast food, bakeries; food sold inside larger establishments and some food trucks may not code as dining"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 3,
+          "conditions": "grocery stores (supermarkets, meat lockers, dairy stores, specialty markets); superstores like Walmart and Target excluded",
+          "merchants_excluded": [
+            "Walmart",
+            "Target"
+          ]
+        },
+        {
+          "category": "entertainment",
+          "multiplier": 3,
+          "conditions": "movie theaters, live event promoters, amusement parks, attractions, zoos, aquariums, bowling, record stores; excludes golf courses, collegiate sporting events, cable and membership services"
+        },
+        {
+          "category": "streaming",
+          "multiplier": 3,
+          "conditions": "popular streaming services such as Netflix, Hulu, Disney+; excludes Verizon FIOS On Demand, audiobooks, fitness programming"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 200,
+        "unit": "cash",
+        "spend": 500,
+        "months": 3
+      },
+      "intro_apr": "0% for 12 months on purchases and balance transfers, then 18.74%-28.74% variable; balance transfer fee applies",
+      "source_urls": [
+        "https://www.capitalone.com/credit-cards/savor/",
+        "https://www.capitalone.com/credit-cards/benefits/entertainment/",
+        "https://www.capitalone.com/credit-cards/compare/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "SavorOne no longer exists as a separate product: Capital One closed the original $95 Savor to new applicants in July 2024 and in late 2024 renamed SavorOne to 'Savor' (the $0-fee card recorded here). So there is no separate SavorOne record. Uncapped 3% categories. 8% Capital One Entertainment rate confirmed on Capital One's Entertainment benefits page (not on the Savor product page itself). Bonus not available if a new-cardmember bonus for this product was received in the past 48 months. Network: Mastercard historically; Capital One has begun issuing some Quicksilver/Venture/Savor accounts on the Discover network (reported for some pre-approval offers), so network may vary."
+    },
+    {
+      "id": "capital_one_venture",
+      "name": "Capital One Venture Rewards",
+      "issuer": "Capital One",
+      "network": "Visa",
+      "annual_fee": 95,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        19.74,
+        28.74
+      ],
+      "currency": "C1",
+      "point_value_cents": 1.85,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (published 1 Oct 2026)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "hotels, vacation rentals and rental cars booked through Capital One Travel"
+        },
+        {
+          "category": "entertainment",
+          "multiplier": 5,
+          "conditions": "Capital One Entertainment ticketing platform only; excludes cardholder pre-sales and Capital One Hall/Arena box office"
+        }
+      ],
+      "base_multiplier": 2,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Global Entry or TSA PreCheck application fee credit",
+          "amount": 120,
+          "period": "every_4_years",
+          "how_to_use": "pay the application fee with the card; statement credit, one per account every 4 years"
+        },
+        {
+          "name": "Capital One Travel Stays credit (first year only, part of welcome offer)",
+          "amount": 300,
+          "period": "year",
+          "how_to_use": "one-time credit for hotels and vacation rentals booked through Capital One Travel; expires one year after account opening; not renewing"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 75000,
+        "unit": "miles",
+        "spend": 4000,
+        "months": 3,
+        "extra": "plus one-time $300 Capital One Travel Stays credit in the first cardholder year"
+      },
+      "source_urls": [
+        "https://www.capitalone.com/credit-cards/venture/",
+        "https://www.capitalone.com/credit-cards/compare/",
+        "https://www.capitalone.com/credit-cards/lp/travel/lp5/",
+        "https://www.capitalone.com/credit-cards/benefits/entertainment/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Not eligible for the bonus if a Venture or Venture X new-cardmember bonus was received in the past 48 months. The issuer page does not mention any lounge visits (the old 2 Capital One Lounge visits per year is not listed), so none recorded. Miles transfer to Capital One airline/hotel partners or redeem at 1 cent toward travel."
+    },
+    {
+      "id": "capital_one_venture_x",
+      "name": "Capital One Venture X Rewards",
+      "issuer": "Capital One",
+      "network": "Visa",
+      "annual_fee": 395,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        19.74,
+        28.74
+      ],
+      "currency": "C1",
+      "point_value_cents": 1.85,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (published 1 Oct 2026)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 10,
+          "conditions": "hotels and rental cars booked through Capital One Travel"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "flights and vacation rentals booked through Capital One Travel"
+        },
+        {
+          "category": "entertainment",
+          "multiplier": 5,
+          "conditions": "Capital One Entertainment ticketing platform only; excludes cardholder pre-sales and Capital One Hall/Arena box office"
+        }
+      ],
+      "base_multiplier": 2,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Annual Capital One Travel credit",
+          "amount": 300,
+          "period": "year",
+          "how_to_use": "statement credit against bookings made through Capital One Travel (flights, hotels, rental cars); resets each cardmember year, not calendar year"
+        },
+        {
+          "name": "Anniversary bonus miles",
+          "amount": 100,
+          "period": "year",
+          "how_to_use": "10,000 miles posted after each account anniversary starting with the first; $100 at Capital One's 1-cent travel rate, about $185 at TPG's Oct 2026 1.85 cents"
+        },
+        {
+          "name": "Global Entry or TSA PreCheck application fee credit",
+          "amount": 120,
+          "period": "every_4_years",
+          "how_to_use": "pay the application fee with the card; statement credit"
+        },
+        {
+          "name": "Airport lounge access (Capital One Lounges + Priority Pass 1,300+)",
+          "amount": null,
+          "period": "year",
+          "how_to_use": "primary cardholder only, Priority Pass enrollment required; since 1 Feb 2026 guests pay ($45 adult at Capital One Lounges, about $35 at Priority Pass) unless $75,000 calendar-year spend unlocks 2 free Capital One Lounge guests; authorized users need $125/yr each for lounge access"
+        },
+        {
+          "name": "Premier/Lifestyle Collection hotel experience credit",
+          "amount": 100,
+          "period": "year",
+          "how_to_use": "per stay, not annual: $100 at Premier Collection or $50 at Lifestyle Collection hotels booked through Capital One Travel"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 75000,
+        "unit": "miles",
+        "spend": 4000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://www.capitalone.com/credit-cards/venture-x/",
+        "https://www.capitalone.com/credit-cards/lp/travel/lp5/",
+        "https://www.capitalone.com/credit-cards/compare/",
+        "https://www.capitalone.com/credit-cards/benefits/entertainment/",
+        "https://thepointsguy.com/credit-cards/capital-one-venture-x/",
+        "https://loyaltylobby.com/2025/06/03/capital-one-venture-x-lounge-access-rule-changes-from-february-1-2026/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "credits.Global Entry/TSA PreCheck amount",
+        "credits.lounge guest and authorized-user fees"
+      ],
+      "notes": "Annual fee $395, APR, earn rates, 75k/$4k/3mo bonus, $300 Capital One Travel credit and 10,000 anniversary miles all read on capitalone.com (product page and the lp5 travel landing page). The $120 Global Entry/TSA credit is on the issuer's Venture page and in TPG's Venture X review, not on the Venture X page render. Lounge change effective 1 Feb 2026 (announced June 2025): free guests and free authorized-user lounge access ended; guest/AU fees are from TPG, Loyalty Lobby and other secondary coverage; the issuer page only says primary cardholders get access. Cell phone protection up to $800 when the phone bill is paid with the card. Authorized users themselves are free to add."
+    },
+    {
+      "id": "capital_one_quicksilver",
+      "name": "Capital One Quicksilver Cash Rewards",
+      "issuer": "Capital One",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        18.74,
+        28.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back, fixed 1 cent per percent",
+        "url": "https://www.capitalone.com/credit-cards/quicksilver/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "hotels, vacation rentals, rental cars and activities booked through Capital One Travel"
+        },
+        {
+          "category": "entertainment",
+          "multiplier": 5,
+          "conditions": "Capital One Entertainment ticketing platform only"
+        }
+      ],
+      "base_multiplier": 1.5,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 200,
+        "unit": "cash",
+        "spend": 500,
+        "months": 3
+      },
+      "intro_apr": "0% for 15 months on purchases and balance transfers (Capital One compare page says 'low intro APR for 15 months'); balance transfer fee applies",
+      "source_urls": [
+        "https://www.capitalone.com/credit-cards/quicksilver/",
+        "https://www.capitalone.com/credit-cards/compare/",
+        "https://www.capitalone.com/learn-grow/money-management/quicksilver-vs-quicksilverone/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "purchase_apr_range"
+      ],
+      "notes": "The Quicksilver product page rendered without its rates box. APR 18.74%-28.74% is inferred from Capital One's own Savor and Quicksilver Student pages today (same no-fee pricing grid); Experian (Aug 2026) and FinanceBuzz list 18.49%-28.49%, likely stale after a prime-rate move. The 5% Capital One Travel and 5% Capital One Entertainment rates are from Capital One's own Quicksilver vs QuicksilverOne article dated 28 Jul 2026, not the product page render. $200 bonus requires $500 in 3 months (compare page); 48-month bonus rule applies."
+    },
+    {
+      "id": "capital_one_quicksilver_student",
+      "name": "Capital One Quicksilver Student Cash Rewards",
+      "issuer": "Capital One",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        18.74,
+        28.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back, fixed 1 cent per percent",
+        "url": "https://www.capitalone.com/credit-cards/quicksilver-student/"
+      },
+      "earn_rules": [],
+      "base_multiplier": 1.5,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 50,
+        "unit": "cash",
+        "spend": 100,
+        "months": 3
+      },
+      "source_urls": [
+        "https://www.capitalone.com/credit-cards/quicksilver-student/",
+        "https://www.capitalone.com/credit-cards/students/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Still offered in Oct 2026 alongside Savor Student (3% dining/grocery/entertainment/streaming, $0 fee, same $50 after $100 bonus, same 18.74%-28.74% APR). The product page does not list any Capital One Travel or Entertainment bonus rate for this card, so none recorded. Flat 1.5% uncapped."
+    },
+    {
+      "id": "capital_one_platinum_secured",
+      "name": "Capital One Platinum Secured",
+      "issuer": "Capital One",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        29.24,
+        29.24
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "No rewards program",
+        "url": "https://www.capitalone.com/credit-cards/platinum-secured/"
+      },
+      "earn_rules": [],
+      "base_multiplier": 0,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": null,
+      "security_deposit": {
+        "minimum_options": [
+          49,
+          99,
+          200
+        ],
+        "initial_credit_line_min": 200,
+        "max_extra_deposit_line": 1000
+      },
+      "source_urls": [
+        "https://www.capitalone.com/credit-cards/platinum-secured/",
+        "https://www.capitalone.com/credit-cards/compare/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "No rewards. 29.24% variable APR (single rate). Refundable deposit of $49, $99 or $200 based on creditworthiness for a $200 line; extra deposit raises the line up to $1,000. Considered for a line increase in as little as 6 months; can graduate to the unsecured Platinum with deposit returned."
+    },
+    {
+      "id": "citi_double_cash",
+      "name": "Citi Double Cash Card",
+      "issuer": "Citi",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 3,
+      "purchase_apr_range": [
+        18.49,
+        28.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Treated as cash: ThankYou points redeemable at 1 cent for statement credit/check/direct deposit",
+        "url": "https://www.citi.com/credit-cards/citi-double-cash-credit-card"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "hotels, car rentals and attractions booked through the Citi Travel portal (1% buy + 1% pay + 3% bonus)"
+        }
+      ],
+      "base_multiplier": 2,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 200,
+        "unit": "cash",
+        "spend": 1500,
+        "months": 6,
+        "detail": "20,000 ThankYou points"
+      },
+      "intro_apr": "0% for 18 months on balance transfers only; no purchase intro APR",
+      "source_urls": [
+        "https://www.citi.com/credit-cards/citi-double-cash-credit-card",
+        "https://www.creditcards.com/card-advice/citi-double-cash-worth-it/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "purchase_apr_range",
+        "foreign_tx_fee_pct",
+        "signup_bonus"
+      ],
+      "notes": "2% = 1% when you buy + 1% when you pay, earned as ThankYou points (1 point per $1 each). Citi's page rendered with blank APR, foreign-fee and bonus values; APR 18.49%-28.74%, 3% foreign fee and the 20k-point/$1,500/6-month bonus are from CreditCards.com dated 14 Oct 2026. Citi Travel 5% total confirmed on Citi's page, no end date shown. If pooled with a Strata Premier/Elite, points become full TYP (TPG Oct 2026: 1.9 cents); valued at 1.0 here as a standalone cash card. Since Custom Cash closed (28 May 2026), this is Citi's only standard cash-back card."
+    },
+    {
+      "id": "citi_custom_cash",
+      "name": "Citi Custom Cash Card",
+      "issuer": "Citi",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 3,
+      "purchase_apr_range": [
+        18.24,
+        28.24
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Treated as cash: ThankYou points at 1 cent",
+        "url": "https://www.citi.com/credit-cards/citi-custom-cash-credit-card"
+      },
+      "earn_rules": [
+        {
+          "category": "dining",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "5% only in the single eligible category with the most spend that billing cycle, first $500; restaurants (excludes bakeries, caterers, restaurants inside another business)"
+        },
+        {
+          "category": "gas",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; gas stations (excludes warehouse clubs, discount stores)"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; grocery stores"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; 'select travel' (airlines, hotels, cruise lines, travel agencies)"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; part of 'select travel'"
+        },
+        {
+          "category": "transit",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; 'select transit'"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; rideshare is part of 'select transit'"
+        },
+        {
+          "category": "streaming",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; select streaming services"
+        },
+        {
+          "category": "drugstores",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule"
+        },
+        {
+          "category": "home_improvement",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule"
+        },
+        {
+          "category": "entertainment",
+          "multiplier": 5,
+          "cap": {
+            "amount": 500,
+            "period": "billing_cycle"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "top-category rule; live entertainment"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "hotels, car rentals and attractions via Citi Travel (1% + 4% bonus); Bankrate lists the 4% bonus 'through 6/30/2026', so it may have lapsed"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": null,
+      "source_urls": [
+        "https://www.citi.com/credit-cards/citi-custom-cash-credit-card",
+        "https://www.citi.com/credit-cards/citi-custom-cash-credit-card/additional-information",
+        "https://awardwallet.com/news/citi-thankyou-rewards/citi-custom-cash-closed-new-applications/",
+        "https://www.bankrate.com/finance/credit-cards/pdp/citi-custom-cash-card"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "purchase_apr_range",
+        "foreign_tx_fee_pct",
+        "earn_rules (eligible category list)",
+        "earn_rules.travel_portal"
+      ],
+      "notes": "CLOSED TO NEW APPLICANTS: Citi's own page says 'Citi is no longer accepting applications for the Citi Custom Cash Card product as of May 28, 2026'; existing cardmembers keep the card and benefits, and user reports say product changes into it may still work. Citi's page now shows no terms, so the earn structure (5% top eligible category per billing cycle on the first $500, then 1%; 1% elsewhere) is from AwardWallet (2 Jun 2026) and Bankrate; APR 18.24%-28.24% from an undated Bankrate page (a July 2026 review says 17.49%-27.49%); 3% foreign fee is the long-standing term, not seen on an issuer page. Ten eligible categories per Citi's prior terms: restaurants, gas stations, grocery stores, select travel, select transit, select streaming services, drugstores, home improvement stores, fitness clubs, live entertainment; fitness clubs has no schema category and is omitted from earn_rules. Only one category earns 5% in a given cycle, so an optimizer must pick one. Earns ThankYou points; 1.9 cents (TPG Oct 2026) only if pooled with Strata Premier/Elite."
+    },
+    {
+      "id": "citi_strata_premier",
+      "name": "Citi Strata Premier Card",
+      "issuer": "Citi",
+      "network": "Mastercard",
+      "annual_fee": 95,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        20.24,
+        28.24
+      ],
+      "currency": "TYP",
+      "point_value_cents": 1.9,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (published 1 Oct 2026)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 10,
+          "conditions": "hotels, car rentals and attractions booked on cititravel.com"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 3,
+          "conditions": "air travel"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 3,
+          "conditions": "other hotel purchases"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "conditions": "restaurants"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 3,
+          "conditions": "supermarkets"
+        },
+        {
+          "category": "gas",
+          "multiplier": 3,
+          "conditions": "gas stations"
+        },
+        {
+          "category": "ev_charging",
+          "multiplier": 3,
+          "conditions": "EV charging stations"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Annual Hotel Benefit",
+          "amount": 100,
+          "period": "year",
+          "how_to_use": "once per calendar year, $100 off a single hotel stay of $500 or more (excluding taxes and fees) booked through cititravel.com or 1-833-737-1288; applied at booking"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 60000,
+        "unit": "points",
+        "spend": 4000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://www.citi.com/credit-cards/citi-strata-premier-credit-card",
+        "https://thepointsguy.com/credit-cards/citi/citi-premier-worth-annual-fee"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "signup_bonus"
+      ],
+      "notes": "Fee, APR, no foreign fee, all earn rates and the $100 hotel benefit read on citi.com today. The page rendered the welcome-offer numbers blank; 60,000 points after $4,000 in 3 months is the standard offer per TPG and others (late 2025), not confirmed for Oct 2026. 48-month bonus rule; Strata Premier and old Citi Premier count as the same card. Uncapped 3x categories."
+    },
+    {
+      "id": "discover_it_cash_back",
+      "name": "Discover it Cash Back",
+      "issuer": "Discover (Capital One)",
+      "network": "Discover",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        17.74,
+        26.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back, fixed 1 cent per percent",
+        "url": "https://www.discover.com/credit-cards/cash-back/it-card.html"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "hotels, vacation rentals, rental cars and activities via Capital One Travel, and Capital One Entertainment tickets, added for Discover it cards after the move to Capital One (27 Jul 2026 onward) per Capital One FAQ as reported by Frequent Miler; not on the Discover product page"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": {
+        "q4_2026": [
+          "dining",
+          "entertainment",
+          "utilities"
+        ],
+        "dates": "2026-10-01 to 2026-12-31",
+        "multiplier": 5,
+        "cap": 1500,
+        "cap_period": "quarter",
+        "after_cap_multiplier": 1,
+        "activation_required": true,
+        "detail": "5% on up to $1,500 of combined purchases in the quarter's categories (up to $75), then 1%. Must activate each quarter (app, online, phone); 5% starts on the later of Oct 1 or the activation date, not retroactive. Restaurants: full-service, cafes, cafeterias, fast food, caterers (restaurants inside other businesses and bakeries may not count). Entertainment (first time as a Discover category): movie theaters, sports/theater/concert promoters, amusement parks, attractions, zoos, aquariums, bowling, record stores; excludes golf, country clubs, some college sports, charity events, streaming/subscriptions, third-party amusement-park tickets, travel packages. Utilities: residential electric, gas, water, plus internet, cable, satellite TV and phone bills paid online or by phone; excludes bills paid in store, through a landlord/HOA, home fuel delivery, standalone streaming. 'utilities' and 'phone' overlap: phone bills count here this quarter.",
+        "q4_2026_labels": [
+          "Restaurants",
+          "Entertainment",
+          "Utilities"
+        ]
+      },
+      "credits": [],
+      "signup_bonus": {
+        "amount": null,
+        "unit": "cashback_match",
+        "spend": 0,
+        "months": 12,
+        "detail": "Cashback Match: all cash back earned in the first 365 days from approval is matched dollar for dollar, unlimited, added within two billing periods after year one; no minimum spend. Per Doctor of Credit (14 Oct 2026) the match now includes Capital One Offers rewards. Effectively doubles every first-year rate (10% on Q4 categories, 2% base)."
+      },
+      "intro_apr": "0% for 15 months on purchases and balance transfers, then 17.74%-26.74% variable; balance transfer fee applies",
+      "source_urls": [
+        "https://www.discover.com/credit-cards/cash-back/it-card.html",
+        "https://www.discover.com/credit-cards/cash-back/cashback-calendar.html",
+        "https://thepointsparty.com/articles/discover-5-percent-cashback-categories-q4-2026",
+        "https://www.nerdwallet.com/credit-cards/news/discover-bonus-categories-q4-2026",
+        "https://frequentmiler.com/discover-it-cards-moving-to-capital-one-7-27-26-more-bonus-spend-categories-capital-one-offers-access-more/",
+        "https://thepointsguy.com/news/discover-capital-one-migration-2026/",
+        "https://www.doctorofcredit.com/tag/discover-it/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "rotating.q4_2026",
+        "foreign_tx_fee_pct",
+        "earn_rules.travel_portal"
+      ],
+      "notes": "Still marketed and open to new applicants in Oct 2026: the Discover page (now a Capital One-hosted page, '(c) 2026 Capital One') has live Apply Now buttons that go to capitalone.com/apply/credit-cards/discover/, and Capital One's own compare page lists it. Discover Bank merged into Capital One, N.A.; Discover accounts began moving to the Capital One website/app on 27 Jul 2026 in waves through 2027. Capital One says the Discover brand and network stay. Discover's disclosure pages say new accounts approved now will have 'some of your account terms' changed in January 2027 (details in Amended Account Terms, not public in what I could read). Discover's rewards calendar page errored ('Oops. Something went wrong'), so the Q4 2026 categories are from The Points Party (3 Oct 2026, quoting Discover's terms) and NerdWallet/CNBC; the $1,500 cap and activation are on Discover's calendar page. Foreign fee 0% is the long-standing Discover term (CFPB card listing says none); not printed on the product page. Redemption changes after migration: no paying the minimum with rewards, gift cards need $25 minimum, no Pay with Rewards in Apple Pay. A single unconfirmed reader comment on Frequent Miler claimed a change-in-terms notice tiering base earn to 0.25%; nothing official supports it."
+    },
+    {
+      "id": "discover_it_student_cash_back",
+      "name": "Discover it Student Cash Back",
+      "issuer": "Discover (Capital One)",
+      "network": "Discover",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        16.74,
+        25.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back, fixed 1 cent per percent",
+        "url": "https://www.discover.com/credit-cards/student/it-card.html"
+      },
+      "earn_rules": [],
+      "base_multiplier": 1,
+      "rotating": {
+        "q4_2026": [
+          "dining",
+          "entertainment",
+          "utilities"
+        ],
+        "dates": "2026-10-01 to 2026-12-31",
+        "multiplier": 5,
+        "cap": 1500,
+        "cap_period": "quarter",
+        "after_cap_multiplier": 1,
+        "activation_required": true,
+        "detail": "Same calendar as Discover it Cash Back: 5% on up to $1,500 per quarter after activation, then 1%; see that record for category definitions.",
+        "q4_2026_labels": [
+          "Restaurants",
+          "Entertainment",
+          "Utilities"
+        ]
+      },
+      "credits": [],
+      "signup_bonus": {
+        "amount": null,
+        "unit": "cashback_match",
+        "spend": 0,
+        "months": 12,
+        "detail": "Unlimited dollar-for-dollar match of all cash back earned in the first year, automatic"
+      },
+      "intro_apr": "0% for 6 months on purchases, then 16.74%-25.74% variable",
+      "source_urls": [
+        "https://www.discover.com/credit-cards/student/it-card.html",
+        "https://thepointsparty.com/articles/discover-5-percent-cashback-categories-q4-2026",
+        "https://www.cnbc.com/select/discover-2021-cash-back-calendar/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "rotating.q4_2026",
+        "foreign_tx_fee_pct"
+      ],
+      "notes": "Open to applicants (Capital One-hosted Discover page, '(c) 2026 Capital One'). No credit score required to apply. The $1,500 cap is not spelled out on the student page ('up to the quarterly maximum'); taken from Discover's calendar page and secondary coverage. Q4 categories and 0% foreign fee from secondary sources as for Discover it Cash Back. Capital One Travel/Entertainment 5% may also apply after migration (see Discover it Cash Back notes); not recorded here."
+    },
+    {
+      "id": "discover_it_secured",
+      "name": "Discover it Secured Cash Back",
+      "issuer": "Discover (Capital One)",
+      "network": "Discover",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        26.49,
+        26.49
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back, fixed 1 cent per percent",
+        "url": "https://www.discover.com/credit-cards/secured/"
+      },
+      "earn_rules": [],
+      "base_multiplier": 1,
+      "rotating": {
+        "q4_2026": [
+          "dining",
+          "entertainment",
+          "utilities"
+        ],
+        "dates": "2026-10-01 to 2026-12-31",
+        "multiplier": 5,
+        "cap": 1500,
+        "cap_period": "quarter",
+        "after_cap_multiplier": 1,
+        "activation_required": true,
+        "detail": "NEW for this card: the relaunched secured card earns the same 5% rotating calendar as Discover it Cash Back (up to $1,500/quarter after activation, then 1%), replacing the old 2% gas & restaurants on $1,000/quarter.",
+        "q4_2026_labels": [
+          "Restaurants",
+          "Entertainment",
+          "Utilities"
+        ]
+      },
+      "credits": [],
+      "signup_bonus": {
+        "amount": null,
+        "unit": "cashback_match",
+        "spend": 0,
+        "months": 12,
+        "detail": "Unlimited match of all cash back earned in the first 365 days; new cardholders only"
+      },
+      "security_deposit": {
+        "minimum_options": [
+          49,
+          99,
+          200
+        ],
+        "initial_credit_line_min": 200
+      },
+      "source_urls": [
+        "https://www.discover.com/credit-cards/secured/",
+        "https://doctorofcredit.com/capital-one-launches-discover-it-secured-cash-back-credit-card",
+        "https://www.nerdwallet.com/credit-cards/news/discover-it-secured-new-rewards-deposit-requirements",
+        "https://www.nerdwallet.com/credit-cards/reviews/discover-it-secured"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "purchase_apr_range",
+        "foreign_tx_fee_pct",
+        "rotating.q4_2026",
+        "rotating.cap"
+      ],
+      "notes": "Relaunched by Capital One as 'Discover it Secured Cash Back' (Doctor of Credit, 5 Oct 2026) after new applications were paused on 2 Jun 2026 for the transition. Issuer page confirms: no annual fee, deposit $49, $99 or $200 by creditworthiness for a line of at least $200 (was a $200 minimum), 5% rotating up to the quarterly maximum when activated plus 1%, first-year Cashback Match, no credit score required, graduation to the unsecured Discover it with deposit returned. Existing holders of the old card keep its old 2% gas/restaurant rewards (NerdWallet). The page shows no APR; 26.49% variable is NerdWallet's pre-relaunch figure and may differ for the new product. $1,500 cap per NerdWallet's relaunch coverage, not on the issuer page."
+    },
+    {
+      "id": "wells_fargo_active_cash",
+      "name": "Wells Fargo Active Cash Card",
+      "issuer": "Wells Fargo",
+      "network": "Visa",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 3,
+      "purchase_apr_range": [
+        18.74,
+        28.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash rewards, fixed value",
+        "url": "https://creditcards.wellsfargo.com/active-cash-credit-card/"
+      },
+      "earn_rules": [],
+      "base_multiplier": 2,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 100,
+        "unit": "dollars cash rewards",
+        "spend": 500,
+        "months": 3
+      },
+      "source_urls": [
+        "https://creditcards.wellsfargo.com/active-cash-credit-card/",
+        "https://creditcards.wellsfargo.com/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Unlimited 2% cash rewards on net purchases, no categories. APR is one of three tiers (18.74%, 24.74% or 28.74% variable) after 0% intro APR for 12 months on purchases and qualifying balance transfers (BTs within 120 days). Visa Signature; cell phone protection up to $600 per claim, $25 deductible, max 2 claims per 12 months (pay the phone bill with the card). Welcome bonus on the issuer page is now $100 for $500 in 3 months; aggregator pages (Experian, Credit Karma) still show the older $200 offer."
+    },
+    {
+      "id": "wells_fargo_autograph",
+      "name": "Wells Fargo Autograph Card",
+      "issuer": "Wells Fargo",
+      "network": "Visa",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        18.74,
+        28.74
+      ],
+      "currency": "Wells Fargo Rewards",
+      "point_value_cents": 1.75,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (Wells Fargo Rewards 1.75c; cash redemption is 1.0c)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "conditions": "restaurants, drinking places, fast food, caterers"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 3,
+          "conditions": "travel: airlines (also hotels, car rental, cruise, travel agencies, discount travel sites, campgrounds)"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 3,
+          "conditions": "travel: hotel/motel, timeshare"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 3,
+          "conditions": "travel agencies and discount travel sites code as travel"
+        },
+        {
+          "category": "gas",
+          "multiplier": 3,
+          "conditions": "gas stations and automated fuel dispensers"
+        },
+        {
+          "category": "ev_charging",
+          "multiplier": 3,
+          "conditions": "EV charging stations count with gas"
+        },
+        {
+          "category": "transit",
+          "multiplier": 3,
+          "conditions": "passenger rail, ferries, tolls, parking lots and garages, taxis and limousines"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 3,
+          "conditions": "earns 3X only when the ride codes as taxi/limousine (transit); Wells Fargo does not name rideshare"
+        },
+        {
+          "category": "streaming",
+          "multiplier": 3,
+          "conditions": "popular streaming services on Wells Fargo's list (wellsfargo.com/autographstreaming); bundled or third-party-billed subscriptions may not count"
+        },
+        {
+          "category": "phone",
+          "multiplier": 3,
+          "conditions": "landline and cell phone providers (telecommunication services)"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 20000,
+        "unit": "points",
+        "spend": 1000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://creditcards.wellsfargo.com/autograph-visa-credit-card/",
+        "https://creditcards.wellsfargo.com/",
+        "https://thepointsguy.com/guide/monthly-valuations/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Wells Fargo values the 20,000-point bonus at $200 cash (1c/pt). Points can transfer to select travel partners 'in any amount' per the issuer page (partners not named there), which is why TPG's 1.75c is used; use 1.0c for cash-only users (NerdWallet values WF Rewards at 1.4c). APR one of 18.74%, 24.74% or 28.74% variable after 0% intro APR for 12 months on purchases. Visa Signature; cell phone protection up to $600, $25 deductible. Sibling card: Autograph Journey ($95; 5X hotels, 4X airlines, 3X other travel and restaurants, 60,000-point bonus after $4,000 in 3 months)."
+    },
+    {
+      "id": "bofa_customized_cash_rewards",
+      "name": "Bank of America Customized Cash Rewards",
+      "issuer": "Bank of America",
+      "network": "Visa",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 3,
+      "purchase_apr_range": [
+        17.74,
+        27.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Cash back, fixed value",
+        "url": "https://www.bankofamerica.com/credit-cards/products/cash-back-credit-card/"
+      },
+      "earn_rules": [
+        {
+          "category": "gas",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "choice category 'Gas and EV charging stations' (pick ONE 3% category; can change once per calendar month); $2,500 cap per quarter is COMBINED across the 3% choice category and the 2% grocery/wholesale club rule; 6% (3% + 3% bonus) in the first year"
+        },
+        {
+          "category": "ev_charging",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "same choice option as gas (Gas and EV charging stations); combined $2,500/quarter cap"
+        },
+        {
+          "category": "online_retail",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "choice category 'Online shopping, including cable, internet, phone plans and streaming'; combined $2,500/quarter cap"
+        },
+        {
+          "category": "streaming",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "part of the Online shopping choice option; combined $2,500/quarter cap"
+        },
+        {
+          "category": "phone",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "phone plans are part of the Online shopping choice option; combined $2,500/quarter cap"
+        },
+        {
+          "category": "utilities",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "cable and internet only, as part of the Online shopping choice option (not electric/water); combined $2,500/quarter cap"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "choice category 'Dining'; combined $2,500/quarter cap"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "choice category 'Travel'; combined $2,500/quarter cap"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "choice category 'Travel'; combined $2,500/quarter cap"
+        },
+        {
+          "category": "drugstores",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "choice category 'Drug stores and pharmacies'; combined $2,500/quarter cap"
+        },
+        {
+          "category": "home_improvement",
+          "multiplier": 3,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bofa_ccr_choice",
+          "conditions": "choice category 'Home improvement and furnishings'; combined $2,500/quarter cap"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 2,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "grocery stores; always on; shares the combined $2,500/quarter cap with the 3% choice category"
+        },
+        {
+          "category": "wholesale_clubs",
+          "multiplier": 2,
+          "cap": {
+            "amount": 2500,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "wholesale clubs; always on; shares the combined $2,500/quarter cap with the 3% choice category"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 200,
+        "unit": "dollars cash back",
+        "spend": 1000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://www.bankofamerica.com/credit-cards/products/cash-back-credit-card/",
+        "https://info.bankofamerica.com/en/rewards/bofa-rewards",
+        "https://wallethub.com/compare/cc/bank-of-america-travel-rewards-vs-cash-rewards",
+        "https://www.cardhub.com/d/bankamericard-cash-back-credit-card-128c"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "foreign_tx_fee_pct",
+        "network"
+      ],
+      "notes": "ONLY ONE 3% choice category is active at a time: the rules sharing choice_group 'bofa_ccr_choice' are mutually exclusive options (an optimizer should pick one per month). The six options: gas & EV charging; online shopping incl. cable, internet, phone plans, streaming; dining; travel; drug stores & pharmacies; home improvement & furnishings. Changeable once per calendar month in Online/Mobile Banking. First-year offer: choice category earns 6% (3% bonus) for the first 12 months, still inside the $2,500 combined quarterly cap. Welcome bonus: $200 online bonus after $1,000 in 90 days. APR 17.74%-27.74% variable after 0% intro for 15 billing cycles on purchases and BTs made in 60 days (3% intro BT fee). BofA Rewards (replaced Preferred Rewards on 26-27 May 2026) multiplies card rewards: Member (no minimum) +10%, Preferred Plus ($30k) +25%, Preferred Honors ($100k) +50%, Premier ($1M) +75%; the old program gave +25/50/75% at $20k/$50k/$100k, and pre-26 May 2026 members may keep an 'extended card benefit' (BofA doesn't say what). So 3% becomes 3.3-5.25% and 2% becomes 2.2-3.5%. BofA's product page shows neither network nor foreign fee; Visa and 3% FX are from WalletHub/CardHub (2026)."
+    },
+    {
+      "id": "apple_card",
+      "name": "Apple Card",
+      "issuer": "Goldman Sachs (transitioning to JPMorgan Chase)",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        17.74,
+        27.99
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Daily Cash, fixed value",
+        "url": "https://www.apple.com/apple-card/"
+      },
+      "earn_rules": [
+        {
+          "category": "everything_else",
+          "multiplier": 2,
+          "conditions": "any purchase paid with Apple Card through Apple Pay; the titanium card and the virtual card number earn 1%"
+        },
+        {
+          "category": "online_retail",
+          "multiplier": 3,
+          "merchants": [
+            "Apple"
+          ],
+          "conditions": "purchases from Apple (Apple Store, apple.com, App Store, Apple services) with Apple Card; Apple Pay not required"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 3,
+          "merchants": [
+            "Uber"
+          ],
+          "conditions": "Apple Pay only, in the Uber app or uber.com; excludes Uber Transit, Split Fares, Group Orders, Uber Family/Teen, vouchers"
+        },
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "merchants": [
+            "Uber Eats"
+          ],
+          "conditions": "Apple Pay only, Uber Eats app or ubereats.com (food delivery)"
+        },
+        {
+          "category": "gas",
+          "multiplier": 3,
+          "merchants": [
+            "Exxon",
+            "Mobil"
+          ],
+          "conditions": "Apple Pay only; fuel, attached c-store and car wash at Exxon/Mobil, pay at pump via Exxon Mobil Rewards+ app or contactless"
+        },
+        {
+          "category": "ev_charging",
+          "multiplier": 3,
+          "merchants": [
+            "ChargePoint"
+          ],
+          "conditions": "Apple Pay only; public ChargePoint charging via app/contactless/Wallet pass, and home chargers on ChargePoint.com"
+        },
+        {
+          "category": "drugstores",
+          "multiplier": 3,
+          "merchants": [
+            "Walgreens",
+            "Duane Reade"
+          ],
+          "conditions": "Apple Pay only; Duane Reade in NY and NJ only; no drive-thru, gift cards or third-party delivery"
+        },
+        {
+          "category": "home_improvement",
+          "multiplier": 3,
+          "merchants": [
+            "Ace Hardware"
+          ],
+          "conditions": "Apple Pay only; online, app and participating stores"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 3,
+          "merchants": [
+            "Booking.com"
+          ],
+          "conditions": "Apple Pay only; stays and car rentals booked via Apple Card's exclusive Booking.com link and prepaid to Booking.com; no pay-at-property"
+        },
+        {
+          "category": "everything_else",
+          "multiplier": 3,
+          "merchants": [
+            "Nike",
+            "Hertz"
+          ],
+          "conditions": "Apple Pay only; Nike stores, nike.com, Nike/SNKRS apps; Hertz rentals booked on Hertz.com or the Hertz app at US corporate locations"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": null,
+      "source_urls": [
+        "https://www.apple.com/apple-card/",
+        "https://support.apple.com/en-us/120400",
+        "https://appleinsider.com/articles/26/01/07/apple-card-moving-to-chase-as-issuer-confirms-apple",
+        "https://wtop.com/consumer-news/2026/01/apple-card-switches-hands-but-no-immediate-changes-for-users/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Base is 1% (titanium card); 2% with Apple Pay; 3% at Apple and the ten named merchants with Apple Pay (Apple support page dated 25 Sept 2026: Ace Hardware, Booking.com, ChargePoint, Duane Reade, Exxon and Mobil, Hertz, Nike, Uber, Uber Eats, Walgreens). Apple Card must be the default Apple Pay card. No annual, late, over-limit or foreign transaction fees. APR 17.74%-27.99% variable as of 1 Oct 2026. Issuer: on 7 Jan 2026 Apple and JPMorgan Chase announced Chase will replace Goldman Sachs as issuer (Mastercard stays), a transition expected to take about 24 months; as of 17 Oct 2026 apple.com still says the card is issued by Goldman Sachs Bank USA, Salt Lake City Branch, and Savings is still at Goldman. Daily Cash can go into Apple Cash or the Goldman-held Savings account."
+    },
+    {
+      "id": "bilt_blue",
+      "name": "Bilt Blue Card",
+      "issuer": "Column N.A. (serviced by Cardless; Bilt program)",
+      "network": "Mastercard",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        26.74,
+        34.74
+      ],
+      "currency": "Bilt",
+      "point_value_cents": 2.2,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations (NerdWallet: 1.8c; Bilt statement-credit floor not fixed)",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "rent",
+          "multiplier": 1.25,
+          "conditions": "Bilt Housing Payments (rent, mortgage, HOA etc.) paid through the Bilt app/site, no fee. Default 'Housing-only Option': multiplier set each billing cycle by everyday spend as a share of the housing payment: >=25% -> 0.5X, >=50% -> 0.75X, >=75% -> 1X, >=100% -> 1.25X; below 25% a flat 250 points per cycle. 1.25X is the maximum, not the default. No transaction-count requirement. Alternative 'Flexible Bilt Cash Option': no tiered multiplier; instead earn 4% Bilt Cash on everyday spend and redeem $3 of Bilt Cash per 100 housing points, up to 1X of the payment."
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 3,
+          "conditions": "hotels booked through the Bilt Travel Portal (1X card + 2X portal bonus); flights via the portal earn 2X; other travel 1X"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 3,
+          "merchants": [
+            "Lyft"
+          ],
+          "conditions": "Lyft only, with Bilt linked as the Lyft loyalty partner (1X card + 2X Lyft bonus); Uber earns 1X"
+        },
+        {
+          "category": "dining",
+          "multiplier": 1,
+          "conditions": "1X at ordinary restaurants; Bilt Neighborhood Dining partner restaurants (20,000+) add a per-restaurant bonus shown in the app, 'up to 4X' total per bilt.com"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 100,
+        "unit": "dollars Bilt Cash",
+        "spend": 0,
+        "months": 0
+      },
+      "source_urls": [
+        "https://www.bilt.com/card",
+        "https://www.biltrewards.com/terms/bilt-card-offer-terms",
+        "https://www.biltrewards.com/terms/bilt-card-double-points",
+        "https://thepointsguy.com/guide/monthly-valuations/"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Bilt 2.0 (launched 7 Feb 2026) replaced the Wells Fargo-issued Bilt Mastercard: three cards (Blue $0, Obsidian $95, Palladium $495) issued by Column N.A., serviced by Cardless; Bilt Card Offer Terms last updated 18 Sept 2026. The old 'use the card 5 times per statement' rule is gone. Rewards option: Housing-only (default; earns no Bilt Cash on everyday spend) or Flexible Bilt Cash (4% Bilt Cash on all everyday spend, excluding housing). Pick within 7 days of opening; later changes apply from the next billing cycle. Under Flexible, unlocking 1X on a $2,000 rent takes $60 of Bilt Cash, i.e. $1,500 of everyday spend. Bilt Cash expires 31 Dec each year; up to $100 carries over. It is also redeemable for Lyft, Bilt Travel hotels, Grubhub, Walgreens, SoulCycle, GoPuff and others (merchant caps), transfer bonuses and status. Rent Day promo (1 Mar 2026 to 1 Jan 2027): on the 1st of each month Blue earns 2X on non-housing purchases, max 1,000 bonus points per month. Points transfer 1:1 to airline and hotel partners and can pay rent, mortgage, student loans or a statement credit (min 1,000 pts; value set by Bilt). APR: 10% intro APR on new purchases for 12 billing cycles, then 26.74%-34.74% variable (one range for all three cards on bilt.com). No foreign transaction fee. Cell phone protection, purchase assurance, MasterRental CDW. Welcome bonus: $100 Bilt Cash on opening, only if you have never held a Bilt 2.0 card."
+    },
+    {
+      "id": "bilt_obsidian",
+      "name": "Bilt Obsidian Card",
+      "issuer": "Column N.A. (serviced by Cardless; Bilt program)",
+      "network": "Mastercard",
+      "annual_fee": 95,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        26.74,
+        34.74
+      ],
+      "currency": "Bilt",
+      "point_value_cents": 2.2,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "dining",
+          "multiplier": 3,
+          "choice_group": "bilt_obsidian_3x",
+          "conditions": "default 3X category: restaurants, bars, bakeries, fast food (Mastercard MCC). Choose dining OR grocery once, within 30 days of opening; then locked for the calendar year"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 3,
+          "cap": {
+            "amount": 25000,
+            "period": "year"
+          },
+          "after_cap_multiplier": 1,
+          "choice_group": "bilt_obsidian_3x",
+          "conditions": "only if grocery is the selected 3X category instead of dining; grocery stores and supermarkets; $25,000 per calendar year"
+        },
+        {
+          "category": "airfare",
+          "multiplier": 2,
+          "conditions": "booked directly with airlines"
+        },
+        {
+          "category": "hotels",
+          "multiplier": 2,
+          "conditions": "booked directly with hotels, motels, resorts (cruise lines and car rental also 2X)"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 4,
+          "conditions": "hotels via the Bilt Travel Portal (2X card + 2X portal bonus); flights via the portal 3X"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 3,
+          "merchants": [
+            "Lyft"
+          ],
+          "conditions": "Lyft linked to Bilt"
+        },
+        {
+          "category": "rent",
+          "multiplier": 1.25,
+          "conditions": "same Housing-only / Flexible Bilt Cash options as Bilt Blue; 1.25X needs everyday spend >= 100% of the housing payment"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Bilt Travel hotel credit",
+          "amount": 50,
+          "period": "half_year",
+          "how_to_use": "hotel stays of 2+ nights booked through the Bilt Travel Portal, Jan-Jun and Jul-Dec ($100/yr)"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 200,
+        "unit": "dollars Bilt Cash",
+        "spend": 0,
+        "months": 0
+      },
+      "source_urls": [
+        "https://www.bilt.com/card",
+        "https://www.biltrewards.com/terms/bilt-card-offer-terms"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "The two rules sharing choice_group 'bilt_obsidian_3x' are mutually exclusive (dining is the default). Points Accelerator (redeemed with Bilt Cash) adds +1X on category spend up to $5,000 per bilt.com. Rent Day (1st of month, through 1 Jan 2027): 6X on the selected 3X category, 4X travel, 2X other, max 1,000 bonus points/month. Authorized users $50 each per year. Adds trip cancellation/interruption, trip delay, extended warranty, lost luggage coverage. APR and FX as Bilt Blue."
+    },
+    {
+      "id": "bilt_palladium",
+      "name": "Bilt Palladium Card",
+      "issuer": "Column N.A. (serviced by Cardless; Bilt program)",
+      "network": "Mastercard",
+      "annual_fee": 495,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        26.74,
+        34.74
+      ],
+      "currency": "Bilt",
+      "point_value_cents": 2.2,
+      "point_value_source": {
+        "name": "The Points Guy, Oct 2026 valuations",
+        "url": "https://thepointsguy.com/guide/monthly-valuations/"
+      },
+      "earn_rules": [
+        {
+          "category": "travel_portal",
+          "multiplier": 4,
+          "conditions": "hotels via the Bilt Travel Portal (2X + 2X portal bonus); flights via the portal 3X"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 4,
+          "merchants": [
+            "Lyft"
+          ],
+          "conditions": "Lyft linked to Bilt (2X + 2X)"
+        },
+        {
+          "category": "rent",
+          "multiplier": 1.25,
+          "conditions": "same Housing-only / Flexible Bilt Cash options as Bilt Blue; 1.25X needs everyday spend >= 100% of the housing payment"
+        }
+      ],
+      "base_multiplier": 2,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Bilt Travel hotel credit",
+          "amount": 200,
+          "period": "half_year",
+          "how_to_use": "hotel stays of 2+ nights booked through the Bilt Travel Portal, Jan-Jun and Jul-Dec ($400/yr)"
+        },
+        {
+          "name": "Annual Bilt Cash",
+          "amount": 200,
+          "period": "year",
+          "how_to_use": "credited on opening and each 1 Jan; spend at Bilt partners, on housing-point unlocks, or transfer bonuses"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 50000,
+        "unit": "points",
+        "spend": 4000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://www.bilt.com/card",
+        "https://www.biltrewards.com/terms/bilt-card-offer-terms"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "2X on all non-housing purchases. Welcome bonus: 50,000 points plus Bilt Gold status after $4,000 of everyday (non-housing) spend in 90 days, plus $300 Bilt Cash on opening. Priority Pass membership. Rent Day: 4X on non-housing purchases on the 1st of each month, max 1,000 bonus points/month. Authorized users $95 each per year. APR and FX as Bilt Blue."
+    },
+    {
+      "id": "us_bank_altitude_go",
+      "name": "U.S. Bank Altitude Go Visa Signature Card",
+      "issuer": "U.S. Bank",
+      "network": "Visa",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 3,
+      "purchase_apr_range": [
+        17.74,
+        27.74
+      ],
+      "currency": "U.S. Bank Altitude points",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Fixed 1c per point for cash back (Bankrate review, 2026; U.S. Bank says deposits to a U.S. Bank account get the maximum value)",
+        "url": "https://www.bankrate.com/credit-cards/reviews/us-bank-altitude-go-card"
+      },
+      "earn_rules": [
+        {
+          "category": "dining",
+          "multiplier": 4,
+          "cap": {
+            "amount": 2000,
+            "period": "quarter"
+          },
+          "after_cap_multiplier": 1,
+          "conditions": "restaurant, fast-food and bar purchases (incl. takeout and restaurant delivery); first $2,000 each quarter"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 2,
+          "conditions": "grocery stores and supermarkets; discount stores/supercenters (Target, Walmart) and wholesale clubs earn 1X"
+        },
+        {
+          "category": "gas",
+          "multiplier": 2,
+          "conditions": "gas stations; discount stores and wholesale clubs excluded"
+        },
+        {
+          "category": "ev_charging",
+          "multiplier": 2,
+          "conditions": "EV charging stations"
+        },
+        {
+          "category": "streaming",
+          "multiplier": 2,
+          "conditions": "qualifying streaming subscriptions on U.S. Bank's list (Netflix, Spotify, Hulu, YouTube Premium, Amazon Prime Video, Amazon Music Unlimited, etc.)"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [
+        {
+          "name": "Streaming credit",
+          "amount": 15,
+          "period": "year",
+          "how_to_use": "automatic after 11 consecutive calendar months of eligible streaming purchases on the card; posts within 2 billing cycles; once per 12-month period"
+        }
+      ],
+      "signup_bonus": {
+        "amount": 20000,
+        "unit": "points",
+        "spend": 1000,
+        "months": 3
+      },
+      "source_urls": [
+        "https://www.usbank.com/credit-cards/altitude-go-visa-signature-credit-card.html",
+        "https://rewards.usbank.com/benefits/card/AltitudeGoBenefits/program-rules",
+        "https://wallethub.com/d/u-s-bank-altitude-go-visa-signature-card-3275c",
+        "https://upgradedpoints.com/credit-cards/reviews/us-bank-altitude-go-visa-signature-card/",
+        "https://www.firstcard.app/learn/us-bank-altitude-go-foreign-transaction-fee",
+        "https://www.bankrate.com/credit-cards/reviews/us-bank-altitude-go-card"
+      ],
+      "checked": "2026-10-17",
+      "unverified": true,
+      "unverified_fields": [
+        "purchase_apr_range",
+        "foreign_tx_fee_pct",
+        "point_value_cents"
+      ],
+      "notes": "4X dining is capped at $2,000 per quarter (U.S. Bank program rules), in force for all cardholders since 15 Apr 2025. Welcome bonus: 20,000 points after $1,000 in 90 days (not for anyone who got this card's bonus in the last 5 years). 0% intro APR for 15 billing cycles on purchases and on BTs made in 60 days (5% BT fee, $5 min). U.S. Bank's page leaves the variable APR blank; 17.74%-27.74% is from WalletHub and UpgradedPoints (2026; NerdWallet shows 17.74%-28.74%). Foreign fee: the issuer page is silent; 3% per FirstCard and FinBedrock (2026), added for new cardholders Sept 2024 and for existing ones 15 Aug 2025, so the card is no longer a no-FX card. U.S. Bank's program rules give no cents-per-point figure; 1c is Bankrate's and Clark's reading of the $200-for-20,000-point bonus."
+    },
+    {
+      "id": "chase_prime_visa",
+      "name": "Prime Visa (Chase Amazon)",
+      "issuer": "Chase",
+      "network": "Visa",
+      "annual_fee": 0,
+      "intro_annual_fee": null,
+      "foreign_tx_fee_pct": 0,
+      "purchase_apr_range": [
+        18.99,
+        27.74
+      ],
+      "currency": "cash",
+      "point_value_cents": 1.0,
+      "point_value_source": {
+        "name": "Amazon rewards points, 1c each at Amazon or as cash back",
+        "url": "https://creditcards.chase.com/cash-back-credit-cards/amazon-prime-rewards"
+      },
+      "earn_rules": [
+        {
+          "category": "online_retail",
+          "multiplier": 5,
+          "merchants": [
+            "Amazon.com",
+            "Audible.com",
+            "Amazon Fresh"
+          ],
+          "conditions": "requires an eligible Prime membership (3% without)"
+        },
+        {
+          "category": "groceries",
+          "multiplier": 5,
+          "merchants": [
+            "Whole Foods Market",
+            "Amazon Fresh"
+          ],
+          "conditions": "Whole Foods and Amazon Fresh only, with eligible Prime membership; other grocery stores 1%"
+        },
+        {
+          "category": "travel_portal",
+          "multiplier": 5,
+          "conditions": "Chase Travel purchases, with eligible Prime membership; bookings direct with airlines, hotels, car rental or cruise lines don't qualify"
+        },
+        {
+          "category": "gas",
+          "multiplier": 2
+        },
+        {
+          "category": "dining",
+          "multiplier": 2
+        },
+        {
+          "category": "transit",
+          "multiplier": 2,
+          "conditions": "local transit and commuting"
+        },
+        {
+          "category": "rideshare",
+          "multiplier": 2,
+          "conditions": "rideshare counts as local transit and commuting"
+        }
+      ],
+      "base_multiplier": 1,
+      "rotating": null,
+      "credits": [],
+      "signup_bonus": {
+        "amount": 150,
+        "unit": "dollars Amazon gift card",
+        "spend": 0,
+        "months": 0
+      },
+      "source_urls": [
+        "https://creditcards.chase.com/cash-back-credit-cards/amazon-prime-rewards"
+      ],
+      "checked": "2026-10-17",
+      "unverified": false,
+      "unverified_fields": [],
+      "notes": "Card has no annual fee but the 5% rates need a paid Prime membership (cost not counted here). Welcome bonus: $150 Amazon gift card loaded on approval for Prime members; new cardmembers only (no existing Amazon Visa or Prime Visa). APR 18.99%-27.74% variable (the page's formula: Prime rate + 11.99 to + 20.74, max 29.99%). No foreign transaction fee. Without Prime this is the Amazon Visa: 3% Amazon/Whole Foods/Chase Travel, 2% gas, dining, transit, 1% other."
+    }
+  ]
+}
