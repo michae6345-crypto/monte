@@ -42,11 +42,7 @@ export function LinkBank() {
     }
   };
 
-  // no keys on this deploy: say so instead of hiding the integration
-  if (configured === false)
-    return (
-      <span className="text-sm">Bank linking (Plaid) is built but switched off in this demo. Upload a statement instead.</span>
-    );
+  // no keys on this deploy: Real vs simulated says so, so the first view doesn't open on "switched off"
   if (configured !== true) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
