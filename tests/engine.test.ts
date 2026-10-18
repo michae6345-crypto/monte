@@ -337,6 +337,10 @@ const SNAPSHOTS: Record<string, { txns: number; spend: number; rewards: number; 
 
 for (const p of PEOPLE) {
   test(`${p.name}: headline snapshot`, () => {
+    // Pin the valuation. It is module-level state, so without this the snapshots
+    // depend on whatever ran before them, and the site sets it per person
+    // (Maya is shown at travel, everyone else at cash).
+    setValuation("cash");
     const s = SNAPSHOTS[p.id];
     const tx = yearOf(p);
     const r = receipt(p.wallet, tx);
@@ -351,6 +355,26 @@ for (const p of PEOPLE) {
     assert.equal(cents(r.leftOnTable), s.leftOnTable);
   });
 }
+
+// The site shows Maya at travel valuation and everyone else at cash, so her headline on
+// screen is not the cash snapshot above. Both are correct; they answer different
+// questions. Pinned here so nobody quotes the wrong one on a slide.
+test("Maya: cash and travel are different headlines, and both are hers", () => {
+  const tx = yearOf(MAYA);
+  setValuation("cash");
+  const cash = receipt(MAYA.wallet, tx);
+  setValuation("travel");
+  const travel = receipt(MAYA.wallet, tx);
+  setValuation("cash"); // leave the module as we found it
+
+  assert.equal(cents(cash.net), 463.32);
+  assert.equal(cents(travel.net), 944.19);
+  // Travel points are worth more per point, so the same year earns more...
+  assert.ok(travel.rewards > cash.rewards);
+  // ...but the gap between cards narrows, so less is left on the table.
+  assert.ok(travel.leftOnTable < cash.leftOnTable);
+  assert.equal(cents(travel.leftOnTable), 89.71);
+});
 
 // SPEC.md's demo path claims "Receipt (-$427)" and "Replay ($104)" for Jordan. Verified
 // against the engine as it stands, with no change to engine code or data.
