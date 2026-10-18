@@ -4,21 +4,25 @@
 // purchases, works out what every cap pool has already consumed, and stores those
 // counters. After this runs, a tap never touches the history again.
 //
-// Body: { userId, source?: "plaid" | "upload", txns?, wallet? }
+// Auth: Authorization: Bearer <supabase jwt>
+// Body: { source?: "plaid" | "upload", txns?, wallet? }
 // Returns: { purchases, capRows, ms }
 
 import { NextResponse } from "next/server";
 import type { Holding, Txn } from "@/lib/engine";
 import { capStateFrom } from "@/lib/db/cap-state";
-import { serviceDb, notConfigured } from "@/lib/db/client";
+import { serviceDb, notConfigured, requestUser, unauthorized } from "@/lib/db/client";
 
 
-type Body = { userId?: string; txns?: Txn[]; wallet?: Holding[]; itemId?: string };
+type Body = { txns?: Txn[]; wallet?: Holding[]; itemId?: string };
 
 export async function POST(req: Request) {
   const t0 = performance.now();
   const db = serviceDb();
   if (!db) return NextResponse.json(notConfigured, { status: 503 });
+  // who this is comes from the verified JWT, never the body
+  const userId = await requestUser(req, db);
+  if (!userId) return NextResponse.json(unauthorized, { status: 401 });
 
   let body: Body;
   try {
@@ -26,9 +30,9 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "bad_json" }, { status: 400 });
   }
-  const { userId, txns, wallet, itemId } = body;
-  if (!userId || !Array.isArray(txns) || !Array.isArray(wallet)) {
-    return NextResponse.json({ error: "userId, txns and wallet are required" }, { status: 400 });
+  const { txns, wallet, itemId } = body;
+  if (!Array.isArray(txns) || !Array.isArray(wallet)) {
+    return NextResponse.json({ error: "txns and wallet are required" }, { status: 400 });
   }
 
   // 1. the cards they hold. Balance and APR come from the account, not a guess.
@@ -66,7 +70,7 @@ export async function POST(req: Request) {
     if (error) return NextResponse.json({ error: "db_error", detail: error.message }, { status: 502 });
   }
 
-  if (itemId) await db.from("bank_items").update({ last_synced: new Date().toISOString() }).eq("id", itemId);
+  if (itemId) await db.from("bank_items").update({ last_synced: new Date().toISOString() }).eq("id", itemId).eq("user_id", userId);
 
   return NextResponse.json({
     purchases: txnRows.length,

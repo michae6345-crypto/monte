@@ -4,6 +4,7 @@
 // It reads the cap counters that sync already wrote, ranks the wallet against them, and
 // returns a winner. The cost does not grow with how long you have been a customer.
 //
+// Auth: Authorization: Bearer <supabase jwt>
 // Body: { merchant, amount, category, date? }
 // Returns: { pick, ranked, capNotes, blocked, ms }
 
@@ -11,15 +12,18 @@ import { NextResponse } from "next/server";
 import { evaluate, pointValue, type Holding, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { capMapFrom, type CapRow } from "@/lib/db/cap-state";
-import { serviceDb, notConfigured } from "@/lib/db/client";
+import { serviceDb, notConfigured, requestUser, unauthorized } from "@/lib/db/client";
 
 
-type Body = { merchant?: string; amount?: number; category?: string; date?: string; userId?: string };
+type Body = { merchant?: string; amount?: number; category?: string; date?: string };
 
 export async function POST(req: Request) {
   const t0 = performance.now();
   const db = serviceDb();
   if (!db) return NextResponse.json(notConfigured, { status: 503 });
+  // who this is comes from the verified JWT, never the body
+  const userId = await requestUser(req, db);
+  if (!userId) return NextResponse.json(unauthorized, { status: 401 });
 
   let body: Body;
   try {
@@ -27,9 +31,9 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "bad_json" }, { status: 400 });
   }
-  const { merchant, amount, category, date, userId } = body;
-  if (!merchant || typeof amount !== "number" || !category || !userId) {
-    return NextResponse.json({ error: "merchant, amount, category and userId are required" }, { status: 400 });
+  const { merchant, amount, category, date } = body;
+  if (!merchant || typeof amount !== "number" || !category) {
+    return NextResponse.json({ error: "merchant, amount and category are required" }, { status: 400 });
   }
 
   // Two reads, both indexed: the wallet, and only the cap rows for the periods this
