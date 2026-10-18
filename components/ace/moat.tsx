@@ -3,12 +3,15 @@
 import { useBrand } from "./brands";
 import { motion } from "framer-motion";
 import { useMemo, useState, type ReactNode } from "react";
-import { pointValue, tap, type Txn } from "@/lib/engine";
+import { interestFor, marginalValue, pointValue, tap, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { Section } from "./section";
 import { MCC, hostOf } from "./strategy";
 import { Lockup } from "@/components/brand";
 import { money, nameOf, useAce } from "./store";
+import { CardArt, shortName } from "./card-art";
+import { MerchantLogo } from "./merchant-logo";
+import { bestSecondCard } from "./one-card";
 
 const ROWS: [string, string, string, string][] = [
   ["Best card at the register", "yes", "yes", "no"],
@@ -39,6 +42,7 @@ export function MoatSection() {
       title={<>Uno picks the card. {b.name} plays every dollar.</>}
       readout={<>compared on what each one advertises, Oct 2026</>}
     >
+      <TwoAnswers />
       <div className="overflow-x-auto m-panel">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="mono text-[11px] uppercase tracking-[0.15em] text-ace-dim">
@@ -75,6 +79,118 @@ export function MoatSection() {
         Uno Wallet (YC Spring 2026) from what its site advertises; it is waitlist-only. Comparison sites means referral-funded sites such as NerdWallet.
       </p>
     </Section>
+  );
+}
+
+// ---------- Same purchase, two answers ----------
+
+type Answer = { merchant?: string; picker: ReactNode; pickerCard?: string; monte: ReactNode; monteCard?: string };
+
+/** The selected person's own purchase, answered by a card picker (best points, nothing else)
+ *  and by Monte. Every figure is the engine's: tap() for the register, marginalValue() for fees. */
+function TwoAnswers() {
+  const { held: wallet, txns, persona } = useAce();
+  const nm = nameOf(persona);
+  const a = useMemo<Answer | null>(() => {
+    const visits = new Map<string, { t: Txn; n: number }>();
+    for (const t of txns) {
+      const v = visits.get(t.merchant);
+      visits.set(t.merchant, { t: v?.t ?? t, n: (v?.n ?? 0) + 1 });
+    }
+    const often = [...visits.values()].sort((x, y) => y.n - x.n);
+    if (wallet.length === 1) {
+      const best = bestSecondCard(wallet, txns);
+      return {
+        picker: <>Nothing to pick: {nm.who} {nm.plural ? "have" : "has"} one card.</>,
+        pickerCard: wallet[0].cardId,
+        monte: best && best.w.net > 1 && !wallet[0].balance
+          ? <>A {shortName(best.id)} beside it would have added {money(best.w.net)} on last year&apos;s purchases, if both are paid in full.</>
+          : <>One card is the right call on this spending. Monte still checks it for interest, price rises and double charges.</>,
+        monteCard: best && best.w.net > 1 && !wallet[0].balance ? best.id : wallet[0].cardId,
+      };
+    }
+    // a store where the most points sit on a card carrying a balance
+    for (const { t } of often) {
+      const res = tap(wallet, { date: t.date, merchant: t.merchant, category: t.category, amount: t.amount });
+      const top = [...res.ranked].sort((x, y) => y.reward - x.reward)[0];
+      const h = wallet.find((x) => x.cardId === top.cardId);
+      if (top.blocked && top.cardId !== res.pick.cardId && h?.balance)
+        return {
+          merchant: t.merchant,
+          picker: <>Use the {shortName(top.cardId)}: {top.mult % 1 ? top.mult.toFixed(1) : top.mult}×, +{money(top.reward, { cents: true })} on {money(t.amount, { cents: true })}.</>,
+          pickerCard: top.cardId,
+          monte: (
+            <>
+              Use the {shortName(res.pick.cardId)}, +{money(res.pick.reward, { cents: true })}. The {shortName(top.cardId)} carries {money(h.balance)} at {h.apr}%, so
+              anything new on it charges interest from day one.
+            </>
+          ),
+          monteCard: res.pick.cardId,
+        };
+    }
+    // no balance: the picker is right at the register; Monte also asks whether the card pays for itself
+    for (const { t } of often) {
+      const res = tap(wallet, { date: t.date, merchant: t.merchant, category: t.category, amount: t.amount });
+      const c = card(res.pick.cardId);
+      if (c.annual_fee <= 0) continue;
+      const m = marginalValue(wallet, txns, res.pick.cardId);
+      return {
+        merchant: t.merchant,
+        picker: <>Use the {shortName(res.pick.cardId)}, +{money(res.pick.reward, { cents: true })}.</>,
+        pickerCard: res.pick.cardId,
+        monte: (
+          <>
+            Same card. And its {money(c.annual_fee)} fee bought {money(m.rewardsAdded + m.credits)} of value last year, so it{" "}
+            {m.net >= 0 ? `pays for itself by ${money(m.net)}` : `costs ${money(-m.net)} more than it returns`}.
+          </>
+        ),
+        monteCard: res.pick.cardId,
+      };
+    }
+    // the picker is right at the register; what it can't see is the balance or the rest of the year
+    const t = often[0]?.t;
+    if (!t) return null;
+    const res = tap(wallet, { date: t.date, merchant: t.merchant, category: t.category, amount: t.amount });
+    const owed = wallet.find((h) => (h.balance ?? 0) > 0);
+    return {
+      merchant: t.merchant,
+      picker: <>Use the {shortName(res.pick.cardId)}, +{money(res.pick.reward, { cents: true })}.</>,
+      pickerCard: res.pick.cardId,
+      monte: owed ? (
+        <>
+          Same card. And the {money(owed.balance ?? 0)} on the {shortName(owed.cardId)} costs {money(interestFor(owed))} a year in interest: pay
+          that down first.
+        </>
+      ) : (
+        <>Same card. Monte also checks the year for fees, price rises and double charges.</>
+      ),
+      monteCard: owed?.cardId ?? res.pick.cardId,
+    };
+  }, [wallet, txns, nm]);
+  if (!a) return null;
+  return (
+    <div className="mb-8">
+      <p className="m-label mb-3 flex items-center gap-2">
+        {a.merchant && <MerchantLogo name={a.merchant} size={20} />}
+        {a.merchant ? `${nm.whose} purchase at ${a.merchant}` : `${nm.whose} wallet`} · two answers
+      </p>
+      <div className="grid gap-4 md:grid-cols-2">
+        {[
+          { who: "A card picker", body: a.picker, card: a.pickerCard, ink: false },
+          { who: "Monte", body: a.monte, card: a.monteCard, ink: true },
+        ].map((x) => (
+          <div key={x.who} className={`flex gap-4 p-5 ${x.ink ? "m-panel-ink rounded-[16px]" : "m-panel"}`}>
+            {x.card && <CardArt id={x.card} size="sm" className="w-20 shrink-0 self-start" />}
+            <div>
+              <div className="m-label" style={x.ink ? { color: "#c3cbff" } : undefined}>
+                {x.who}
+              </div>
+              <p className="mt-2 text-lg leading-snug">{x.body}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
