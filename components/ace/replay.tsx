@@ -2,9 +2,8 @@
 
 import { useBrand } from "./brands";
 import { motion, useInView } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { cardArt, shortName } from "./card-art";
-import { Num } from "./num";
 import { Bracketed, HandNote } from "@/components/brand";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
@@ -16,8 +15,12 @@ const LANE = 64;
 export function ReplaySection() {
   const { wallet, r, txns, persona } = useAce();
   const [mode, setModeRaw] = useState<"actual" | "best">("actual");
-  const [auto, setAuto] = useState<"actual" | "best">("actual");
-  const setMode = setModeRaw;
+  // until someone clicks the toggle, scrolling sweeps the year from left to right
+  const [manual, setManual] = useState(false);
+  const setMode = (m: "actual" | "best") => {
+    setManual(true);
+    setModeRaw(m);
+  };
   const { brand: b } = useBrand();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-20%" });
@@ -81,12 +84,16 @@ export function ReplaySection() {
     >
       <Stage vh={190}>
         {(p) => {
-          const want = p > 0.42 ? "best" : "actual";
+          // the sweep: a line crosses the year; every purchase it passes moves to Monte's pick
+          const f = manual ? (mode === "best" ? 1 : 0) : Math.min(1, Math.max(0, (p - 0.12) / 0.72));
+          const shown = f >= 1 ? "best" : f <= 0 ? "actual" : "sweep";
+          const passed = (x: number) => x / W <= f;
+          const sofar = r.actual.total + dots.reduce((a, d) => a + (passed(d.x) ? d.gain : 0), 0);
+          const view = shown === "sweep" ? (f > 0.5 ? "best" : "actual") : shown;
           return (
       <div ref={ref} className="m-panel p-5 md:p-8">
-        <ScrollFlip want={want} auto={auto} onFlip={(m) => { setAuto(m); setModeRaw(m); }} />
         <div className="mb-5">
-          <StageSteps steps={["as he paid", "on Monte's pick"]} p={p} />
+          <StageSteps steps={["as paid", "the sweep", "on Monte's pick"]} p={p} />
         </div>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="inline-flex rounded-full p-1" style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}>
@@ -94,24 +101,24 @@ export function ReplaySection() {
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`rounded-full px-5 py-2 text-sm transition ${mode === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
+                className={`rounded-full px-5 py-2 text-sm transition ${view === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
               >
                 {m === "actual" ? `What ${persona.name} did` : `What ${b.name} would do`}
               </button>
             ))}
           </div>
-          {mode === "actual" && (
+          {shown === "actual" && (
             <HandNote dir="left" className="hidden lg:flex" delay={0.3}>
-              flip it and watch the dots move
+              scroll, or flip it, and watch the dots move
             </HandNote>
           )}
           <div className="text-right">
-            <div className="m-label">{mode === "best" ? "Rewards, played right" : "Rewards, as played"}</div>
+            <div className="m-label">{shown === "actual" ? "Rewards, as played" : shown === "best" ? "Rewards, played right" : "Rewards, replayed so far"}</div>
             <div className="text-6xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.04em" }}>
-              <Num value={mode === "best" ? r.best.total : r.actual.total} />
+              <span className="tnum">{money(shown === "best" ? r.best.total : shown === "actual" ? r.actual.total : sofar)}</span>
             </div>
-            <div className={`mono mt-1 text-xs transition-opacity ${mode === "best" ? "text-ace-gain opacity-100" : "opacity-0"}`}>
-              {money(r.leftOnTable, { sign: true })} from the same purchases
+            <div className={`mono mt-1 text-xs transition-opacity ${shown !== "actual" ? "text-ace-gain opacity-100" : "opacity-0"}`}>
+              {money((shown === "best" ? r.best.total : sofar) - r.actual.total, { sign: true })} from the same purchases
             </div>
           </div>
         </div>
@@ -142,9 +149,13 @@ export function ReplaySection() {
                 {m}
               </text>
             ))}
+            {f > 0 && f < 1 && (
+              <line x1={f * W} x2={f * W} y1={0} y2={H - 6} strokeWidth={2} style={{ stroke: "var(--m-accent)" }} />
+            )}
             {dots.map((d, i) => {
-              const y = mode === "actual" ? d.ya : d.yb;
-              const card = mode === "actual" ? d.ca : d.cb;
+              const moveIt = passed(d.x);
+              const y = moveIt ? d.yb : d.ya;
+              const card = moveIt ? d.cb : d.ca;
               return (
                 <motion.circle
                   key={d.id}
@@ -153,11 +164,11 @@ export function ReplaySection() {
                   initial={{ cy: d.ya, opacity: 0 }}
                   animate={inView ? { cy: y, opacity: 1 } : {}}
                   transition={{
-                    cy: { type: "spring", stiffness: 70, damping: 13, delay: d.moved ? (i % 60) * 0.012 : 0 },
+                    cy: { type: "spring", stiffness: 90, damping: 14, delay: manual && d.moved ? (i % 60) * 0.012 : 0 },
                     opacity: { delay: (d.x / W) * 1.2, duration: 0.3 },
                   }}
-                  fill={mode === "best" ? (d.moved ? "var(--m-ink)" : "var(--m-mute)") : card === "apple_card" ? "#8f949c" : extractColor(card)}
-                  fillOpacity={mode === "best" && !d.moved ? 0.35 : 0.85}
+                  fill={moveIt ? (d.moved ? "var(--m-ink)" : "var(--m-mute)") : card === "apple_card" ? "#8f949c" : extractColor(card)}
+                  fillOpacity={moveIt && !d.moved ? 0.35 : 0.85}
                 />
               );
             })}
@@ -166,7 +177,7 @@ export function ReplaySection() {
 
         <div className="mt-8 grid gap-6 border-t border-ace-line pt-6 md:grid-cols-[1fr_1.4fr]">
           <p className="text-ace-dim">
-            {mode === "best" ? (
+            {view === "best" ? (
               <>
                 <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. {b.name}{" "}
                 respects every cap and quarter{wallet.some((h) => h.balance) ? ", and never routes new spending to a card carrying a balance: those purchases start charging interest the day you make them" : ""}.
@@ -203,12 +214,4 @@ export function ReplaySection() {
 function extractColor(id: string) {
   const m = cardArt(id).bg.match(/#[0-9a-f]{6}/gi);
   return m ? m[1] ?? m[0] : "#888";
-}
-
-/** Scroll drives the flip; a click still overrides until the scroll crosses the line again. */
-function ScrollFlip({ want, auto, onFlip }: { want: "actual" | "best"; auto: "actual" | "best"; onFlip: (m: "actual" | "best") => void }) {
-  useEffect(() => {
-    if (want !== auto) onFlip(want);
-  }, [want, auto, onFlip]);
-  return null;
 }
