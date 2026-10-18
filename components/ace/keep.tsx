@@ -80,12 +80,12 @@ export function KeepSection() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="grid gap-4 border-b border-ace-line px-5 py-5 last:border-b-0 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.4fr)] md:items-center md:gap-6"
+              className="grid gap-4 border-b border-ace-line px-5 py-5 last:border-b-0 [&>*]:min-w-0 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.4fr)] md:items-center md:gap-6"
             >
               <div className="flex items-center gap-3">
                 <CardArt id={h.cardId} size="sm" className="w-16 shrink-0" />
                 <div className="min-w-0">
-                  <div className="truncate font-medium">{shortName(h.cardId)}</div>
+                  <div className="font-medium leading-snug">{shortName(h.cardId)}</div>
                   <div className="mono text-[11px] text-ace-dim">
                     {m.fee ? `${money(m.fee)} fee` : "no annual fee"}
                     {interest > 0 ? ` · ${money(h.balance ?? 0)} at ${h.apr}%` : ""}
@@ -175,10 +175,8 @@ function Bar({ label, v, span, tone }: { label: string; v: number; span: number;
 // ---------------- For you: preferences, next card, nudges ----------------
 
 export function ForYouSection() {
-  const { wallet, txns, valuation, setValuationMode, tryCard, removeCard, persona } = useAce();
+  const { wallet, txns, valuation, setValuationMode, tryCard, persona } = useAce();
   const [noFee, setNoFee] = useState(false);
-  const { held } = useAce();
-  const triedNow = wallet.filter((h) => !held.includes(h)).map((h) => h.cardId);
   const drift = useDrift();
   const { brand: b } = useBrand();
   const [perks, setPerks] = useState<0 | 0.5 | 1>(0);
@@ -349,21 +347,6 @@ export function ForYouSection() {
 
         <div className="grid gap-8 2xl:grid-cols-2 [&>*]:min-w-0">
           <div>
-            {triedNow.length > 0 && (
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-ace-ink px-4 py-3 text-sm text-ace-bg">
-                <span>
-                  What-if: {triedNow.map(shortName).join(", ")} added to next year&apos;s projections. Last year&apos;s receipt, replay and leaks still show the cards held.
-                </span>
-                <button
-                  onClick={() => {
-                    triedNow.forEach((id) => removeCard(id));
-                  }}
-                  className="btn btn-sm bg-ace-bg text-ace-ink"
-                >
-                  undo
-                </button>
-              </div>
-            )}
             <div className="m-label mb-4">
               Best next card for {nameOf(persona).who}
               {wallet.some((h) => h.balance) ? " · once the balance is paid" : ""}
@@ -388,7 +371,7 @@ export function ForYouSection() {
                   <div className="min-w-0 flex-1 basis-[calc(100%-7.5rem)] sm:basis-0">
                     <div className="text-sm font-medium leading-snug">{shortName(x.id)}</div>
                     <div className="mono text-[11px] text-ace-dim">
-                      {money(x.rewardsAdded, { sign: true })} rewards · {x.fee ? `${money(-x.fee, { sign: true })} fee` : "no annual fee"}
+                      {money(x.rewardsAdded, { sign: true })} rewards last year · {x.fee ? `${money(-x.fee, { sign: true })} fee` : "no annual fee"}
                       {x.perkValue ? ` · ${money(x.perkValue, { sign: true })} perks` : ""}
                     </div>
                     {x.bonus && (
@@ -491,5 +474,23 @@ function Pill({ on, onClick, children }: { on: boolean; onClick: () => void; chi
     >
       {children}
     </button>
+  );
+}
+
+/** What-if cards, said once wherever projections show them (every Plan tab, Next year). */
+export function WhatIfBar() {
+  const { wallet, held, removeCard } = useAce();
+  const tried = wallet.filter((h) => !held.includes(h)).map((h) => h.cardId);
+  if (!tried.length) return null;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-ace-ink px-4 py-3 text-sm text-ace-bg">
+      <span>
+        What-if: {tried.map(shortName).join(", ")} added to next year&apos;s projections. Last year&apos;s receipt, replay and leaks still show the
+        cards held.
+      </span>
+      <button onClick={() => tried.forEach((id) => removeCard(id))} className="btn btn-sm bg-ace-bg text-ace-ink">
+        undo
+      </button>
+    </div>
   );
 }

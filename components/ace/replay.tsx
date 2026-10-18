@@ -122,7 +122,7 @@ export function ReplaySection() {
           return (
       <div ref={ref} className="m-panel p-5 md:p-8">
         <div className="mb-5">
-          <StageSteps steps={["as paid", "the sweep", "on Monte's pick"]} p={p} />
+          <StageSteps steps={["as paid", "the sweep", "on Monte's pick"]} p={shown === "sweep" ? p : shown === "best" ? 1 : 0} />
         </div>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="inline-flex rounded-full p-1" style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}>

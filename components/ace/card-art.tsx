@@ -53,6 +53,27 @@ export function shortName(id: string) {
     .trim();
 }
 
+/** The card's own name without the issuer or "Card": for steps, chips and narrow columns. */
+const NICK: Record<string, string> = {
+  amex_gold: "Amex Gold",
+  amex_platinum: "Amex Platinum",
+  amex_blue_cash_preferred: "Blue Cash Preferred",
+  amex_blue_cash_everyday: "Blue Cash Everyday",
+  discover_it_cash_back: "Discover it",
+  discover_it_student_cash_back: "Discover it Student",
+  discover_it_secured: "Discover it Secured",
+  apple_card: "Apple Card",
+  bilt_blue: "Bilt Blue",
+  bilt_obsidian: "Bilt Obsidian",
+  bilt_palladium: "Bilt Palladium",
+  bofa_customized_cash_rewards: "Customized Cash",
+  us_bank_altitude_go: "Altitude Go",
+  chase_prime_visa: "Prime Visa",
+};
+export function nick(id: string) {
+  return NICK[id] ?? shortName(id).replace(/^(Chase|Capital One|Citi|Wells Fargo)\s+/, "").replace(/\s+(Cash Rewards|Rewards|Card)$/, "");
+}
+
 export function CardArt({
   id,
   className,

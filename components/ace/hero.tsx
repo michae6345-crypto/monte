@@ -8,12 +8,13 @@ import { shortName } from "./card-art";
 import { Lockup } from "@/components/brand";
 import { PERSONAS } from "@/lib/data/personas";
 import { nameOf, useAce } from "./store";
+import { WhatIfBar } from "./keep";
 import { useMemo } from "react";
 
 
 export function Nav() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-ace-line bg-ace-bg/90">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-ace-line bg-ace-bg">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
         <a href="#top" className="group flex items-center" aria-label="Monte, back to top">
           <Lockup size={20} />
@@ -69,6 +70,9 @@ export function NextYear() {
           const step = Math.min(n - 1, Math.floor(p * n * 0.999));
           return (
             <div className="mx-auto w-full max-w-6xl px-5 py-6">
+              <div className="mb-3">
+                <WhatIfBar />
+              </div>
               <div className="mb-5">
                 <StageSteps steps={["today", adds ? "a second card" : `${b.name}'s routing`, ...(carried ? ["paid off"] : [])]} p={p} />
               </div>

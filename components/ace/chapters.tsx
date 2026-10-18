@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Chapter } from "./chapter";
 import { People } from "./people";
+import { WhatIfBar } from "./keep";
 import { useAce } from "./store";
 
 type S = Record<
@@ -78,6 +79,7 @@ export function Chapters({ sections: s }: { sections: S }) {
             <span className="m-second block">in the order that saves the most.</span>
           </>
         }
+        intro={<WhatIfBar />}
         tabs={[
           { key: "payoff", label: "Pay this first", node: s.payoff },
           { key: "keep", label: "Keep or cancel", node: s.keep },

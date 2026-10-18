@@ -45,7 +45,11 @@ export function TapSection() {
   useEffect(() => {
     const on = (e: Event) => {
       const k = SPOTS.findIndex((s) => s.merchant === (e as CustomEvent<string>).detail);
-      if (k >= 0) choose(k);
+      if (k >= 0) {
+        // hold it: the scroll tour mustn't swap the store mid-pitch
+        setManual(true);
+        choose(k);
+      }
     };
     window.addEventListener("monte:tap", on);
     return () => window.removeEventListener("monte:tap", on);
@@ -138,7 +142,7 @@ export function TapSection() {
                     transition={{ type: "spring", stiffness: 140, damping: 18 }}
                   >
                     <CardArt id={h.cardId} dim={!isPick} />
-                    {h.balance ? (
+                    {h.balance && isPick ? (
                       <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[10px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)]">
                         carries a balance
                       </div>

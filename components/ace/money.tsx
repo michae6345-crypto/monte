@@ -59,7 +59,7 @@ export function MoneySection() {
       lede="A year of purchases by category, merchant and month, and the subscriptions still billing. Switch person in the bar above, or drop in your own statement."
     >
       <div className="mb-8 flex flex-wrap items-center gap-2">
-        <StatementUpload onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
+        <StatementUpload key={persona.id} onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
         <LinkBank />
       </div>
 

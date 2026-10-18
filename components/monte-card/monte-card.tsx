@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote, MonteMark, Sampler } from "@/components/brand";
-import { CardArt, shortName } from "@/components/ace/card-art";
+import { CardArt, nick, shortName } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money, nameOf, useAce } from "@/components/ace/store";
 import { spotsFor } from "@/components/ace/spots";
@@ -149,7 +149,7 @@ export function MonteCardDemo() {
         </div>
 
         {/* right: what Monte receives, and what it decides */}
-        <div className="m-mono min-h-[420px] p-6 text-[13px] leading-[1.7]">
+        <div className="m-mono min-h-[420px] min-w-0 break-words p-6 text-[13px] leading-[1.7]">
           {!shown && (
             <div className="flex h-full flex-col items-start justify-center gap-4 text-m-slate">
               <span className="m-display text-5xl text-m-accent">[ ]</span>
@@ -194,7 +194,7 @@ export function MonteCardDemo() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: n * 0.08 }}
-                      className={`grid grid-cols-[1fr_auto_auto] items-baseline gap-4 ${r.blocked ? "line-through" : ""}`}
+                      className={`grid grid-cols-[minmax(0,1fr)_minmax(0,auto)_auto] items-baseline gap-x-4 ${r.blocked ? "line-through" : ""}`}
                     >
                       <span className={r.cardId === pick?.cardId ? "text-m-ink" : "text-m-slate"}>
                         {r.cardId === pick?.cardId ? "→ " : "  "}
@@ -215,7 +215,7 @@ export function MonteCardDemo() {
                   pick && (
                     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-1">
                       <div className="m-display text-2xl text-m-ink">
-                        Charge <Bracketed>{shortName(pick.cardId)}</Bracketed>{" "}
+                        Charge <Bracketed>{nick(pick.cardId)}</Bracketed>{" "}
                         <span className="m-num m-gain">{money(pick.reward, { cents: true, sign: true })}</span>
                       </div>
                       <div className="text-m-slate">

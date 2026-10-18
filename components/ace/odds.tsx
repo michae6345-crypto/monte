@@ -80,7 +80,7 @@ const MONTHS = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "
 
 export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pick?: string; kind?: "add" | "drop" }) {
   const nm = nameOf(useAce().persona);
-  const adds = mc.options.filter((o) => o.id.startsWith(`${kind}:`));
+  const adds = mc.options.filter((o) => o.id.startsWith(`${kind}:`)).sort((a, b) => b.p50 - a.p50);
   const [sel, setSel] = useState<string | null>(null);
   const o = adds.find((x) => x.id === (sel ?? pick)) ?? adds[0];
 

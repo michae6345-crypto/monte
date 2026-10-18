@@ -205,11 +205,18 @@ export function LeaksSection() {
       {total >= 1 && (
         // the headline, added up on screen: only the rows marked as counted
         <p className="m-mono mt-4 text-[13px]">
-          {leaks
-            .filter((l) => l.counts)
-            .map((l) => money(l.amount, { cents: true }))
-            .join(" + ")}{" "}
-          = {money(total, { cents: true })} a year. Rows marked &ldquo;not counted&rdquo; are shown, not added.
+          {leaks.filter((l) => l.counts).length > 1 ? (
+            <>
+              {leaks
+                .filter((l) => l.counts)
+                .map((l) => money(l.amount, { cents: true }))
+                .join(" + ")}{" "}
+              = {money(total, { cents: true })} a year.
+            </>
+          ) : (
+            <>Counted: {leaks.find((l) => l.counts)?.title.toLowerCase()}, {money(total, { cents: true })} a year.</>
+          )}{" "}
+          Rows marked &ldquo;not counted&rdquo; are shown, not added.
         </p>
       )}
     </div>

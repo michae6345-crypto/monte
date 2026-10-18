@@ -197,8 +197,14 @@ export function HistorySection() {
                     <br />
                     <span className="mono">earns {money(-x.miss, { cents: true })} less</span>
                   </span>
+                ) : x.used !== x.best && balanceCards.has(x.used) ? (
+                  <span className="text-right text-[11px] leading-tight" title="This card carries a balance, so new purchases on it accrue interest from day one.">
+                    avoids interest
+                    <br />
+                    <span className="mono">earns the same</span>
+                  </span>
                 ) : (
-                  <span className="mono text-right text-ace-dim">—</span>
+                  <span className="mono text-right">—</span>
                 )}
               </motion.div>
             ))}

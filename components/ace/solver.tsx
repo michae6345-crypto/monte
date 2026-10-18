@@ -10,7 +10,7 @@ import { card } from "@/lib/engine/catalog";
 import { monteCarloSamples, resampledYears } from "@/lib/engine/montecarlo";
 import { Sampler } from "@/components/brand";
 import { money } from "./store";
-import { shortName } from "./card-art";
+import { nick, shortName } from "./card-art";
 import { bestSecondCard } from "./one-card";
 
 /** adds: a card that is not in the wallet today (the one-card case: what a second card would do) */
@@ -378,7 +378,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           </dd>
         </div>
         <div className="px-4 py-3">
-          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `median vs ${runs[0].short}`}</dt>
+          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `median vs ${runs[0].short.replace(/^The /, "the ")}`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {beats === null ? "every other strategy is measured against this" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
           </dd>
@@ -425,7 +425,7 @@ export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: st
   if (carried.length)
     out.push({
       id: "cleared",
-      short: `+ clear the ${shortName(carried[0].cardId)}`,
+      short: `+ clear the ${nick(carried[0].cardId)}`,
       label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" above.)`,
       wallet,
       policy: "best",
