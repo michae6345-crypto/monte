@@ -73,8 +73,10 @@ source URL and the date we checked it, and to the purchases behind it.
 - **Provenance** (`lib/engine/provenance.ts`): any dollar returns its rule, the
   arithmetic (`$84.20 × 3x × 2.05¢/point = $5.18`), the issuer source and the date.
 
-Two rules the engine will not break: never recommend a card that carries a balance, and
-never show a number it cannot source.
+Two rules the engine keeps:
+
+1. It never recommends a card that carries a balance.
+2. It never shows a number it cannot source.
 
 ## Run it
 
