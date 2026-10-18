@@ -102,12 +102,7 @@ node --import ./scripts/_alias.mjs scripts/mc.ts            # Monte Carlo odds p
 node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy, with a worked cap trap
 ```
 
-`jordan-check` prints the whole argument in two lines:
-
-```
-rewards(actual cards) $552.69 + credits $80.00 - fees $325.00 - interest $734.72 = RECEIPT NET -$427.03
-replay(best card in the same wallet) $656.83 - actual $552.69 = LEFT ON THE TABLE $104.14
-```
+`jordan-check` ends with the two lines in the table above.
 
 ## Connecting a bank
 
