@@ -73,6 +73,15 @@ export function ReplaySection() {
     if (off < -0.5) rows.push(["off the card with a balance", off]);
     return rows;
   }, [dots, r.leftOnTable]);
+  // whole dollars that add up to the rounded headline (largest remainder), so a judge can sum them
+  const shownCat = useMemo(() => {
+    const target = Math.round(r.leftOnTable);
+    const fl = byCat.map(([, v]) => Math.floor(v));
+    let left = target - fl.reduce((a, x) => a + x, 0);
+    const order = byCat.map(([, v], k) => [v - Math.floor(v), k] as const).sort((a, b) => b[0] - a[0]);
+    for (const [, k] of order) if (left-- > 0) fl[k] += 1;
+    return fl;
+  }, [byCat, r.leftOnTable]);
 
   const moved = dots.filter((d) => d.moved).length;
 
@@ -206,7 +215,7 @@ export function ReplaySection() {
             )}
           </p>
           <div className="space-y-2">
-            {byCat.map(([cat, v]) => (
+            {byCat.map(([cat, v], k) => (
               <div key={cat} className="flex items-center gap-3 text-sm">
                 <span className="mono w-28 shrink-0 text-[11px] uppercase tracking-wider text-ace-dim">{cat.replace(/_/g, " ")}</span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-ace-line">
@@ -217,7 +226,7 @@ export function ReplaySection() {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   />
                 </div>
-                <span className={`mono w-16 text-right ${v < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{barsOn ? money(v, { sign: true }) : ""}</span>
+                <span className={`mono w-16 text-right ${v < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{barsOn ? money(shownCat[k], { sign: true }) : ""}</span>
               </div>
             ))}
           </div>
