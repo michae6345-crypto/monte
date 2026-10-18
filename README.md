@@ -137,6 +137,7 @@ is fully verified.
 | `data/` | Card catalog and category map, each rule with its source |
 | `scripts/` | Verification scripts and the smoke test |
 | `tests/` | 36 tests, including hand-computed cases |
+| `docs/` | Spec, deploy runbook, brand, judge Q&A |
 
 ## Layout
 
