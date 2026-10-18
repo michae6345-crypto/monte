@@ -17,10 +17,6 @@
 
 <p align="center"><sub>ACM@USC TrojanHacks 2026 · Finance</sub></p>
 
-![Jordan's year: $553 in rewards, $735 in interest](docs/img/monte.png)
-
-<p align="center"><sub>Jordan's year: $553 earned in rewards, $735 paid in interest.</sub></p>
-
 ## The problem
 
 Rewards apps show you points. Jordan is 24, first job in LA, three cards. He earned
@@ -38,7 +34,7 @@ minus interest.
 | **The Receipt** | Rewards + perks − fees − interest, per card, for the year |
 | **Purchases** | Every purchase: the card you used, the card Monte would have picked |
 | **Replay** | The same year routed to the best card in the wallet you already have |
-| **Tap** | The best card at a merchant right now, never one carrying a balance |
+| **Tap** | At the register: every card ranked for this store, the winner pays, never one carrying a balance |
 | **Keep or cancel** | Each card's fee against the value it adds over your next-best card |
 | **Apply** | What to get next, with odds from 1,000 simulated years |
 
@@ -93,10 +89,52 @@ Two rules the engine keeps:
 1. It never recommends a card that carries a balance.
 2. It never shows a number it cannot source.
 
+## Tap to pay
+
+The tap demo plays one purchase at the register, on the engine's real `tap()` and the
+selected person's wallet. Open it from the nav, the floating *Try tap to pay* button,
+[`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) or `?tap`.
+
+| Step | What happens |
+|---|---|
+| 1. Store code | The reader sends the merchant, amount and category code (MCC), e.g. Trader Joe's, 5411 |
+| 2. Wallet | Monte opens the person's cards and their balances |
+| 3. Caps | It replays this period's purchases so each card's spending caps are already counted |
+| 4. Rank | Every card is scored for this purchase; a card carrying a balance is blocked |
+| 5. Pay | The top unblocked card pays |
+
+On screen: a countertop reader with four contactless lights and the approval beep, and an
+Apple Pay-style phone holding the Monte card (*Hold Near Reader*), whose cards flip while it
+ranks. Nothing is timed: Next, space or the arrow keys move each step on.
+
+**Real:** the ranking, the cap counts, the balance block and the reward on every card.
+**Simulated:** the reader, the phone and the NFC. It runs in the browser.
+
+### Why there is no real Monte card
+
+No app can choose the card inside Apple Pay or Google Wallet; only the person can. The
+workaround, one Monte card that charges your best card behind the scenes, breaks in four places:
+
+1. **The bonus disappears.** Rewards follow the store's category code. If Monte paid Trader
+   Joe's (5411) and then charged your Amex Gold, Amex would see a charge from Monte, not a
+   grocery store, and pay 1× instead of 4×.
+2. **It can count as a cash advance.** Some issuers treat loading another card as one: a fee
+   up front and interest from day one.
+3. **The money runs backwards.** Monte would pay about 2–3% in card fees each time it charged
+   your real card and earn less than that on the Monte card side.
+4. **It takes a bank and months.** Issuing a card needs a partner bank, Visa or Mastercard
+   approval and identity checks. Curve runs this model in the UK and Europe, and some issuers
+   have blocked it.
+
+So Monte works around the wallet: before you tap it shows the right card for the place you're
+at, so you pick it in Apple Pay; after you tap each purchase gets a verdict; once a year it
+replays the year to show what each card cost. The Monte card itself is simulated at
+[`/brand`](https://ace-eta-beryl.vercel.app/brand).
+
 ## Try it
 
-**Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
-mode, or open [`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) to watch a tap at the register.
+**Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` (or open `?present`)
+for presenter mode and walk the demo with the arrow keys, or open [`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) to watch a tap at the register.
 
 **Run it locally:**
 
@@ -135,7 +173,8 @@ engine, the Monte Carlo, the LP, the receipt and every number it produces, state
 upload, and the Plaid integration code.
 
 **Simulated:** the five demo people (Jordan, Maya, the Parks, Sam, Rosa) and their
-transactions are synthetic. Tap is a web demo, not NFC. Plaid runs against the sandbox,
+transactions are synthetic. Tap is a web demo, not NFC
+(see [Tap to pay](#tap-to-pay)). Plaid runs against the sandbox,
 not a real bank.
 
 **Flagged:** cards marked `UNVERIFIED` in the catalog are badged in the UI. Jordan's wallet
@@ -146,7 +185,8 @@ is fully verified.
 | Path | What's there |
 |---|---|
 | `app/` | Pages (`/`, `/dashboard`, `/brand`) and the Plaid + health API routes |
-| `components/ace/` | The product's sections: receipt, replay, tap, keep, odds, presenter mode |
+| `components/ace/` | The product's sections: receipt, replay, tap, keep, odds, presenter mode, tap demo |
+| `components/monte-card/` | The simulated Monte card and why it isn't real |
 | `components/brand/`, `components/ui/` | The Monte mark, hand-drawn notes, and base UI parts |
 | `lib/engine/` | Rules engine, Monte Carlo, LP optimizer, provenance, statement CSV parser |
 | `lib/data/` | The five demo people and the Plaid mapping |

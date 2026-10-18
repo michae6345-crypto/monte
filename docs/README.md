@@ -11,4 +11,3 @@
 | `deploy.md` | Deploy runbook and Plaid sandbox setup |
 | `JUDGE-QA.md` | Expected judge questions with answers |
 | `pitch/` | Full judge Q&A and stills from the demo video |
-| `img/` | Images used in the README |
