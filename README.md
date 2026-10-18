@@ -27,6 +27,20 @@ minus interest.
 | **Keep or cancel** | Each card's fee against the value it adds over your next-best card |
 | **Apply** | What to get next, with odds from 1,000 simulated years |
 
+## Does it work?
+
+For Jordan, `scripts/jordan-check.ts` rebuilds the receipt line by line:
+
+| Line | Amount |
+|---|---|
+| Rewards on the cards he used | $552.69 |
+| Credits used | $80.00 |
+| Annual fees | −$325.00 |
+| Interest | −$734.72 |
+| **Net** | **−$427.03** |
+| Same purchases, best card in the same wallet | $656.83 |
+| **Left on the table** | **$104.14** |
+
 ## How it works
 
 The engine is deterministic. **The AI never does the math.** Every dollar on screen traces
