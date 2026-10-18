@@ -219,7 +219,7 @@ export function WrappedSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-x-7 bottom-24 text-[2.1rem] leading-[1.05] tracking-[-0.035em]"
+              className="absolute inset-x-7 top-1/2 -translate-y-1/2 text-[2.1rem] leading-[1.05] tracking-[-0.035em]"
               style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}
             >
               {s.body}

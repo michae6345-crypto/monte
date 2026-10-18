@@ -255,7 +255,9 @@ export function DropHero() {
       const p = span > 0 ? Math.min(1, Math.max(0, -rect.top / span)) : 1;
       const ids = order();
       const extra = ids.length - MINE.length;
-      return ids.slice(0, MINE.length + Math.floor(Math.min(1, p / 0.75) * extra + 1e-6));
+      // three more cards on load so the table isn't bare; scrolling deals the rest
+      const onLoad = Math.min(extra, 3);
+      return ids.slice(0, MINE.length + onLoad + Math.floor(Math.min(1, p / 0.75) * (extra - onLoad) + 1e-6));
     };
 
     let cancel = () => {};

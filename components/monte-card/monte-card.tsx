@@ -57,6 +57,12 @@ export function MonteCardDemo() {
     timers.current.push(window.setTimeout(() => setPhase("ranking"), 900));
     timers.current.push(window.setTimeout(() => setPhase("done"), 1600));
   };
+  // open on the first tap's result instead of an empty pane (UI session, audit #15)
+  useEffect(() => {
+    const id = window.setTimeout(() => run(0), 400);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const shown = phase !== "idle";
   const pick = res?.pick;
