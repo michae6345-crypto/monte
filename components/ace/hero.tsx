@@ -18,10 +18,10 @@ export function Nav() {
         <a href="#top" className="group flex items-center" aria-label="Monte, back to top">
           <Lockup size={20} />
         </a>
-        <nav className="m-label hidden gap-6 md:flex">
-          <a href="#receipt" className="hover:underline">Problem</a>
-          <a href="#misses" className="hover:underline">Misses</a>
-          <a href="#register" className="hover:underline">Register</a>
+        <nav className="m-label hidden gap-5 lg:flex">
+          <a href="#see" className="hover:underline">See it</a>
+          <a href="#leaks" className="hover:underline">Leaks</a>
+          <a href="#spend" className="hover:underline">Spend</a>
           <a href="#plan" className="hover:underline">Plan</a>
           <a href="#next" className="hover:underline">Next year</a>
           <a href="#how" className="hover:underline">How</a>
@@ -63,7 +63,7 @@ export function NextYear() {
               </div>
               <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div>
-                  <p className="m-label mb-6">§05 · next year, played 1,000 times</p>
+                  <p className="m-label mb-6">§05 · next year ×1000</p>
                   <h2 className="text-4xl md:text-[3.2rem]">
                     Same cards. Same spending.
                     <span className="m-second block">A thousand next years.</span>

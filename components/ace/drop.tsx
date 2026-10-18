@@ -395,7 +395,7 @@ export function DropHero() {
             <Lockup size={30} state={landed ? "resolved" : "breathe"} />
           </div>
           <h1 className="text-[12.5vw] sm:text-7xl md:text-[6.4rem]">
-            Every card,{" "}
+            Every dollar,{" "}
             <span className="relative inline-block whitespace-nowrap">
               <span
                 className="relative z-10"
@@ -418,11 +418,11 @@ export function DropHero() {
             </span>
           </h1>
           <div className="pointer-events-auto mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#receipt" className="btn btn-primary">
+            <a href="#see" className="btn btn-primary">
               See it work <span aria-hidden>→</span>
             </a>
-            <a href="#register" className="btn btn-ghost">
-              Try a tap
+            <a href="#leaks" className="btn btn-ghost">
+              Find the leaks
             </a>
           </div>
           <button

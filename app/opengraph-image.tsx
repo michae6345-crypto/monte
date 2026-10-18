@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 // The link preview (Devpost, iMessage, Slack): the 𝔼 mark, the wordmark and the line.
-export const alt = "Monte: every card, played right.";
+export const alt = "Monte: every dollar, played right.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -26,11 +26,11 @@ export default function OG() {
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", marginTop: 56, fontSize: 104, lineHeight: 1, letterSpacing: "-0.045em", fontWeight: 600 }}>
-          <span>Every card,</span>
+          <span>Every dollar,</span>
           <span style={{ borderBottom: `10px solid ${blue}`, alignSelf: "flex-start", paddingBottom: 6 }}>played right.</span>
         </div>
         <div style={{ display: "flex", marginTop: 44, fontSize: 30, color: ink }}>
-          What your credit cards really cost, the right card for every purchase, and 1,000 simulated years.
+          See where it goes. Stop the leaks. Spend it right. Plan the next move.
         </div>
       </div>
     ),

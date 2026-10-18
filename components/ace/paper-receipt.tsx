@@ -90,7 +90,7 @@ export function PaperReceipt({
             {name}
           </div>
           <div className="m-mono text-[10.5px] uppercase tracking-[0.18em] text-ace-dim">
-            18 Oct 2025 – 17 Oct 2026 · {purchases} purchases
+            18 Oct 2025 – 17 Oct 2026 · {purchases} purchases · as used
           </div>
         </div>
 
@@ -165,7 +165,7 @@ export function PaperReceipt({
           </div>
           <p className="mt-1 text-ace-dim">
             Same purchases, the right card in this same wallet{carried ? `, never the ${shortName(carried.cardId)}` : ""}.{" "}
-            <a href="#misses" className="text-ace-ink underline underline-offset-2">
+            <a href="#spend" className="text-ace-ink underline underline-offset-2">
               replay ↓
             </a>
           </p>

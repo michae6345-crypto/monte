@@ -9,17 +9,16 @@ import { useAce } from "./store";
 type Step = { id: string; title: string; cue: string; tap?: string; tab?: string };
 
 const STEPS: Step[] = [
-  { id: "top", title: "Hook", cue: "Every card, played right. Scroll: the market lands around Jordan's three cards." },
-  { id: "receipt", tab: "receipt", title: "The problem", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
-  { id: "misses", tab: "replay", title: "Replay", cue: "Scroll: the same purchases move to the right card. $104 back." },
-  { id: "register", tab: "tap", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
-  { id: "register", tab: "card", title: "The Monte Card", cue: "One card, the engine picks at the tap. Simulated, and we say why." },
-  { id: "plan", tab: "payoff", title: "Pay this first", cue: "$250 a month: 13 months. Minimums: 12 years. Then +$521 a year." },
-  { id: "plan", tab: "keep", title: "Keep or cancel", cue: "Amex Gold pays for itself in 0 of 1,000 years. Downgrade." },
-  { id: "next", title: "Next year", cue: "1,000 simulated years: routing alone moves every dot right." },
+  { id: "top", title: "Hook", cue: "Every dollar, played right. For anyone with money moving through a bank, not just card collectors." },
+  { id: "see", tab: "stores", title: "See where it goes", cue: "A year of Jordan's spending: every store, sized by money, growing month by month." },
+  { id: "see", tab: "receipt", title: "What his cards cost", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
+  { id: "leaks", tab: "leaks", title: "Stop the leaks", cue: "Monte found $891 a year leaking: interest, a fee that doesn't pay, the wrong card. Each with its fix." },
+  { id: "spend", tab: "replay", title: "Spend it right", cue: "Scroll: the same purchases move to the right card. $104 back." },
+  { id: "spend", tab: "tap", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
+  { id: "plan", tab: "payoff", title: "Plan the next move", cue: "$250 a month clears it in 13 months, not 12 years. Then +$521 a year." },
+  { id: "next", title: "Next year ×1000", cue: "1,000 simulated years: today, played right, paid off." },
   { id: "how", tab: "trace", title: "How it works", cue: "One purchase traced: merchant code, rule, cents, source. No model does the math." },
   { id: "how", tab: "real", title: "Real vs simulated", cue: "Card terms and engine are real. Jordan is synthetic. Plaid is sandbox." },
-  { id: "how", tab: "moat", title: "Why it wins", cue: "Uno picks the card. Monte also counts the fees and the interest, and isn't paid by banks." },
 ];
 
 const noop = () => () => {};

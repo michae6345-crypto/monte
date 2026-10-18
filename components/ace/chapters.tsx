@@ -4,59 +4,69 @@ import type { ReactNode } from "react";
 import { Chapter } from "./chapter";
 
 type S = Record<
-  "money" | "wrapped" | "receipt" | "replay" | "history" | "odd" | "tap" | "card" | "payoff" | "keep" | "apply" | "next" | "how" | "real" | "moat" | "chart",
+  "money" | "wrapped" | "receipt" | "replay" | "history" | "odd" | "tap" | "card" | "payoff" | "keep" | "apply" | "next" | "how" | "real" | "moat" | "chart" | "leaks",
   ReactNode
 >;
 
-/** The page after the hero, in the order of the pitch: the problem, the misses, the moment
- *  at the register, the plan, next year, and how it works. Views live as tabs. */
+/** Monte for anyone with money moving through a bank: six things it does, card routing one of
+ *  them. Each chapter is one headline with its views as tabs. */
 export function Chapters({ sections: s }: { sections: S }) {
   return (
     <>
       <Chapter
-        id="receipt"
+        id="see"
         index="01"
-        kicker="The problem"
+        kicker="See where it goes"
         title={
           <>
-            What three cards
-            <span className="m-second block">really cost in a year.</span>
+            See where it goes.
+            <span className="m-second block">Every store, every month, every fee.</span>
           </>
         }
         tabs={[
-          { key: "receipt", label: "The receipt", node: s.receipt },
           { key: "stores", label: "Where it went", node: s.money },
-          { key: "wrapped", label: "Wrapped", node: s.wrapped },
+          { key: "receipt", label: "What your cards cost", node: s.receipt },
         ]}
       />
       <Chapter
-        id="misses"
+        id="leaks"
         index="02"
-        kicker="The misses"
-        title={<>The wrong card, purchase by purchase.</>}
+        kicker="Stop the leaks"
+        title={
+          <>
+            Stop the leaks.
+            <span className="m-second block">Interest, fees, price rises, double charges.</span>
+          </>
+        }
         tabs={[
-          { key: "replay", label: "Replay", node: s.replay },
-          { key: "purchases", label: "Every purchase", node: s.history },
+          { key: "leaks", label: "The leaks", node: s.leaks },
           { key: "odd", label: "Odd charges", node: s.odd },
         ]}
       />
       <Chapter
-        id="register"
+        id="spend"
         index="03"
-        kicker="At the register"
-        title={<>At the register.</>}
+        kicker="Spend it right"
+        title={
+          <>
+            Spend it right.
+            <span className="m-second block">The right card for every purchase, even if you have one.</span>
+          </>
+        }
         tabs={[
+          { key: "replay", label: "Replay", node: s.replay },
           { key: "tap", label: "Tap", node: s.tap },
           { key: "card", label: "The Monte Card", node: s.card },
+          { key: "purchases", label: "Every purchase", node: s.history },
         ]}
       />
       <Chapter
         id="plan"
         index="04"
-        kicker="The plan"
+        kicker="Plan the next move"
         title={
           <>
-            What to do about it,
+            Plan the next move,
             <span className="m-second block">in the order that saves the most.</span>
           </>
         }
@@ -68,8 +78,20 @@ export function Chapters({ sections: s }: { sections: S }) {
       />
       {s.next}
       <Chapter
-        id="how"
+        id="look"
         index="06"
+        kicker="Look back"
+        title={
+          <>
+            Look back.
+            <span className="m-second block">The year, wrapped.</span>
+          </>
+        }
+        tabs={[{ key: "wrapped", label: "Wrapped", node: s.wrapped }]}
+      />
+      <Chapter
+        id="how"
+        index="07"
         kicker="How it works"
         title={
           <>

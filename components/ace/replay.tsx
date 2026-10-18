@@ -8,6 +8,7 @@ import { Bracketed, HandNote } from "@/components/brand";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 import { Stage, StageSteps } from "./stage";
+import { OneCardView } from "./one-card";
 
 const W = 1000;
 const LANE = 64;
@@ -63,6 +64,13 @@ export function ReplaySection() {
   }, [dots]);
 
   const moved = dots.filter((d) => d.moved).length;
+
+  if (wallet.length === 1)
+    return (
+      <Section id="replay" index="04" kicker="Replay" title={<>One card does everything.</>}>
+        <OneCardView />
+      </Section>
+    );
 
   return (
     <Section

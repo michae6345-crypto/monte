@@ -17,6 +17,7 @@ import { MonteCardSection } from "@/components/ace/monte-card-section";
 import { Presenter } from "@/components/ace/presenter";
 import { Chapters } from "@/components/ace/chapters";
 import { StrategyChart } from "@/components/ace/strategy";
+import { LeaksSection } from "@/components/ace/leaks";
 
 // The pitch in seven beats: the cards, your year, the receipt, the misses, the register,
 // the plan, next year, and how it works. Secondary views live as tabs inside each beat.
@@ -46,6 +47,7 @@ export default function Home() {
                 real: <RealSection />,
                 moat: <MoatSection />,
                 chart: <StrategyChart />,
+                leaks: <LeaksSection />,
               }}
             />
           </main>

@@ -98,7 +98,7 @@ export function KeepSection() {
                   </span>
                   <span className="text-right">
                     <span className={`m-num block text-sm ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })}/yr</span>
-                    <span className="block text-[11px] text-ace-dim">this card on its own</span>
+                    <span className="block text-[11px] text-ace-dim">this card, played right</span>
                   </span>
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
