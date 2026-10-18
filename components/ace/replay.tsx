@@ -8,13 +8,16 @@ import { Num } from "./num";
 import { Bracketed, HandNote } from "@/components/brand";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
+import { Stage, StageSteps } from "./stage";
 
 const W = 1000;
 const LANE = 64;
 
 export function ReplaySection() {
   const { wallet, r, txns, persona } = useAce();
-  const [mode, setMode] = useState<"actual" | "best">("actual");
+  const [mode, setModeRaw] = useState<"actual" | "best">("actual");
+  const [auto, setAuto] = useState<"actual" | "best">("actual");
+  const setMode = setModeRaw;
   const { brand: b } = useBrand();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-20%" });
@@ -76,7 +79,21 @@ export function ReplaySection() {
       }
       lede={`Each dot is one of ${persona.name}'s purchases, placed on the card that paid for it. Flip to ${b.name} and watch them move to the card that should have.`}
     >
+      <Stage vh={190}>
+        {(p) => {
+          const want = p > 0.42 ? "best" : "actual";
+          if (want !== auto) {
+            // scroll drives the flip; a click still overrides until the next crossing
+            queueMicrotask(() => {
+              setAuto(want);
+              setModeRaw(want);
+            });
+          }
+          return (
       <div ref={ref} className="m-panel p-5 md:p-8">
+        <div className="mb-5">
+          <StageSteps steps={["as he paid", "on Monte's pick"]} p={p} />
+        </div>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="inline-flex rounded-full p-1" style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}>
             {(["actual", "best"] as const).map((m) => (
@@ -182,6 +199,9 @@ export function ReplaySection() {
           </div>
         </div>
       </div>
+          );
+        }}
+      </Stage>
     </Section>
   );
 }

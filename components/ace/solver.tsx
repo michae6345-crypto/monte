@@ -69,10 +69,16 @@ export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
   return runs;
 }
 
-export function Solver({ strategies, txns, title }: { strategies: Strategy[]; txns: Txn[]; title: string }) {
+export function Solver({ strategies, txns, title, step }: { strategies: Strategy[]; txns: Txn[]; title: string; step?: number }) {
   const ready = useSolver(strategies, txns);
   const runs = useMemo(() => ready ?? [], [ready]);
-  const [k, setK] = useState(0);
+  const [k, setK] = useState(step ?? 0);
+  // a scroll stage can drive the strategy; a click still overrides until the next step
+  const [lastStep, setLastStep] = useState(step);
+  if (step !== undefined && step !== lastStep) {
+    setLastStep(step);
+    setK(step);
+  }
   const [shown, setShown] = useState(YEARS);
   const [hover, setHover] = useState<{ lo: number; hi: number; n: number; x: number; w: number } | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);

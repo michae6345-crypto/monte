@@ -19,9 +19,10 @@ const c2 = (v: number) => money(v, { sign: true, cents: true });
 function Row({ k, v, sub, i, strong, trace }: { k: string; v: number; sub?: string; i: number; strong?: boolean; trace?: ProvenanceLine[] }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.15 + i * 0.07, duration: 0.25 }}
+      initial={{ opacity: 0, y: -6, clipPath: "inset(0 0 100% 0)" }}
+      whileInView={{ opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" }}
+      viewport={{ once: true, margin: "0px 0px -12% 0px" }}
+      transition={{ delay: (i % 4) * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className="flex items-baseline justify-between gap-4"
     >
       <span className="min-w-0">

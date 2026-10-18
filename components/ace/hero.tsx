@@ -3,6 +3,7 @@
 import { useBrand } from "./brands";
 import { Solver, jordanStrategies } from "./solver";
 import { DropHero } from "./drop";
+import { Stage, StageSteps } from "./stage";
 import { Lockup } from "@/components/brand";
 import { PERSONAS } from "@/lib/data/personas";
 import { useAce } from "./store";
@@ -44,37 +45,43 @@ export function NextYear() {
   const { brand: b } = useBrand();
   const txns = useMemo(() => yearOf(JORDAN), []);
   const strategies = useMemo(() => jordanStrategies(JORDAN.wallet, JORDAN.name), []);
+  const words = [
+    { h: "As he plays today.", d: `Every purchase on the card ${JORDAN.name} actually reached for. The balance charges interest all year.` },
+    { h: `Every purchase on ${b.name}'s pick.`, d: "Same cards, same spending, each purchase routed to the card that pays most, never the one with a balance." },
+    { h: "And the balance paid off.", d: "The same routing once the Apple Card is clear: no interest, and the Apple Card can earn again." },
+  ];
 
   return (
-    <section id="next" className="relative scroll-mt-16 border-y border-ace-line bg-ace-panel py-20 md:py-28">
-      <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-        <div>
-          <p className="mono mb-6 text-[11px] uppercase tracking-[0.22em] text-ace-dim">
-            <span className="text-ace-ink">{b.name}</span> · next year, played 1,000 times
-          </p>
-          <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.035em] md:text-5xl">
-            Same cards. Same spending.
-            <span className="block text-ace-dim">A different year.</span>
-          </h2>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-ace-dim">
-            Each dot is one simulated year of {JORDAN.name}&apos;s spending, redrawn from his real months. Switch the strategy and watch the
-            same thousand years move.
-          </p>
-          <ol className="mono mt-8 space-y-2 text-[12px] text-ace-dim">
-            <li>
-              <span className="text-ace-ink">01</span> as {JORDAN.name} plays today
-            </li>
-            <li>
-              <span className="text-ace-ink">02</span> every purchase on the card {b.name} picks
-            </li>
-            <li>
-              <span className="text-ace-ink">03</span> and the balance paid off first
-            </li>
-          </ol>
-        </div>
-        <Solver strategies={strategies} txns={txns} title={`monte solve --wallet ${JORDAN.name.toLowerCase()} --next-year --runs 1000`} />
-      </div>
-
+    <section id="next" className="relative scroll-mt-16 border-y border-ace-line bg-ace-panel">
+      <Stage vh={260}>
+        {(p) => {
+          const step = p < 0.34 ? 0 : p < 0.67 ? 1 : 2;
+          return (
+            <div className="mx-auto w-full max-w-6xl px-5 py-16">
+              <div className="mb-8">
+                <StageSteps steps={["today", `${b.name}'s routing`, "paid off"]} p={p} />
+              </div>
+              <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+                <div>
+                  <p className="m-label mb-6">§06 · next year, played 1,000 times</p>
+                  <h2 className="text-4xl md:text-[3.2rem]">
+                    Same cards. Same spending.
+                    <span className="m-second block">A thousand next years.</span>
+                  </h2>
+                  <div className="mt-8 min-h-[7rem]">
+                    <p className="text-2xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.02em" }}>
+                      <span className="m-num mr-3 text-base">{String(step + 1).padStart(2, "0")}</span>
+                      {words[step].h}
+                    </p>
+                    <p className="mt-2 max-w-md text-lg leading-relaxed text-ace-dim">{words[step].d}</p>
+                  </div>
+                </div>
+                <Solver strategies={strategies} txns={txns} step={step} title={`monte solve --wallet ${JORDAN.name.toLowerCase()} --next-year --runs 1000`} />
+              </div>
+            </div>
+          );
+        }}
+      </Stage>
     </section>
   );
 }
