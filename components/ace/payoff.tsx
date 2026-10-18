@@ -95,7 +95,15 @@ export function PayoffSection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet, txns, valuation]);
 
-  if (!debts.length) return null;
+  if (!debts.length)
+    return (
+      <Section id="payoff" index="06½" kicker="Pay this first" title={<>Nothing to pay down.</>}>
+        <div className="m-panel p-8 text-lg">
+          {who} {who === "You" ? "pay" : "pays"} every card in full, so there is no interest to stop. The next move is in Keep or cancel and What to apply
+          for.
+        </div>
+      </Section>
+    );
 
   const W = 640;
   const H = 220;

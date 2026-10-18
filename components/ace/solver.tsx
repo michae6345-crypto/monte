@@ -55,7 +55,14 @@ function computeRuns(strategies: Strategy[], txns: Txn[], seed = 42): Run[] {
       finals = Array.from(monteCarloSamples(s.wallet, txns, { years: YEARS, seed, assumePaidOff: s.paidOff }).options[0].net);
     }
     const sorted = [...finals].sort((a, b) => a - b);
-    return { ...s, finals, p5: sorted[50], p50: sorted[500], p95: sorted[949] };
+    // same quantile rule as the engine's summary (linear between ranks), so medians agree
+    const q = (x: number) => {
+      const pos = (sorted.length - 1) * x;
+      const lo = Math.floor(pos);
+      const hi = Math.min(sorted.length - 1, lo + 1);
+      return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+    };
+    return { ...s, finals, p5: q(0.05), p50: q(0.5), p95: q(0.95) };
   });
 }
 
@@ -312,7 +319,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
 
       <div
         ref={wrap}
-        className="relative h-[230px] px-4 pt-3 md:h-[260px]"
+        className="relative h-[200px] px-4 pt-3 md:h-[220px]"
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const fx = (e.clientX - rect.left) / rect.width;

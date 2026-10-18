@@ -56,11 +56,19 @@ export function ReplaySection() {
 
   const byCat = useMemo(() => {
     const m: Record<string, number> = {};
-    for (const d of dots) if (d.moved) m[d.cat] = (m[d.cat] ?? 0) + d.gain;
-    return Object.entries(m)
-      .filter(([, v]) => v > 0.5)
+    let off = 0;
+    for (const d of dots)
+      if (d.moved) {
+        if (d.gain >= 0) m[d.cat] = (m[d.cat] ?? 0) + d.gain;
+        else off += d.gain;
+      }
+    const rows = Object.entries(m)
+      .filter(([, v]) => v >= 5)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
+      .slice(0, 4);
+    // purchases moved off a card carrying a balance earn less, but stop charging interest
+    if (off < -0.5) rows.push(["off the card with a balance", off]);
+    return rows;
   }, [dots]);
 
   const moved = dots.filter((d) => d.moved).length;
@@ -98,6 +106,7 @@ export function ReplaySection() {
           const passed = (x: number) => x / W <= f;
           const sofar = r.actual.total + dots.reduce((a, d) => a + (passed(d.x) ? d.gain : 0), 0);
           const view = shown === "sweep" ? (f > 0.5 ? "best" : "actual") : shown;
+          const barsOn = shown === "best";
           return (
       <div ref={ref} className="m-panel p-5 md:p-8">
         <div className="mb-5">
@@ -200,13 +209,13 @@ export function ReplaySection() {
                 <span className="mono w-28 shrink-0 text-[11px] uppercase tracking-wider text-ace-dim">{cat.replace(/_/g, " ")}</span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-ace-line">
                   <motion.div
-                    className="h-full rounded-full bg-ace-ink"
+                    className={`h-full rounded-full ${v < 0 ? "bg-ace-loss" : "bg-ace-ink"}`}
                     initial={{ width: 0 }}
-                    animate={{ width: mode === "best" ? `${(v / byCat[0][1]) * 100}%` : 0 }}
+                    animate={{ width: barsOn ? `${(Math.abs(v) / byCat[0][1]) * 100}%` : 0 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   />
                 </div>
-                <span className="mono w-14 text-right text-ace-gain">{mode === "best" ? `+$${Math.round(v)}` : ""}</span>
+                <span className={`mono w-16 text-right ${v < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{barsOn ? money(v, { sign: true }) : ""}</span>
               </div>
             ))}
           </div>

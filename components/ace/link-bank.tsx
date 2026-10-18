@@ -37,6 +37,7 @@ export function LinkBank() {
     }
   };
 
+  if (configured !== true) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <button
@@ -62,7 +63,7 @@ export function LinkBank() {
             : "Plaid didn't answer. Try the CSV export instead."}
         </span>
       )}
-      {s.k === "idle" && configured === false && <span className="text-xs text-ace-dim">sandbox keys not set on this deployment</span>}
+
     </div>
   );
 }

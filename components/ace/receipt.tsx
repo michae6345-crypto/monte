@@ -30,7 +30,7 @@ export function ReceiptSection() {
       }
       lede="Rewards and the perks you used, minus annual fees, minus interest. One number per card, and one for the wallet. Add a card or mark a balance and it reprints."
     >
-      <div className="grid gap-10 lg:grid-cols-[1fr_440px]">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_440px] [&>*]:min-w-0">
         {/* controls */}
         <div className="space-y-8">
           <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Whose year">

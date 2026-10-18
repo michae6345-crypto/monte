@@ -144,7 +144,7 @@ export function LeaksSection() {
   const total = leaks.filter((l) => l.counts).reduce((a, l) => a + l.amount, 0);
 
   return (
-    <div>
+    <div id="leaks-list" className="scroll-mt-24">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
         <h3 className="max-w-2xl text-3xl md:text-[2.6rem]">
           {total >= 1 ? (

@@ -6,19 +6,19 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAce } from "./store";
 
-type Step = { id: string; title: string; cue: string; tap?: string; tab?: string };
+type Step = { id: string; title: string; cue: string; tap?: string; tab?: string; target?: string };
 
 const STEPS: Step[] = [
   { id: "top", title: "Hook", cue: "Every dollar, played right. For anyone with money moving through a bank, not just card collectors." },
-  { id: "see", tab: "stores", title: "See where it goes", cue: "A year of Jordan's spending: every store, sized by money, growing month by month." },
-  { id: "see", tab: "receipt", title: "What his cards cost", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
-  { id: "leaks", tab: "leaks", title: "Stop the leaks", cue: "Monte found $891 a year leaking: interest, a fee that doesn't pay, the wrong card. Each with its fix." },
-  { id: "spend", tab: "replay", title: "Spend it right", cue: "Scroll: the same purchases move to the right card. $104 back." },
-  { id: "spend", tab: "tap", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
-  { id: "plan", tab: "payoff", title: "Plan the next move", cue: "$250 a month clears it in 13 months, not 12 years. Then +$521 a year." },
+  { id: "see", tab: "stores", target: "money-view", title: "See where it goes", cue: "A year of Jordan's spending: every store, sized by money, growing month by month." },
+  { id: "see", tab: "receipt", target: "receipt-view", title: "What his cards cost", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
+  { id: "leaks", tab: "leaks", target: "leaks-list", title: "Stop the leaks", cue: "Monte found $891 a year leaking: interest, a fee that doesn't pay, the wrong card. Each with its fix." },
+  { id: "spend", tab: "replay", target: "replay-view", title: "Spend it right", cue: "Scroll: the same purchases move to the right card. $104 back." },
+  { id: "spend", tab: "tap", target: "tap-view", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
+  { id: "plan", tab: "payoff", target: "payoff-view", title: "Plan the next move", cue: "$250 a month clears it in 13 months, not 12 years. Then +$521 a year." },
   { id: "next", title: "Next year ×1000", cue: "1,000 simulated years: today, played right, paid off." },
-  { id: "how", tab: "trace", title: "How it works", cue: "One purchase traced: merchant code, rule, cents, source. No model does the math." },
-  { id: "how", tab: "real", title: "Real vs simulated", cue: "Card terms and engine are real. Jordan is synthetic. Plaid is sandbox." },
+  { id: "how", tab: "trace", target: "how-view", title: "How it works", cue: "One purchase traced: merchant code, rule, cents, source. No model does the math." },
+  { id: "how", tab: "real", target: "real-view", title: "Real vs simulated", cue: "Card terms and engine are real. Jordan is synthetic. Plaid is sandbox." },
 ];
 
 const noop = () => () => {};
@@ -44,7 +44,8 @@ export function Presenter() {
       const n = Math.max(0, Math.min(STEPS.length - 1, k));
       setI(n);
       const s = STEPS[n];
-      document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      // open the tab first, then land on the view itself, not the chapter heading
+      window.setTimeout(() => document.getElementById(s.target ?? s.id)?.scrollIntoView({ behavior: "smooth", block: "start" }), s.tab ? 120 : 0);
       if (s.tab) window.dispatchEvent(new CustomEvent("monte:tab", { detail: { chapter: s.id, tab: s.tab } }));
       if (s.tap) window.setTimeout(() => window.dispatchEvent(new CustomEvent("monte:tap", { detail: s.tap })), 450);
     };
@@ -84,7 +85,7 @@ export function Presenter() {
   const clock = `${left < 0 ? "−" : ""}${Math.floor(Math.abs(left) / 60)}:${String(Math.abs(left) % 60).padStart(2, "0")}`;
 
   return (
-    <div className="mono fixed bottom-4 left-4 right-4 z-[80] mx-auto flex max-w-3xl items-center gap-4 rounded-lg border border-ace-line bg-ace-ink px-4 py-3 text-[12px] text-ace-bg shadow-2xl">
+    <div className="mono fixed bottom-3 right-3 z-[80] flex max-w-[min(440px,calc(100vw-24px))] items-center gap-3 rounded-full bg-ace-ink px-4 py-2 text-[11px] text-ace-bg shadow-[0_8px_24px_-12px_rgba(14,15,18,.5)]">
       <span className="shrink-0 tnum" style={{ color: "var(--ace-gold)" }}>
         {String(i + 1).padStart(2, "0")}/{STEPS.length}
       </span>

@@ -8,6 +8,7 @@ import { tap } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
+import { Stage } from "./stage";
 import { money, useAce } from "./store";
 
 const SPOTS = [
@@ -31,6 +32,7 @@ export function TapSection() {
   // brackets blink while the engine ranks the cards, then resolve on the winner
   const [solving, setSolving] = useState(false);
   const timer = useRef(0);
+  const [manual, setManual] = useState(false);
   const choose = (k: number) => {
     setI(k);
     setSolving(true);
@@ -71,12 +73,18 @@ export function TapSection() {
       }
       lede="Pick a store. Monte ranks your cards for that purchase, counting caps already used, this quarter's categories, perks about to expire, and any card carrying a balance."
     >
+      <Stage vh={260}>
+        {(p) => (
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto_1fr]">
+        {!manual && <AutoPick k={Math.min(SPOTS.length - 1, Math.floor(Math.max(0, (p - 0.06) / 0.88) * SPOTS.length))} current={i} onPick={choose} />}
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
           {SPOTS.map((s, k) => (
             <button
               key={s.merchant}
-              onClick={() => choose(k)}
+              onClick={() => {
+                setManual(true);
+                choose(k);
+              }}
               className={`flex items-center gap-3 rounded-[10px] px-4 py-3 text-left transition ${
                 k === i ? "bg-ace-panel shadow-[0_0_0_1.5px_var(--m-ink)]" : "bg-ace-panel shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
               }`}
@@ -145,8 +153,8 @@ export function TapSection() {
                 exit={{ opacity: 0 }}
                 className="absolute inset-x-4 bottom-5 rounded-2xl bg-ace-panel p-3.5 shadow-[0_0_0_1px_var(--m-line-strong)]"
               >
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-sm font-semibold">{solving ? "ranking your cards" : shortName(pick.cardId)}</span>
+                <div className="text-sm font-semibold leading-tight">{solving ? "ranking your cards" : shortName(pick.cardId)}</div>
+                <div className="mt-1 flex items-baseline justify-between gap-2">
                   <span className={`text-3xl ${solving ? "text-ace-dim" : "text-ace-gain"}`} style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
                     <Bracketed state={solving ? "computing" : "resolved"}>{solving ? "···" : `+${money(pick.reward, { cents: true })}`}</Bracketed>
                   </span>
@@ -200,9 +208,12 @@ export function TapSection() {
             <div className="mt-3 space-y-2">
               {res.ranked.map((x) => (
                 <div key={x.cardId} className={`flex items-center justify-between text-sm ${x.blocked ? "text-ace-dim line-through" : ""}`}>
-                  <span>{shortName(x.cardId)}</span>
+                  <span>
+                    {shortName(x.cardId)}
+                    {x.blocked ? <span className="ml-1 text-[11px] no-underline"> · carries a balance</span> : null}
+                  </span>
                   <span className="mono">
-                    {x.mult.toFixed(x.mult % 1 ? 1 : 0)}x · {money(x.reward, { cents: true })}
+                    {x.mult.toFixed(x.mult % 1 ? 1 : 0)}× · {money(x.reward, { cents: true })}
                   </span>
                 </div>
               ))}
@@ -213,6 +224,17 @@ export function TapSection() {
           </div>
         </div>
       </div>
+        )}
+      </Stage>
     </Section>
   );
+}
+
+/** While nobody has clicked, the scroll position picks the store. */
+function AutoPick({ k, current, onPick }: { k: number; current: number; onPick: (k: number) => void }) {
+  useEffect(() => {
+    if (k !== current) onPick(k);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [k]);
+  return null;
 }
