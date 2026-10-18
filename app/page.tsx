@@ -12,6 +12,7 @@ import { Footer, HowSection, MoatSection } from "@/components/ace/moat";
 import { RealSection } from "@/components/ace/real";
 import { WrappedSection } from "@/components/ace/wrapped";
 import { PayoffSection } from "@/components/ace/payoff";
+import { OddChargesSection } from "@/components/ace/odd";
 import { MonteCardSection } from "@/components/ace/monte-card-section";
 import { Presenter } from "@/components/ace/presenter";
 
@@ -26,6 +27,7 @@ export default function Home() {
             <MoneySection />
             <ReceiptSection />
             <HistorySection />
+            <OddChargesSection />
             <ReplaySection />
             <TapSection />
             <MonteCardSection />
