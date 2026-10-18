@@ -8,3 +8,5 @@ UI only. Numbers come from `lib/engine`; nothing here computes a dollar.
 | `brand/` | The Monte mark, bracket labels, hand-drawn notes |
 | `monte-card/` | The Monte card shown in the wallet and tap demo |
 | `ui/` | Base parts: button, card, dialog, tabs, tooltip, slider |
+
+`ace/` keeps its pre-rename name; the product was called Ace until 18 Oct.
