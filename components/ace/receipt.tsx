@@ -37,8 +37,8 @@ export function ReceiptSection() {
               <button
                 key={p.id}
                 onClick={() => setPersona(p.id)}
-                className={`rounded-md border px-4 py-2 text-left transition ${
-                  persona.id === p.id ? "border-ace-gold bg-ace-gold/10" : "border-ace-line hover:border-ace-ink/30"
+                className={`rounded-[14px] bg-ace-panel px-4 py-2.5 text-left transition ${
+                  persona.id === p.id ? "shadow-[0_0_0_1.5px_var(--m-ink)]" : "shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
                 }`}
               >
                 <div className="text-sm font-medium">{p.name}</div>
@@ -126,7 +126,7 @@ export function ReceiptSection() {
               <button
                 key={v}
                 onClick={() => setValuationMode(v)}
-                className={`rounded-md border px-3 py-1 transition ${valuation === v ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line text-ace-dim"}`}
+                className={`btn btn-sm ${valuation === v ? "btn-primary" : "btn-ghost"}`}
               >
                 {v === "cash" ? "cash (1¢ a point)" : "travel (TPG, Oct 2026)"}
               </button>

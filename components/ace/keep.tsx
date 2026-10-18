@@ -347,7 +347,7 @@ export function ForYouSection() {
                   </span>
                   <button
                     onClick={() => addCard(x.id)}
-                    className="rounded-md border border-ace-line px-2.5 py-1 text-xs text-ace-dim transition hover:border-ace-gold hover:text-ace-gold"
+                    className="btn btn-ghost btn-sm"
                   >
                     try it
                   </button>
@@ -414,7 +414,7 @@ function Pill({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   return (
     <button
       onClick={onClick}
-      className={`rounded-md border px-3 py-1 text-sm capitalize transition ${on ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line text-ace-dim hover:text-ace-ink"}`}
+      className={`btn btn-sm capitalize ${on ? "btn-primary" : "btn-ghost"}`}
     >
       {children}
     </button>

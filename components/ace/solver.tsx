@@ -296,9 +296,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
             role="tab"
             aria-selected={i === k}
             onClick={() => setK(i)}
-            className={`mono rounded-md border px-2.5 py-1 text-[11px] transition ${
-              i === k ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line text-ace-dim hover:border-ace-ink/40 hover:text-ace-ink"
-            }`}
+            className={`btn btn-sm ${i === k ? "btn-primary" : "btn-ghost"}`}
           >
             <span className="opacity-60">{String(i + 1).padStart(2, "0")}</span> {s.short}
           </button>

@@ -252,14 +252,14 @@ function StatementUpload({ onLoad, defaultCard, active }: { onLoad: (t: import("
     <div className="flex flex-wrap items-center gap-2">
       <button
         onClick={() => ref.current?.click()}
-        className={`rounded-md border px-4 py-2 text-sm transition ${active ? "border-ace-gold bg-ace-gold/10" : "border-dashed border-ace-gold/60 text-ace-gold hover:bg-ace-gold/10"}`}
+        className={`btn btn-sm ${active ? "btn-primary" : "btn-ghost"}`}
       >
-        ↑ Use my statement (CSV)
+        Upload a statement (CSV)
       </button>
       <select
         value={card}
         onChange={(e) => setCard(e.target.value)}
-        className="rounded-md border border-ace-line bg-ace-panel px-3 py-2 text-xs text-ace-dim"
+        className="btn-sm h-9 rounded-full bg-ace-panel px-3 text-xs text-ace-dim shadow-[0_0_0_1px_var(--m-line-strong)]"
         aria-label="Which card is this statement from"
       >
         {CARDS.map((c) => (

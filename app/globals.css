@@ -215,3 +215,48 @@ body.ace {
 }
 
 
+
+/* Buttons: solid ink primary, white secondary with a hairline. Plain words, no brackets. */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: 999px;
+    font-family: var(--m-font-body);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.6;
+  }
+  .btn-primary {
+    background: var(--m-ink);
+    color: var(--m-ground);
+  }
+  .btn-primary:hover {
+    background: color-mix(in oklab, var(--m-ink) 86%, white);
+  }
+  .btn-ghost {
+    background: var(--m-panel);
+    color: var(--m-ink);
+    box-shadow: 0 0 0 1px var(--m-line-strong);
+  }
+  .btn-ghost:hover {
+    background: var(--m-wash);
+  }
+  .btn-sm {
+    height: 2.25rem;
+    padding: 0 1rem;
+    font-size: 14px;
+  }
+}

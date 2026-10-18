@@ -67,16 +67,16 @@ export function HistorySection() {
               setMerchant(null);
             }}
             placeholder="Search a merchant or category…"
-            className="min-w-[220px] flex-1 rounded-md border border-ace-line bg-ace-bg px-4 py-2 text-sm outline-none placeholder:text-ace-dim focus:border-ace-gold"
+            className="h-9 min-w-[220px] flex-1 rounded-full bg-ace-panel px-4 text-sm shadow-[0_0_0_1px_var(--m-line-strong)] outline-none placeholder:text-ace-dim focus:shadow-[0_0_0_1.5px_var(--m-ink)]"
           />
           <button
             onClick={() => setOnlyMiss((v) => !v)}
-            className={`rounded-md border px-4 py-2 text-sm transition ${onlyMiss ? "border-ace-loss bg-ace-loss/10 text-ace-loss" : "border-ace-line text-ace-dim"}`}
+            className={`btn btn-sm ${onlyMiss ? "btn-primary" : "btn-ghost"}`}
           >
             Only the misses
           </button>
           {merchant && (
-            <button onClick={() => setMerchant(null)} className="rounded-md border border-ace-gold bg-ace-gold/10 px-4 py-2 text-sm">
+            <button onClick={() => setMerchant(null)} className="btn btn-primary btn-sm">
               {merchant} ✕
             </button>
           )}

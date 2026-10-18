@@ -114,9 +114,7 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
           <button
             key={a.id}
             onClick={() => setSel(a.id)}
-            className={`mono rounded-md border px-2.5 py-1 text-[11px] transition ${
-              a.id === o.id ? "border-ace-gold bg-ace-gold/10 text-ace-ink" : "border-ace-line text-ace-dim hover:text-ace-ink"
-            }`}
+            className={`btn btn-sm ${a.id === o.id ? "btn-primary" : "btn-ghost"}`}
           >
             {a.label.replace(/^Add /, "+ ").replace(/^(Cancel|Drop) /, "− ").replace(/ Card| from American Express| Visa Signature/g, "")}
             <span className="ml-1.5 opacity-70">{money(a.p50 - mc.current.p50, { sign: true })}</span>

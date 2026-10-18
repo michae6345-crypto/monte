@@ -381,24 +381,20 @@ export function DropHero() {
           <h1 className="text-[11vw] sm:text-6xl md:text-[5.25rem]">
             Every card, <Bracketed mono={false}>played right</Bracketed>.
             <span className="m-second block text-[0.62em]">
-              {JORDAN.name}&apos;s cost him <Bracketed>{money(jr.net, { sign: true })}</Bracketed> last year.
+              {JORDAN.name}&apos;s cost him <Bracketed>{money(-jr.net)}</Bracketed> last year.
             </span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ace-dim md:text-lg">
-            Three cards paid him <Tone tone="gain">{money(jr.rewards + jr.credits, { sign: true })}</Tone> and charged him{" "}
-            <Tone tone="loss">{money(-(jr.fees + jr.interest), { sign: true })}</Tone> in fees and interest. {b.name} plays every purchase on
+            Three cards paid him <Tone tone="gain">{money(jr.rewards + jr.credits)}</Tone> and charged him{" "}
+            <Tone tone="loss">{money(jr.fees + jr.interest)}</Tone> in fees and interest. {b.name} plays every purchase on
             the right card and says which cards to keep.
           </p>
           <div className="pointer-events-auto mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#receipt" className="m-mono whitespace-nowrap rounded-full bg-ace-gold px-5 py-2.5 text-sm text-white transition hover:brightness-110">
-              [ try {JORDAN.name}&apos;s year ]
+            <a href="#receipt" className="btn btn-primary">
+              See {JORDAN.name}&apos;s year <span aria-hidden>→</span>
             </a>
-            <a
-              href="#tap"
-              className="m-mono whitespace-nowrap rounded-full bg-ace-panel px-5 py-2.5 text-sm text-ace-ink transition hover:bg-[var(--m-wash)]"
-              style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}
-            >
-              [ try a tap ]
+            <a href="#tap" className="btn btn-ghost">
+              Try a tap
             </a>
           </div>
           <p className="m-label mt-6 transition-opacity" style={{ opacity: allDealt ? 0 : 1 }}>

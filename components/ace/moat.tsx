@@ -115,9 +115,7 @@ export function HowSection() {
           <button
             key={o.id}
             onClick={() => setK(i)}
-            className={`mono rounded-md border px-3 py-1.5 text-[12px] transition ${
-              i === k ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line bg-ace-panel text-ace-dim hover:text-ace-ink"
-            }`}
+            className={`btn btn-sm ${i === k ? "btn-primary" : "btn-ghost"}`}
           >
             {o.merchant} {money(o.amount, { cents: true })}
           </button>

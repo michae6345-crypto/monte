@@ -42,10 +42,9 @@ export function LinkBank() {
       <button
         onClick={go}
         disabled={s.k === "linking"}
-        className="m-mono whitespace-nowrap rounded-full bg-ace-panel px-4 py-2 text-[13px] text-ace-ink transition hover:bg-[var(--m-wash)] disabled:opacity-60"
-        style={{ boxShadow: "0 0 0 1px var(--m-line-strong)" }}
+        className="btn btn-ghost btn-sm"
       >
-        [ link a bank · sandbox ]
+        Link a bank (sandbox)
       </button>
       {s.k === "linking" && <Sampler label="Reading the sandbox bank" />}
       {s.k === "done" && (
