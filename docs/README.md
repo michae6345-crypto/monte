@@ -8,3 +8,4 @@
 | `HACKATHON.md` | TrojanHacks rules and deadlines |
 | `RESEARCH.md` | Market research behind the idea |
 | `BRAND.md` | Name, mark, colours, type |
+| `deploy.md` | Deploy runbook and Plaid sandbox setup |
