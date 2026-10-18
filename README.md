@@ -12,7 +12,10 @@ Rewards apps show you points. Jordan is 24, first job in LA, three cards. He ear
 and paid **$734.72** in interest on a $2,800 balance. His cards cost him **$427.03** more
 than they paid him. No rewards app shows that number.
 
-## What it does
+## What Monte does
+
+Monte reads a year of purchases and shows the net: rewards plus perks used, minus fees,
+minus interest.
 
 | Section | What you get |
 |---|---|
