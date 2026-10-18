@@ -12,6 +12,7 @@
     "smoke": "node --import ./scripts/_alias.mjs scripts/smoke.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@base-ui/react": "^1.9.0",
     "@supabase/supabase-js": "^2.118.0",
     "class-variance-authority": "^0.7.1",
