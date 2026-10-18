@@ -52,7 +52,8 @@ for (const p of PERSONAS) {
   const t1 = performance.now();
   const theirs = uiMonteCarlo(p.wallet, tx);
   const theirsMs = performance.now() - t1;
-  const head = (n: string, r: typeof mine, ms: number) =>
+  // structural: the engine's result has one extra field (hypothetical) the stand-in lacks
+  const head = (n: string, r: { current: { p5: number; p50: number; p95: number }; options: { label: string; winShare: number }[] }, ms: number) =>
     console.log(
       `  ${n.padEnd(22)} p5 ${$(r.current.p5)}  p50 ${$(r.current.p50)}  p95 ${$(r.current.p95)}` +
         `  spread p95-p5 ${$(r.current.p95 - r.current.p5)}  ${r.options.length} options  ${ms.toFixed(0)} ms`,

@@ -29,7 +29,10 @@
 //   not clear the debt), so their interest still counts.
 // - Balance rule (SPEC #14, "no new card while you carry a balance"): if any held card
 //   carries a balance, no "add:" options are produced, even for explicit candidates.
-//   "drop:" options (cards with an annual fee) are still produced.
+//   "drop:" options (cards with an annual fee) are still produced. For the "here is what
+//   opens up once you've cleared it" screen, pass { assumePaidOff: true }: balances are
+//   zeroed before anything runs and the result carries `hypothetical` so it can never be
+//   mistaken for the real wallet.
 // - Bands, cumulative net by month: rewards as earned in each month; the annual fee is
 //   charged in full in month 1 (it posts up front, so fee cards start below zero);
 //   credits used and interest are spread evenly, 1/12 a month. Month 12 = the year net.
@@ -48,7 +51,14 @@ export type Outcome = {
   winShare: number;
   bands: Band[];
 };
-export type MonteCarloResult = { years: number; seed: number; current: Outcome; options: Outcome[] };
+export type MonteCarloResult = {
+  years: number;
+  seed: number;
+  current: Outcome;
+  options: Outcome[];
+  /** null for the real wallet; set when opts.assumePaidOff cleared a balance. */
+  hypothetical: Hypothetical | null;
+};
 export type MonteCarloOpts = {
   years?: number;
   seed?: number;
@@ -63,7 +73,27 @@ export type MonteCarloOpts = {
    *  then shows exactly the uncertainty the data supports (which months you get), and
    *  nothing invented. */
   driftSd?: number;
+  /** The "once you've paid this off" view: every balance is treated as cleared before
+   *  anything else runs, so interest drops out and "add:" options are allowed again
+   *  (SPEC #14 only blocks a new card WHILE you carry one). The result carries
+   *  `hypothetical` so a screen can never show this as the current wallet by accident. */
+  assumePaidOff?: boolean;
 };
+
+/** Marks a result as the paid-off hypothetical rather than the real wallet. */
+export type Hypothetical = { assumePaidOff: true; clearedBalance: number; cards: string[] };
+
+/** Same wallet with every balance cleared. Used by opts.assumePaidOff; exported so a
+ *  caller can see exactly what the hypothetical changes. */
+export function paidOffWallet(wallet: Holding[]): Holding[] {
+  return wallet.map((h) => ({ ...h, balance: 0 }));
+}
+
+function hypotheticalOf(wallet: Holding[], on: boolean | undefined): Hypothetical | null {
+  if (!on) return null;
+  const carrying = wallet.filter((h) => (h.balance ?? 0) > 0);
+  return { assumePaidOff: true, clearedBalance: carrying.reduce((a, h) => a + (h.balance ?? 0), 0), cards: carrying.map((h) => h.cardId) };
+}
 
 const SYN_YEAR = 2026;
 const DAYS_IN = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // 2026 is not a leap year
@@ -352,6 +382,7 @@ export type MonteCarloSamples = {
   years: number;
   seed: number;
   options: { id: string; label: string; net: Float64Array; cum: Float64Array /* years x 12 */ }[];
+  hypothetical: Hypothetical | null;
 };
 
 /** Every simulated year's net for every option (index 0 = current). monteCarlo()
@@ -359,6 +390,8 @@ export type MonteCarloSamples = {
 export function monteCarloSamples(wallet: Holding[], txns: Txn[], opts: MonteCarloOpts = {}): MonteCarloSamples {
   const years = Math.max(1, Math.floor(opts.years ?? 1000));
   const seed = opts.seed ?? 42;
+  const hypothetical = hypotheticalOf(wallet, opts.assumePaidOff);
+  if (hypothetical) wallet = paidOffWallet(wallet);
   const options = optionsFor(wallet, txns, opts.candidates);
 
   const blocks = monthBlocks(txns);
@@ -441,7 +474,7 @@ export function monteCarloSamples(wallet: Holding[], txns: Txn[], opts: MonteCar
       for (let m = 1; m <= 12; m++) r.cum[y * 12 + m - 1] += ((f.credits - f.interest) * m) / 12 - f.fees;
     }
   }
-  return { years, seed, options: res };
+  return { years, seed, options: res, hypothetical };
 }
 
 // ---------- summary ----------
@@ -487,5 +520,5 @@ export function monteCarlo(wallet: Holding[], txns: Txn[], opts: MonteCarloOpts 
   });
   const [current, ...options] = outcomes;
   options.sort((a, b) => b.winShare - a.winShare || b.mean - a.mean);
-  return { years: s.years, seed: s.seed, current, options };
+  return { years: s.years, seed: s.seed, current, options, hypothetical: s.hypothetical };
 }
