@@ -5,13 +5,13 @@
 // them. With a mouse you can pick a card up and throw it. Touch only scrolls.
 
 import Matter from "matter-js";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { JORDAN, yearOf } from "@/lib/data/personas";
 import { receipt } from "@/lib/engine";
-import { useBrand } from "./brands";
 import { CardArt, shortName } from "./card-art";
 import { money } from "./store";
-import { Bracketed, Lockup } from "@/components/brand";
+import { Lockup } from "@/components/brand";
 
 const MINE = JORDAN.wallet.map((h) => h.cardId);
 // Jordan's first, then the market in the order it's dealt. Phones skip the last three.
@@ -59,7 +59,6 @@ function rng(seed: number) {
 }
 
 export function DropHero() {
-  const { brand: b } = useBrand();
   const txns = useMemo(() => yearOf(JORDAN), []);
   const jr = useMemo(() => receipt(JORDAN.wallet, txns), [txns]);
   const tags = useMemo(() => {
@@ -391,20 +390,32 @@ export function DropHero() {
           <div className="mb-6 flex justify-center">
             <Lockup size={30} state={landed ? "resolved" : "breathe"} />
           </div>
-          <h1 className="text-[11vw] sm:text-6xl md:text-[5.25rem]">
-            Every card, <Bracketed mono={false}>played right</Bracketed>.
-            <span className="m-second block text-[0.62em]">
-              {JORDAN.name}&apos;s cost him <Bracketed>{money(-jr.net)}</Bracketed> last year.
+          <h1 className="text-[12.5vw] sm:text-7xl md:text-[6.4rem]">
+            Every card,{" "}
+            <span className="relative inline-block whitespace-nowrap">
+              <span
+                className="relative z-10"
+                style={{ fontFamily: "var(--m-font-note)", fontVariationSettings: '"INFM" 100, "BNCE" 30', fontWeight: 600, letterSpacing: "-0.01em" }}
+              >
+                played right.
+              </span>
+              <svg viewBox="0 0 300 24" preserveAspectRatio="none" className="pointer-events-none absolute -bottom-[0.12em] left-[-2%] h-[0.32em] w-[104%]" aria-hidden>
+                <motion.path
+                  d="M4 15 C 60 6, 140 4, 210 9 S 280 16, 296 8"
+                  fill="none"
+                  strokeWidth={7}
+                  strokeLinecap="round"
+                  style={{ stroke: "var(--m-accent)" }}
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: landed ? 1 : 0 }}
+                  transition={{ duration: 0.8, ease: [0.65, 0, 0.35, 1] }}
+                />
+              </svg>
             </span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ace-dim md:text-lg">
-            Three cards paid him <Tone tone="gain">{money(jr.rewards + jr.credits)}</Tone> and charged him{" "}
-            <Tone tone="loss">{money(jr.fees + jr.interest)}</Tone> in fees and interest. {b.name} plays every purchase on
-            the right card and says which cards to keep.
-          </p>
           <div className="pointer-events-auto mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#receipt" className="btn btn-primary">
-              See {JORDAN.name}&apos;s year <span aria-hidden>→</span>
+            <a href="#solver" className="btn btn-primary">
+              See it work <span aria-hidden>→</span>
             </a>
             <a href="#tap" className="btn btn-ghost">
               Try a tap
@@ -423,8 +434,4 @@ export function DropHero() {
       </div>
     </div>
   );
-}
-
-function Tone({ tone, children }: { tone: "gain" | "loss"; children: ReactNode }) {
-  return <span className={`tnum font-medium ${tone === "gain" ? "text-ace-gain" : "text-ace-loss"}`}>{children}</span>;
 }

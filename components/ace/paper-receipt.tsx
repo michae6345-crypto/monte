@@ -11,10 +11,12 @@ import { card } from "@/lib/engine/catalog";
 import { Bracketed, HandNote, MonteMark } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
 import { money } from "./store";
+import { Trace } from "./trace";
+import { creditProvenanceFor, feeProvenanceFor, interestProvenanceFor, type ProvenanceLine } from "@/lib/engine/provenance";
 
 const c2 = (v: number) => money(v, { sign: true, cents: true });
 
-function Row({ k, v, sub, i, strong }: { k: string; v: number; sub?: string; i: number; strong?: boolean }) {
+function Row({ k, v, sub, i, strong, trace }: { k: string; v: number; sub?: string; i: number; strong?: boolean; trace?: ProvenanceLine[] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -4 }}
@@ -26,7 +28,9 @@ function Row({ k, v, sub, i, strong }: { k: string; v: number; sub?: string; i: 
         <span className={`block truncate ${strong ? "text-ace-ink" : "text-ace-ink/80"}`}>{k}</span>
         {sub && <span className="block text-[10.5px] text-ace-dim">{sub}</span>}
       </span>
-      <span className={`m-num shrink-0 ${v < 0 ? "text-ace-loss" : v > 0 ? "text-ace-gain" : "text-ace-dim"} ${strong ? "font-semibold" : ""}`}>{c2(v)}</span>
+      <span className={`m-num shrink-0 ${v < 0 ? "text-ace-loss" : v > 0 ? "text-ace-gain" : "text-ace-dim"} ${strong ? "font-semibold" : ""}`}>
+        {trace && trace.length ? <Trace lines={trace}>{c2(v)}</Trace> : c2(v)}
+      </span>
     </motion.div>
   );
 }
@@ -110,9 +114,17 @@ export function PaperReceipt({
                   </div>
                   <div className="space-y-1 pl-[3.4rem]">
                     <Row k="rewards earned" v={c.rewards} i={i++} />
-                    {c.credits > 0 && <Row k="perks used" v={c.credits} i={i++} />}
-                    {c.fee > 0 && <Row k="annual fee" v={-c.fee} i={i++} />}
-                    {c.interest > 0 && <Row k="interest" v={-c.interest} sub={`$${(h.balance ?? 0).toLocaleString()} × ${h.apr}% APR`} i={i++} />}
+                    {c.credits > 0 && <Row k="perks used" v={c.credits} i={i++} trace={creditProvenanceFor(h)} />}
+                    {c.fee > 0 && <Row k="annual fee" v={-c.fee} i={i++} trace={[feeProvenanceFor(c.cardId)].filter((x): x is NonNullable<typeof x> => !!x)} />}
+                    {c.interest > 0 && (
+                      <Row
+                        k="interest"
+                        v={-c.interest}
+                        sub={`$${(h.balance ?? 0).toLocaleString()} × ${h.apr}% APR`}
+                        i={i++}
+                        trace={[interestProvenanceFor(h)].filter((x): x is NonNullable<typeof x> => !!x)}
+                      />
+                    )}
                     <div className="border-t border-dotted border-ace-line pt-1">
                       <Row k="card net" v={c.net} i={i++} strong />
                     </div>

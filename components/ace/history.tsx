@@ -7,6 +7,8 @@ import { CardMini, shortName } from "./card-art";
 import { CAT_COLOR, label } from "./money";
 import { Bracketed } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
+import { Trace } from "./trace";
+import { provenanceFor } from "@/lib/engine/provenance";
 
 const CATEGORIES = Object.keys(CAT_COLOR).filter((c) => c !== "other");
 import { R, Section } from "./section";
@@ -28,7 +30,7 @@ export function HistorySection() {
       .map((t) => {
         const ha = a.get(t.id)!;
         const hb = bh.get(t.id)!;
-        return { t, used: ha.cardId, got: ha.reward, best: hb.cardId, could: hb.reward, rule: hb.rule, miss: hb.reward - ha.reward };
+        return { t, ha, hb, used: ha.cardId, got: ha.reward, best: hb.cardId, could: hb.reward, rule: hb.rule, miss: hb.reward - ha.reward };
       });
   }, [txns, r]);
 
@@ -147,7 +149,7 @@ export function HistorySection() {
                 <CardTag id={x.used} />
                 {x.best === x.used ? <span className="text-[13px] font-medium text-ace-gain">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
                 {x.miss > 0.005 ? (
-                  <span className="text-right text-ace-loss"><Bracketed state="rest">{money(-x.miss, { sign: true, cents: true })}</Bracketed></span>
+                  <span className="text-right text-ace-loss"><Trace lines={[provenanceFor(x.hb, x.t), provenanceFor(x.ha, x.t)]}><Bracketed state="rest">{money(-x.miss, { sign: true, cents: true })}</Bracketed></Trace></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (
                   <span className="text-right text-[11px] leading-tight text-ace-dim" title="This card carries a balance, so new purchases on it accrue interest from day one.">
                     no interest
