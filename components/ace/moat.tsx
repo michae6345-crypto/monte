@@ -8,7 +8,7 @@ import { CARDS, card } from "@/lib/engine/catalog";
 import { optimalReplay } from "@/lib/engine/lp";
 import { Section } from "./section";
 import { MCC, hostOf } from "./strategy";
-import { Lockup } from "@/components/brand";
+import { Lockup, PenMark } from "@/components/brand";
 import { money, nameOf, useAce } from "./store";
 import { CardArt, shortName } from "./card-art";
 import { MerchantLogo } from "./merchant-logo";
@@ -55,15 +55,23 @@ export function MoatSection() {
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((row) => (
-              <tr key={row[0]} className="border-b border-ace-line/70 last:border-b-0">
+            {ROWS.map((row, r) => (
+              <motion.tr
+                key={row[0]}
+                className="border-b border-ace-line/70 last:border-b-0"
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+                transition={{ delay: r * 0.07, duration: 0.4 }}
+              >
                 {row.map((c, k) => (
                   <td key={k} className={`px-5 py-3 ${k === 0 ? "text-ace-ink" : k === 1 ? "mono font-medium text-ace-ink" : "mono text-ace-dim"}`}>
-                    {c}
+                    {/* Monte's answers are circled by hand as each row lands, Monte's "no" to referral fees included */}
+                    {k === 1 ? <PenMark delay={0.3 + r * 0.07}>{c}</PenMark> : c}
                     {k === 0 && noteOf(row[0]) >= 0 ? <sup className="mono ml-1 text-[10px] text-ace-dim">{noteOf(row[0]) + 1}</sup> : null}
                   </td>
                 ))}
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>

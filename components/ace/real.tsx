@@ -45,9 +45,9 @@ export function RealSection() {
   ];
   return (
     <Section id="real" index="10" kicker="Real vs simulated" title={<>What&apos;s real on this page, and what isn&apos;t.</>}>
-      <div className="grid border-l border-t border-ace-line md:grid-cols-3">
+      <div className="m-panel grid divide-y divide-[var(--m-line)] overflow-hidden md:grid-cols-3 md:divide-x md:divide-y-0">
         {cols.map((c) => (
-          <div key={c.tag} className="border-b border-r border-ace-line bg-ace-panel p-6">
+          <div key={c.tag} className="p-6">
             <div className={`text-3xl ${c.tone}`} style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.03em" }}>{c.tag}</div>
             <dl className="mt-4 space-y-4">
               {c.items.map(([k, v]) => (
