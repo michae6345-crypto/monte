@@ -9,6 +9,7 @@ import { tap } from "@/lib/engine";
 import { CARDS } from "@/lib/engine/catalog";
 import { shortName } from "./card-art";
 import { Num } from "./num";
+import { Bracketed, HandNote } from "@/components/brand";
 import { R, Section } from "./section";
 import { LinkBank } from "./link-bank";
 import { money, useAce } from "./store";
@@ -59,7 +60,12 @@ export function MoneySection() {
       id="money"
       index="01"
       kicker="Where your money goes"
-      title={<>Where {money(total)} went.</>}
+      title={
+        <>
+          {persona.id === "you" ? "You" : persona.name} spent <Bracketed>{money(total)}</Bracketed> last year.
+          <span className="m-second block">Here is where it went.</span>
+        </>
+      }
       readout={
         <>
           <R>{txns.length}</R> purchases · <R>{cats.length}</R> categories · <R>{subs.length}</R> recurring
@@ -74,9 +80,14 @@ export function MoneySection() {
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* treemap */}
-        <div className="m-panel p-5">
+        <div className="m-panel relative p-5">
+          {cats[0] && (
+            <HandNote dir="down-left" className="absolute -top-9 right-28 hidden md:flex" delay={0.4}>
+              {label(cats[0].category)} is {Math.round(cats[0].share * 100)}% of everything
+            </HandNote>
+          )}
           <div className="mb-4 flex items-baseline justify-between">
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">By category · {txns.length} purchases</div>
+            <div className="m-label">By category · {txns.length} purchases</div>
             <div className="text-right">
               <Num value={total} className="text-3xl font-semibold tnum" />
               <span className="mono ml-2 text-xs text-ace-dim">in a year</span>
@@ -196,7 +207,7 @@ export function MoneySection() {
         {/* subscriptions */}
         <div className="m-panel p-5">
           <div className="mb-4 flex items-baseline justify-between">
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Keeps charging you</div>
+            <div className="m-label">Keeps charging you</div>
             <span className="mono text-sm">
               <Num value={subs.reduce((a, s) => a + s.perYear, 0)} />
               <span className="text-ace-dim">/yr</span>

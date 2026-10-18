@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Picks the right card at every tap, and shows what your cards really cost you after interest, fees and the perks you never use.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useBrand } from "./brands";
 import { cardArt, shortName } from "./card-art";
 import { CAT_COLOR, label } from "./money";
+import { Bracketed } from "@/components/brand";
 import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
@@ -43,7 +44,12 @@ export function HistorySection() {
       id="history"
       index="03"
       kicker="Every purchase, judged"
-      title={<>Every purchase, with a verdict.</>}
+      title={
+        <>
+          <Bracketed>{rows.filter((x) => x.used !== x.best).length}</Bracketed> of {rows.length} purchases
+          <span className="m-second block">went on the wrong card.</span>
+        </>
+      }
       readout={
         <>
           <R tone="loss">{rows.filter((x) => x.used !== x.best).length}</R> of <R>{rows.length}</R> not on {b.name}&apos;s pick · <R tone="loss">{money(r.leftOnTable)}</R> left on the table
@@ -109,9 +115,9 @@ export function HistorySection() {
                 </span>
                 <span className="mono text-right">{money(x.t.amount, { cents: true })}</span>
                 <CardTag id={x.used} />
-                {x.best === x.used ? <span className="text-xs text-ace-gain">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
+                {x.best === x.used ? <span className="m-mono text-xs text-ace-dim">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
                 {x.miss > 0.005 ? (
-                  <span className="mono text-right text-ace-loss">−{money(x.miss, { cents: true })}</span>
+                  <span className="text-right text-ace-loss"><Bracketed>{money(-x.miss, { sign: true, cents: true })}</Bracketed></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (
                   <span className="text-right text-[11px] leading-tight text-ace-dim" title="This card carries a balance, so new purchases on it accrue interest from day one.">
                     no interest
