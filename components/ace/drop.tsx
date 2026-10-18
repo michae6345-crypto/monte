@@ -375,11 +375,12 @@ export function DropHero() {
                 style={{ opacity: 0 }}
               >
                 <span className={`m-tag ${i % 2 ? "m-tag-r" : ""}`}>
-                  <span className="text-ace-dim">{shortName(id)}</span>{" "}
+                  <span className="hidden sm:inline">{shortName(id)} </span>
                   <span className={tags[id].tone === "gain" ? "text-ace-gain" : "text-ace-loss"}>
                     {tags[id].text.split(" ")[0]}
                   </span>{" "}
-                  {tags[id].text.split(" ").slice(1).join(" ")}
+                  <span className="hidden sm:inline">{tags[id].text.split(" ").slice(1).join(" ")}</span>
+                  <span className="sm:hidden">{tags[id].text.split(" ")[1]}</span>
                 </span>
               </div>
             ) : null,
