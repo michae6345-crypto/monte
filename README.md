@@ -135,6 +135,7 @@ is fully verified.
 | `lib/engine/` | Rules engine, Monte Carlo, LP optimizer, provenance, statement CSV parser |
 | `lib/data/` | The five demo people and the Plaid mapping |
 | `data/` | Card catalog and category map, each rule with its source |
+| `scripts/` | Verification scripts and the smoke test |
 
 ## Layout
 
