@@ -7,7 +7,7 @@
 
 <h1 align="center">Monte</h1>
 
-**Every card played right, and what your cards really cost you.**
+<p align="center"><b>Every card played right, and what your cards really cost you.</b></p>
 
 **[Live site](https://ace-eta-beryl.vercel.app)** · **[Demo video](https://youtu.be/Tn4YrpoLjh8)** · [Devpost](https://devpost.com/software/monte-calygj)
 
