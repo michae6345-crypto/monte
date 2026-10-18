@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "./brands";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { CARDS, card } from "@/lib/engine/catalog";
@@ -12,6 +13,7 @@ import { money, useAce } from "./store";
 export function ReceiptSection() {
   const { persona, setPersona, wallet, addCard, removeCard, toggleBalance, valuation, setValuationMode, r, txns } = useAce();
   const [picker, setPicker] = useState(false);
+  const { brand: b } = useBrand();
 
   const lines: { label: string; sub?: string; value: number }[] = [
     ...r.perCard.map((c) => ({ label: `${shortName(c.cardId)} rewards`, value: c.rewards })),
@@ -32,10 +34,10 @@ export function ReceiptSection() {
       kicker="The Receipt"
       title={
         <>
-          What your cards <span className="serif italic text-ace-gold">really</span> did last year.
+          What your cards <span className="serif text-ace-gold">really</span> did last year.
         </>
       }
-      lede="Every rewards app shows the points. Ace shows the net: rewards and perks you actually used, minus annual fees, minus interest. Pick a person, or build your own wallet."
+      lede={`Every rewards app shows the points. ${b.name} shows the net: rewards and perks you actually used, minus annual fees, minus interest. Pick a person, or build your own wallet.`}
     >
       <div className="grid gap-10 lg:grid-cols-[1fr_440px]">
         {/* controls */}
@@ -155,7 +157,7 @@ export function ReceiptSection() {
           className="relative mx-auto w-full max-w-[440px] lg:sticky lg:top-24 lg:self-start"
         >
           <div className="receipt-edge rounded-t-sm bg-ace-paper px-7 pb-12 pt-8 text-[#1d1b16] shadow-[0_40px_80px_-20px_rgba(0,0,0,.8)]">
-            <div className="mono text-center text-[11px] uppercase tracking-[0.3em] text-black/50">Ace · annual receipt</div>
+            <div className="mono text-center text-[11px] uppercase tracking-[0.3em] text-black/50">{b.name} · annual receipt</div>
             <div className="serif mt-1 text-center text-3xl">{persona.name}</div>
             <div className="mono mt-1 text-center text-[10px] uppercase tracking-widest text-black/40">18 Oct 2025 – 17 Oct 2026</div>
             <div className="my-5 border-t border-dashed border-black/25" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "./brands";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { tap } from "@/lib/engine";
@@ -25,6 +26,7 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 
 export function TapSection() {
   const { wallet, txns } = useAce();
+  const { brand: b } = useBrand();
   const [i, setI] = useState(0);
   const spot = SPOTS[i];
   const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
@@ -45,10 +47,10 @@ export function TapSection() {
       kicker="Tap"
       title={
         <>
-          The right card, <span className="serif italic text-ace-gold">at the register.</span>
+          The right card, <span className="serif text-ace-gold">at the register.</span>
         </>
       }
-      lede="Walk into a store and Ace already knows which card wins there, counting caps you've used, quarterly categories, perks about to expire, and which card you shouldn't touch."
+      lede={`Walk into a store and ${b.name} already knows which card wins there, counting caps you've used, quarterly categories, perks about to expire, and which card you shouldn't touch.`}
     >
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto_1fr]">
         <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-1">

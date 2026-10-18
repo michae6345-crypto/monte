@@ -1,10 +1,11 @@
 "use client";
 
+import { useBrand } from "./brands";
 import { motion } from "framer-motion";
 import { CARDS } from "@/lib/engine/catalog";
 import { Section } from "./section";
 
-const MOATS = [
+const MOATS_RAW = [
   {
     n: "01",
     title: "Paid by you, not the banks.",
@@ -28,17 +29,19 @@ const MOATS = [
 ];
 
 export function MoatSection() {
+  const { brand: b } = useBrand();
+  const MOATS = MOATS_RAW.map((m) => ({ ...m, body: m.body.replace(/\bAce\b/g, b.name) }));
   return (
     <Section
       id="moat"
       index="06"
-      kicker="Why Ace wins"
+      kicker={`Why ${b.name} wins`}
       title={
         <>
-          Uno picks the card. <span className="serif italic text-ace-gold">Ace shows the bill.</span>
+          Uno picks the card. <span className="serif text-ace-gold">{b.name} shows the bill.</span>
         </>
       }
-      lede="Inspired by Uno Wallet (YC Spring 2026), which picks the best card at tap time. Ace adds what every rewards app leaves out: the cost side."
+      lede={`Inspired by Uno Wallet (YC Spring 2026), which picks the best card at tap time. ${b.name} adds what every rewards app leaves out: the cost side.`}
     >
       <div className="grid gap-px overflow-hidden rounded-3xl border border-ace-line bg-ace-line md:grid-cols-2">
         {MOATS.map((m, i) => (
@@ -63,7 +66,7 @@ export function MoatSection() {
           <thead className="mono text-[11px] uppercase tracking-[0.15em] text-ace-dim">
             <tr className="border-b border-ace-line">
               <th className="py-3 font-normal"></th>
-              <th className="py-3 font-normal text-ace-gold">Ace</th>
+              <th className="py-3 font-normal text-ace-gold">{b.name}</th>
               <th className="py-3 font-normal">Uno Wallet</th>
               <th className="py-3 font-normal">Card comparison sites</th>
             </tr>
@@ -111,7 +114,7 @@ export function HowSection() {
       kicker="How it works"
       title={
         <>
-          The AI never does <span className="serif italic text-ace-gold">the math.</span>
+          The AI never does <span className="serif text-ace-gold">the math.</span>
         </>
       }
       lede="Every dollar on this page comes from a published card term and an optimizer you can audit. Click through any number and you reach the rule and the purchases behind it."
@@ -146,10 +149,11 @@ export function HowSection() {
 }
 
 export function Footer() {
+  const { brand: b } = useBrand();
   return (
     <footer className="border-t border-ace-line py-16">
       <div className="mx-auto max-w-6xl px-5">
-        <div className="text-[18vw] font-semibold leading-none tracking-[-0.06em] text-ace-ink/[0.06] md:text-[12rem]">Ace</div>
+        <div className="text-[18vw] font-semibold leading-none tracking-[-0.06em] text-ace-ink/[0.06] md:text-[12rem]">{b.name}</div>
         <div className="mt-6 flex flex-col justify-between gap-4 text-sm text-ace-dim md:flex-row">
           <p>Built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with Claude Code.</p>
           <p className="mono text-[11px] uppercase tracking-wider">Card terms checked 17 Oct 2026 · Demo data is synthetic · Not financial advice</p>

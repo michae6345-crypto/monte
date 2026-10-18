@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "./brands";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { CardArt } from "./card-art";
 import { Num } from "./num";
@@ -18,19 +19,20 @@ const STATS = [
 ];
 
 export function Nav() {
+  const { brand: b } = useBrand();
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-ace-line/50 bg-ace-bg/60 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
         <a href="#top" className="flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-md bg-ace-ink text-sm font-bold text-ace-bg">A</span>
-          <span className="serif text-2xl leading-none">Ace</span>
+          <b.Mark size={28} />
+          <span className="serif text-2xl leading-none">{b.name}</span>
         </a>
         <nav className="mono hidden gap-6 text-[11px] uppercase tracking-[0.18em] text-ace-dim md:flex">
           <a href="#receipt" className="hover:text-ace-ink">Receipt</a>
           <a href="#replay" className="hover:text-ace-ink">Replay</a>
           <a href="#tap" className="hover:text-ace-ink">Tap</a>
           <a href="#keep" className="hover:text-ace-ink">Keep or cancel</a>
-          <a href="#moat" className="hover:text-ace-ink">Why Ace</a>
+          <a href="#moat" className="hover:text-ace-ink">Why {b.name}</a>
         </nav>
         <a href="#receipt" className="rounded-full bg-ace-ink px-4 py-1.5 text-sm font-medium text-ace-bg transition hover:bg-ace-gold">
           Audit a wallet
@@ -42,6 +44,7 @@ export function Nav() {
 
 export function Hero() {
   const { persona } = useAce();
+  const { brand: b } = useBrand();
   const jr = useMemo(() => receipt(JORDAN.wallet, yearOf(JORDAN)), []);
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -60,8 +63,8 @@ export function Hero() {
       }}
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 top-10 size-[38rem] rounded-full bg-[#e9c46a]/10 blur-[120px]" />
-        <div className="absolute -right-32 bottom-0 size-[34rem] rounded-full bg-[#3ee58f]/8 blur-[120px]" />
+        <div className="absolute -left-40 top-10 size-[38rem] rounded-full bg-ace-gold/10 blur-[120px]" />
+        <div className="absolute -right-32 bottom-0 size-[34rem] rounded-full bg-ace-gain/10 blur-[120px]" />
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{ backgroundImage: "linear-gradient(var(--ace-line) 1px,transparent 1px),linear-gradient(90deg,var(--ace-line) 1px,transparent 1px)", backgroundSize: "56px 56px" }}
@@ -75,7 +78,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             className="mono mb-6 text-[11px] uppercase tracking-[0.25em] text-ace-gold"
           >
-            Your wallet, audited
+            {b.eyebrow}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -83,7 +86,7 @@ export function Hero() {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="text-[13vw] font-semibold leading-[0.9] tracking-[-0.045em] md:text-[5.6rem]"
           >
-            Your cards are <span className="serif italic text-ace-gold">costing</span> you.
+            Your cards are <span className="serif text-ace-gold">costing</span> you.
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -91,11 +94,11 @@ export function Hero() {
             transition={{ delay: 0.35 }}
             className="mt-7 max-w-lg text-lg leading-relaxed text-ace-dim"
           >
-            Ace picks the right card at every tap, and shows what your cards really cost you: after interest, annual fees
+            {b.name} picks the right card at every tap, and shows what your cards really cost you: after interest, annual fees
             and the perks you never use.
           </motion.p>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-9 flex flex-wrap gap-3">
-            <a href="#receipt" className="rounded-full bg-ace-gold px-6 py-3 font-medium text-black transition hover:brightness-110">
+            <a href="#receipt" className="rounded-full bg-ace-gold px-6 py-3 font-medium text-ace-on-accent transition hover:brightness-110">
               See Jordan&apos;s receipt
             </a>
             <a href="#tap" className="rounded-full border border-ace-line px-6 py-3 text-ace-ink transition hover:border-ace-ink/40">

@@ -139,6 +139,12 @@
   --ace-loss: #ff5a52;
   --ace-gold: #e9c46a;
   --ace-paper: #f3efe6;
+  --ace-on-accent: #0b0a07;
+  --brand-body: var(--font-geist-sans);
+  --brand-head: var(--font-geist-sans);
+  --brand-accent: var(--font-serif);
+  --brand-accent-style: italic;
+  --brand-accent-weight: 400;
 }
 
 @theme inline {
@@ -152,13 +158,21 @@
   --color-ace-loss: var(--ace-loss);
   --color-ace-gold: var(--ace-gold);
   --color-ace-paper: var(--ace-paper);
+  --color-ace-on-accent: var(--ace-on-accent);
 }
 
 body.ace {
   background: var(--ace-bg);
   color: var(--ace-ink);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--brand-body), system-ui, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.ace h1,
+.ace h2,
+.ace h3 {
+  font-family: var(--brand-head), system-ui, sans-serif;
 }
 
 .ace ::selection {
@@ -167,8 +181,9 @@ body.ace {
 }
 
 .serif {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 400;
+  font-family: var(--brand-accent), Georgia, serif;
+  font-weight: var(--brand-accent-weight);
+  font-style: var(--brand-accent-style);
   letter-spacing: -0.01em;
 }
 

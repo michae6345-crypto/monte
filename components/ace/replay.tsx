@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "./brands";
 import { motion, useInView } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
 import { cardArt, shortName } from "./card-art";
@@ -13,6 +14,7 @@ const LANE = 64;
 export function ReplaySection() {
   const { wallet, r, txns, persona } = useAce();
   const [mode, setMode] = useState<"actual" | "best">("actual");
+  const { brand: b } = useBrand();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-20%" });
 
@@ -62,10 +64,10 @@ export function ReplaySection() {
       kicker="Replay"
       title={
         <>
-          Same purchases. <span className="serif italic text-ace-gold">Better</span> cards.
+          Same purchases. <span className="serif text-ace-gold">Better</span> cards.
         </>
       }
-      lede={`Each dot is one of ${persona.name}'s purchases, placed on the card that paid for it. Flip to Ace and watch them move to the card that should have.`}
+      lede={`Each dot is one of ${persona.name}'s purchases, placed on the card that paid for it. Flip to ${b.name} and watch them move to the card that should have.`}
     >
       <div ref={ref} className="rounded-3xl border border-ace-line bg-ace-panel/70 p-5 md:p-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -76,7 +78,7 @@ export function ReplaySection() {
                 onClick={() => setMode(m)}
                 className={`rounded-full px-5 py-2 text-sm transition ${mode === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
               >
-                {m === "actual" ? `What ${persona.name} did` : "What Ace would do"}
+                {m === "actual" ? `What ${persona.name} did` : `What ${b.name} would do`}
               </button>
             ))}
           </div>
@@ -132,11 +134,11 @@ export function ReplaySection() {
           <p className="text-ace-dim">
             {mode === "best" ? (
               <>
-                <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. Ace
+                <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. {b.name}
                 respects every cap and quarter{wallet.some((h) => h.balance) ? ", and never routes new spending to a card carrying a balance: those purchases start charging interest the day you make them" : ""}.
               </>
             ) : (
-              <>Flip to “What Ace would do” to re-route the year.</>
+              <>Flip to “What {b.name} would do” to re-route the year.</>
             )}
           </p>
           <div className="space-y-2">

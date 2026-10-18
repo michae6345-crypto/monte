@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "./brands";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { marginalValue, whatIf, interestFor } from "@/lib/engine";
@@ -24,7 +25,7 @@ export function KeepSection() {
       kicker="Keep or cancel"
       title={
         <>
-          Is each card <span className="serif italic text-ace-gold">earning its spot?</span>
+          Is each card <span className="serif text-ace-gold">earning its spot?</span>
         </>
       }
       lede="A card is worth what it adds over the next-best card you already carry, plus the perks you actually use, minus its fee. Not the number on the brochure."
@@ -100,6 +101,7 @@ export function KeepSection() {
 export function ForYouSection() {
   const { wallet, txns, valuation, setValuationMode, addCard, persona } = useAce();
   const [noFee, setNoFee] = useState(false);
+  const { brand: b } = useBrand();
   const [perks, setPerks] = useState<0 | 0.5 | 1>(0);
 
   const spend = useMemo(() => {
@@ -167,15 +169,15 @@ export function ForYouSection() {
       kicker="Learns you"
       title={
         <>
-          Recommendations from <span className="serif italic text-ace-gold">your</span> spending, not a sponsor.
+          Recommendations from <span className="serif text-ace-gold">your</span> spending, not a sponsor.
         </>
       }
-      lede="Ace learns how you spend, how you redeem, which perks you really use and what you won't put up with, then ranks cards on what they'd do for you, not on referral payouts."
+      lede={`${b.name} learns how you spend, how you redeem, which perks you really use and what you won't put up with, then ranks cards on what they'd do for you, not on referral payouts.`}
     >
       <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
         <div className="space-y-6 rounded-3xl border border-ace-line bg-ace-panel/70 p-6">
           <div>
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">What Ace learned</div>
+            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">What {b.name} learned</div>
             <ul className="mt-3 space-y-2 text-sm">
               {spend.top.map(([cat, v]) => (
                 <li key={cat} className="flex justify-between">
@@ -220,7 +222,7 @@ export function ForYouSection() {
             <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">Best next card for {persona.name}</div>
             {wallet.some((h) => h.balance) && (
               <div className="mb-3 rounded-2xl border border-ace-loss/40 bg-ace-loss/10 p-4 text-sm leading-relaxed">
-                <span className="font-semibold text-ace-loss">Ace&apos;s advice: no new card yet.</span> {persona.name} carries a balance, and
+                <span className="font-semibold text-ace-loss">{b.name}&apos;s advice: no new card yet.</span> {persona.name} carries a balance, and
                 the interest outweighs any card below. Pay it down first; this list is what to apply for after.
               </div>
             )}
