@@ -242,6 +242,13 @@ function Proof() {
 
 // ---------- How it works: one real purchase, traced ----------
 
+const STEPS: [string, string][] = [
+  ["Sort each purchase", "A year of bank transactions, each tagged with its merchant category code."],
+  ["Price it on every card", "Each card's multipliers, caps, credits and annual fee, from the issuer's published terms."],
+  ["Route it", "A linear program assigns every purchase to a card and checks that no other assignment earns more."],
+  ["Simulate the year", "1,000 seeded runs of the spending give each recommendation the share of years it comes out ahead."],
+];
+
 const PICKS = ["Sweetgreen", "Mobil", "Uber", "Trader Joe's"];
 
 export function HowSection() {
@@ -272,10 +279,19 @@ export function HowSection() {
       id="how"
       index="09"
       kicker="How it works"
-      title={<>Follow one purchase through the math.</>}
+      title={<>Four steps from a purchase to a recommendation.</>}
       readout={<>no model decides a dollar amount</>}
-      lede={`Pick one of ${nameOf(persona).whose} purchases and follow it through: merchant, store code, category, every card's published rule, and the cents.`}
+      lede={`Pick one of ${nameOf(persona).whose} purchases below to see the numbers at each step.`}
     >
+      <ol className="mb-8 grid gap-4 md:grid-cols-2">
+        {STEPS.map(([h, body], i) => (
+          <li key={h} className="m-panel p-5">
+            <div className="m-num text-[11px]">{String(i + 1).padStart(2, "0")}</div>
+            <div className="mt-1 text-lg font-medium text-ace-ink">{h}</div>
+            <p className="mt-1 text-sm leading-relaxed">{body}</p>
+          </li>
+        ))}
+      </ol>
       <Proof />
       <div className="mb-3 flex flex-wrap gap-1.5">
         {options.map((o, i) => (
@@ -353,11 +369,7 @@ export function Footer() {
   return (
     <footer className="border-t border-ace-line py-12">
       <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-5 text-sm text-ace-dim md:flex-row">
-        <div className="flex flex-col gap-3">
-          <Lockup size={28} state="resolved" />
-          <p>Built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with Claude Code.</p>
-        </div>
-        <p className="mono text-[11px] uppercase tracking-wider">Card terms checked 17 Oct 2026 · Demo people are synthetic · Not financial advice</p>
+        <Lockup size={28} state="resolved" />
       </div>
     </footer>
   );

@@ -104,11 +104,7 @@ export function Chapters({ sections: s }: { sections: S }) {
             <span className="m-second block">Math on the card companies&apos; published terms.</span>
           </>
         }
-        tabs={[
-          { key: "trace", label: "Trace a purchase", node: s.how },
-          { key: "real", label: "Real vs simulated", node: s.real },
-          { key: "moat", label: "Monte vs the rest", node: s.moat },
-        ]}
+        tabs={[{ key: "how", label: "How it works", node: s.how }]}
       />
     </>
   );
