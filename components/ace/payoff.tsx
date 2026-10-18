@@ -4,23 +4,24 @@
 // and see the payoff month by month against minimum payments, then what the wallet looks like
 // once it's clear (Michael's engine, monteCarlo with assumePaidOff, labelled as a projection).
 
-import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { card } from "@/lib/engine/catalog";
 import { monteCarlo } from "@/lib/engine/montecarlo";
 import { Bracketed, Expect, HandNote } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
 import { Section } from "./section";
+import { Stage } from "./stage";
 import { money, useAce } from "./store";
 
 type Debt = { cardId: string; balance: number; apr: number };
-type Path = { months: number; interest: number; series: number[] };
+type Path = { months: number; interest: number; series: number[]; paid: number[] };
 
 /** Avalanche: pay the highest APR first, the rest at minimum, interest monthly at APR/12. */
 function payoff(debts: Debt[], monthly: number, cap = 600): Path {
   const b = debts.map((d) => d.balance);
   const order = debts.map((d, i) => i).sort((x, y) => debts[y].apr - debts[x].apr);
   const series = [b.reduce((a, x) => a + x, 0)];
+  const paid = [0];
   let interest = 0;
   let m = 0;
   while (b.some((x) => x > 0.005) && m < cap) {
@@ -39,8 +40,9 @@ function payoff(debts: Debt[], monthly: number, cap = 600): Path {
       pay -= p;
     }
     series.push(Math.max(0, b.reduce((a, x) => a + x, 0)));
+    paid.push(interest);
   }
-  return { months: m, interest, series };
+  return { months: m, interest, series, paid };
 }
 
 /** A typical card minimum: the month's interest plus 1% of the balance, at least $35. */
@@ -60,7 +62,7 @@ function minimums(debts: Debt[], cap = 600): Path {
     }
     series.push(Math.max(0, b.reduce((a, x) => a + x, 0)));
   }
-  return { months: m, interest, series };
+  return { months: m, interest, series, paid: [] };
 }
 
 const span = (m: number) => (m >= 24 ? `${Math.floor(m / 12)} yr ${m % 12 ? `${m % 12} mo` : ""}`.trim() : `${m} months`);
@@ -123,6 +125,11 @@ export function PayoffSection() {
       }
       lede={`${who} carries ${money(total)}. Every month it costs ${money(firstInterest, { cents: true })} in interest, more than any card in the wallet earns. Pick a monthly payment and see how fast it goes.`}
     >
+      <Stage vh={190}>
+        {(p) => {
+          const cur = Math.min(mine.months, Math.round(Math.min(1, Math.max(0, (p - 0.08) / 0.8)) * mine.months));
+          const done = cur >= mine.months;
+          return (
       <div className="grid gap-8 lg:grid-cols-[1.35fr_1fr]">
         <div className="m-panel relative p-5 md:p-6">
           <div className="mb-4 flex flex-wrap items-center gap-4">
@@ -144,12 +151,17 @@ export function PayoffSection() {
           <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`Paying ${money(monthly)} a month clears it in ${span(mine.months)} with ${money(mine.interest)} of interest; minimum payments take ${span(mins.months)} and ${money(mins.interest)}.`}>
             <path d={area(mins.series)} style={{ fill: "var(--m-wash)" }} />
             <path d={line(mins.series)} fill="none" strokeWidth={1.25} strokeDasharray="4 4" style={{ stroke: "var(--m-slate)" }} />
-            <motion.path key={monthly} d={area(mine.series)} initial={{ opacity: 0.4 }} animate={{ opacity: 1 }} style={{ fill: "color-mix(in oklab, var(--m-ink) 10%, transparent)" }} />
-            <path d={line(mine.series)} fill="none" strokeWidth={2} style={{ stroke: "var(--m-ink)" }} />
-            <line x1={x(mine.months)} x2={x(mine.months)} y1={y(total)} y2={y(0)} strokeDasharray="2 3" style={{ stroke: "var(--m-accent)" }} />
-            <text x={Math.min(x(mine.months) + 6, W - 90)} y={y(total * 0.85)} fontSize={11} className="m-mono" style={{ fill: "var(--m-accent)" }}>
-              paid off · {span(mine.months)}
-            </text>
+            <path d={area(mine.series.slice(0, cur + 1))} style={{ fill: "color-mix(in oklab, var(--m-ink) 10%, transparent)" }} />
+            <path d={line(mine.series.slice(0, cur + 1))} fill="none" strokeWidth={2.5} style={{ stroke: "var(--m-ink)" }} />
+            <circle cx={x(cur)} cy={y(mine.series[cur] ?? 0)} r={6} style={{ fill: done ? "var(--m-accent)" : "var(--m-ink)" }} />
+            {done && (
+              <>
+                <line x1={x(mine.months)} x2={x(mine.months)} y1={y(total)} y2={y(0)} strokeDasharray="2 3" style={{ stroke: "var(--m-accent)" }} />
+                <text x={Math.min(x(mine.months) + 6, W - 90)} y={y(total * 0.85)} fontSize={11} className="m-mono" style={{ fill: "var(--m-accent)" }}>
+                  paid off · {span(mine.months)}
+                </text>
+              </>
+            )}
             <text x={8} y={H - 6} fontSize={10} className="m-mono" style={{ fill: "var(--m-mute)" }}>
               now
             </text>
@@ -158,6 +170,11 @@ export function PayoffSection() {
               {mins.months > months ? " →" : ""}
             </text>
           </svg>
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-1" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.02em" }}>
+            <span className="text-2xl">{cur === 0 ? "Today" : `Month ${cur}`}</span>
+            <span className="text-2xl">{money(mine.series[cur] ?? 0)} left</span>
+            <span className="text-2xl text-ace-loss">{cur === 0 ? "no interest yet" : `${money(-(mine.paid[cur] ?? 0), { sign: true })} interest so far`}</span>
+          </div>
           <dl className="m-num mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-[var(--m-line)] text-[12px] sm:grid-cols-4">
             {[
               ["your plan", span(mine.months), "ink"],
@@ -182,7 +199,7 @@ export function PayoffSection() {
           </p>
         </div>
 
-        <div className="m-panel p-5 md:p-6">
+        <div className={`m-panel p-5 transition-opacity duration-500 md:p-6 ${done ? "opacity-100" : "opacity-40"}`}>
           <p className="m-label">once it&apos;s clear</p>
           {proj && proj.after.hypothetical ? (
             <>
@@ -226,6 +243,9 @@ export function PayoffSection() {
           )}
         </div>
       </div>
+          );
+        }}
+      </Stage>
     </Section>
   );
 }
