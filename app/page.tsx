@@ -1,5 +1,6 @@
 import { AceProvider } from "@/components/ace/store";
-import { BrandProvider, BrandSwitcher } from "@/components/ace/brands";
+import { BrandProvider } from "@/components/ace/brands";
+import { KitGate } from "@/components/ace/kit-gate";
 import { Hero, Nav } from "@/components/ace/hero";
 import { ReceiptSection } from "@/components/ace/receipt";
 import { MoneySection } from "@/components/ace/money";
@@ -13,7 +14,7 @@ export default function Home() {
   return (
     <BrandProvider>
       <AceProvider>
-        <div className="grain">
+        <div>
           <Nav />
           <main>
             <Hero />
@@ -28,7 +29,7 @@ export default function Home() {
             <HowSection />
           </main>
           <Footer />
-          <BrandSwitcher />
+          <KitGate />
         </div>
       </AceProvider>
     </BrandProvider>

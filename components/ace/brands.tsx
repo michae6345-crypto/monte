@@ -261,7 +261,7 @@ export const useBrand = () => useContext(Ctx);
 
 export function BrandSwitcher() {
   const { choice, set } = useBrand();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const rows: { key: keyof Choice; label: string; items: { id: string; label: string; note: string }[] }[] = [
     { key: "logo", label: "Logo", items: LOGOS },
     { key: "theme", label: "Theme", items: THEMES },
