@@ -196,6 +196,13 @@ export function DropHero() {
       const loop = () => {
         if (!alive) return;
         const now = performance.now();
+        // a tab opened in the background can have no size yet: wait for one
+        if (W < 60 || H < 60) {
+          if (st.clientWidth >= 60 && st.clientHeight >= 60) size();
+          last = now;
+          cancel = frame(loop);
+          return;
+        }
         const want = target();
         if (n < want && now - stagger > 140) {
           spawn(n++);

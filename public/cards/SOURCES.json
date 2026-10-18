@@ -1,0 +1,148 @@
+{
+  "amex_gold": {
+    "url": "https://icm.aexp-static.com/acquisition/card-art/NUS000000174_480x304_straight_withname.png",
+    "page": "https://www.americanexpress.com/us/credit-cards/card/gold-card/",
+    "fetched": "2026-10-18"
+  },
+  "amex_platinum": {
+    "url": "https://icm.aexp-static.com/acquisition/card-art/NUS000000237_480x304_straight_withname.png",
+    "page": "https://www.americanexpress.com/us/credit-cards/card/platinum/",
+    "fetched": "2026-10-18"
+  },
+  "amex_blue_cash_preferred": {
+    "url": "https://icm.aexp-static.com/acquisition/card-art/NUS000000264_480x304_straight_withname.png",
+    "page": "https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/",
+    "fetched": "2026-10-18"
+  },
+  "amex_blue_cash_everyday": {
+    "url": "https://icm.aexp-static.com/acquisition/card-art/NUS000000305_480x304_straight_withname.png",
+    "page": "https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/",
+    "fetched": "2026-10-18"
+  },
+  "chase_freedom_unlimited": {
+    "url": "https://www.chase.com/content/dam/unified-assets/card-art/chase-freedom/freedom-unlimited/card_freedomUtld_V.png",
+    "page": "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    "fetched": "2026-10-18"
+  },
+  "chase_freedom_flex": {
+    "url": "https://www.chase.com/content/dam/unified-assets/card-art/chase-freedom/freedom-flex/card_freedomFlex_MC.png",
+    "page": "https://www.chase.com/personal/credit-cards/freedom/flex",
+    "fetched": "2026-10-18"
+  },
+  "chase_sapphire_preferred": {
+    "url": "https://creditcards.chase.com/content/dam/jpmc-camoh/ccc-sapphire/dual/hero/card_sapphire_pref_new.png",
+    "page": "https://creditcards.chase.com/a1/26Q3/sapphire/dual (redirect from https://www.chase.com/sapphire)",
+    "fetched": "2026-10-18"
+  },
+  "chase_sapphire_reserve": {
+    "url": "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire_reserve_card_Halo.png",
+    "page": "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve",
+    "fetched": "2026-10-18"
+  },
+  "chase_prime_visa": {
+    "url": "https://m.media-amazon.com/images/G/01/credit/CBCC/acq-landing-page/pd23/hero_card-art_dual-vertical.png",
+    "page": "https://www.amazon.com/dp/B007URFTYI",
+    "fetched": "2026-10-18"
+  },
+  "apple_card": {
+    "url": "https://www.apple.com/v/apple-card/n/images/overview/titanium_card__edutuqq7hsuq_large_2x.jpg",
+    "page": "https://www.apple.com/apple-card/",
+    "fetched": "2026-10-18"
+  },
+  "capital_one_savor": {
+    "url": "https://ecm.capitalone.com/WCM/card/products/new-savor-card-art.png",
+    "page": "https://www.capitalone.com/credit-cards/savor/",
+    "fetched": "2026-10-18"
+  },
+  "capital_one_venture": {
+    "url": "https://ecm.capitalone.com/WCM/card/products/venture-card-art.png",
+    "page": "https://www.capitalone.com/credit-cards/venture/",
+    "fetched": "2026-10-18"
+  },
+  "capital_one_venture_x": {
+    "url": "https://ecm.capitalone.com/WCM/card/products/venturex-cg-static-card-1000x630-2.png",
+    "page": "https://www.capitalone.com/credit-cards/venture-x/",
+    "fetched": "2026-10-18"
+  },
+  "capital_one_quicksilver": {
+    "url": "https://ecm.capitalone.com/WCM/card/products/qs_cardart_prim_1290x812.png",
+    "page": "https://www.capitalone.com/credit-cards/quicksilver-student/ (same art at 300px on https://www.capitalone.com/credit-cards/quicksilver/)",
+    "fetched": "2026-10-18"
+  },
+  "capital_one_quicksilver_student": {
+    "url": "https://ecm.capitalone.com/WCM/card/products/qs_cardart_prim_1290x812.png",
+    "page": "https://www.capitalone.com/credit-cards/quicksilver-student/",
+    "fetched": "2026-10-18"
+  },
+  "capital_one_platinum_secured": {
+    "url": "https://ecm.capitalone.com/WCM/card/products/plat_cardart_prim_323x203.png",
+    "page": "https://www.capitalone.com/credit-cards/platinum-secured/",
+    "fetched": "2026-10-18"
+  },
+  "citi_double_cash": {
+    "url": "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-double-cash-credit-card/citi-double-cash-credit-card_306x192.png",
+    "page": "https://www.citi.com/credit-cards/citi-double-cash-credit-card",
+    "fetched": "2026-10-18"
+  },
+  "citi_custom_cash": {
+    "url": "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-custom-cash-credit-card/citi-custom-cash-credit-card_306x192.png",
+    "page": "https://www.citi.com/credit-cards/citi-custom-cash-credit-card",
+    "fetched": "2026-10-18"
+  },
+  "citi_strata_premier": {
+    "url": "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.png",
+    "page": "https://www.citi.com/credit-cards/citi-strata-premier-credit-card",
+    "fetched": "2026-10-18"
+  },
+  "discover_it_cash_back": {
+    "url": "https://ecm.capitalone.com/WCM/dfs-card/products/cardart-cashit-with-shadow.png",
+    "page": "https://www.discover.com/credit-cards/cash-back/it-card/",
+    "fetched": "2026-10-18"
+  },
+  "discover_it_student_cash_back": {
+    "url": "https://ecm.capitalone.com/WCM/dfs-card/products/cardart-student-it-iridescent-shadow.png",
+    "page": "https://www.discover.com/credit-cards/student-credit-card/it-card/",
+    "fetched": "2026-10-18"
+  },
+  "discover_it_secured": {
+    "url": "https://ecm.capitalone.com/WCM/dfs-card/products/cardart-cashit-with-shadow.png",
+    "page": "https://www.discover.com/credit-cards/secured-credit-card/",
+    "fetched": "2026-10-18"
+  },
+  "wells_fargo_active_cash": {
+    "url": "https://creditcards.wellsfargo.com/rv/next/images/cards/active-cash.webp?v=c2c5c7f",
+    "page": "https://creditcards.wellsfargo.com/active-cash-credit-card/",
+    "fetched": "2026-10-18"
+  },
+  "wells_fargo_autograph": {
+    "url": "https://creditcards.wellsfargo.com/rv/next/images/cards/autograph.webp?v=c2c5c7f",
+    "page": "https://creditcards.wellsfargo.com/autograph-visa-credit-card/",
+    "fetched": "2026-10-18"
+  },
+  "bofa_customized_cash_rewards": {
+    "url": "https://www1.bac-assets.com/credit-cards/spa-assets/images/assets-images-site-credit-cards-masthead-container-default-bofa_cshsigcm_v.png",
+    "page": "https://www.bankofamerica.com/credit-cards/",
+    "fetched": "2026-10-18"
+  },
+  "bilt_blue": {
+    "url": "https://img.bilt.com/43819/1790799681-bilt-tahoe.webp?w=2000",
+    "page": "https://www.bilt.com/card/blue",
+    "fetched": "2026-10-18"
+  },
+  "bilt_obsidian": {
+    "url": "https://img.bilt.com/43819/1790799681-bilt-vail.webp?w=2000",
+    "page": "https://www.bilt.com/card/obsidian",
+    "fetched": "2026-10-18"
+  },
+  "bilt_palladium": {
+    "url": "https://img.bilt.com/43819/1790799681-bilt-aspen.webp?w=2000",
+    "page": "https://www.bilt.com/card/palladium",
+    "fetched": "2026-10-18"
+  },
+  "us_bank_altitude_go": {
+    "url": "https://www.usbank.com/content/dam/usbank/en/images/illustrations/card-art/credit-cards/altitude-go-visa-signature-credit-card.png",
+    "page": "https://www.usbank.com/credit-cards.html",
+    "fetched": "2026-10-18"
+  },
+  "missing": []
+}
