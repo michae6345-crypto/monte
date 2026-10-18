@@ -136,6 +136,7 @@ is fully verified.
 | `lib/data/` | The five demo people and the Plaid mapping |
 | `data/` | Card catalog and category map, each rule with its source |
 | `scripts/` | Verification scripts and the smoke test |
+| `tests/` | 36 tests, including hand-computed cases |
 
 ## Layout
 
