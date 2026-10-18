@@ -34,7 +34,7 @@ function timed<T>(f: () => T): [T, number] {
 }
 
 export function MonteCardDemo() {
-  const { wallet, txns } = useAce();
+  const { wallet, txns, persona } = useAce();
   const [i, setI] = useState(0);
   const [phase, setPhase] = useState<Phase>("idle");
   const [res, setRes] = useState<{ ranked: TapOption[]; pick: TapOption; ms: number } | null>(null);
@@ -82,10 +82,10 @@ export function MonteCardDemo() {
           <div className="relative mx-auto w-full max-w-[300px]">
             <div className="m-panel-ink relative flex aspect-[1.586/1] flex-col justify-between rounded-[16px] p-5">
               <div className="flex items-start justify-between">
-                <span className="m-label" style={{ color: "#8a8f98" }}>
+                <span className="m-label" style={{ color: "#c3cbff" }}>
                   monte card
                 </span>
-                <span className="m-mono text-[10px] text-[#8a8f98]">virtual</span>
+                <span className="m-mono text-[10px] text-[#c3cbff]">virtual</span>
               </div>
               <span className="dark">
                 <MonteMark size={34} />
@@ -218,7 +218,7 @@ export function MonteCardDemo() {
 
               {phase === "done" && (
                 <HandNote dir="up-left" width={260} delay={0.3}>
-                  the request is made up. the pick is the real engine on Jordan&apos;s cards
+                  the request is made up. the pick is the real engine on {persona.id === "you" ? "your" : `${persona.name}'s`} cards
                 </HandNote>
               )}
             </div>
@@ -292,23 +292,23 @@ export function WhyNotRealCard() {
       </div>
 
       <div className="m-panel-ink flex flex-col p-6">
-        <div className="m-label" style={{ color: "#8a8f98" }}>
+        <div className="m-label" style={{ color: "#c3cbff" }}>
           what monte does instead
         </div>
         <h3 className="m-display mt-2 text-3xl">
-          You tap the card. <span style={{ color: "#8a8f98" }}>Monte makes sure it&apos;s the right one.</span>
+          You tap the card. <span style={{ color: "#c3cbff" }}>Monte makes sure it&apos;s the right one.</span>
         </h3>
         <ul className="mt-6 space-y-5">
           {INSTEAD.map((x) => (
             <li key={x.when} className="grid grid-cols-[120px_1fr] gap-3 border-t border-white/10 pt-4">
-              <span className="m-label" style={{ color: "#9aa0aa" }}>
+              <span className="m-label" style={{ color: "#c3cbff" }}>
                 {x.when}
               </span>
               <span className="text-[15px] leading-relaxed">{x.what}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-auto pt-8 text-sm leading-relaxed text-[#9aa0aa]">
+        <p className="mt-auto pt-8 text-sm leading-relaxed text-[#c3cbff]">
           The Monte Card above is where this goes next. The engine part already works: it ranks your cards in a few milliseconds. What&apos;s left is
           keeping the store&apos;s category code attached when Monte charges your real card.
         </p>
