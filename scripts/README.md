@@ -13,3 +13,4 @@ its working.
 | `print.ts` | Every person's receipt, per-card value and best card to add |
 | `stmt-test.ts` | Statement CSV parsing on Chase- and Amex-style exports |
 | `plaid-fixture-test.ts` | The Plaid mapping on hand-written fixtures; no keys needed |
+| `smoke.ts` | The demo path against a deployment; exits 1 if it isn't safe to present (`npm run smoke`) |
