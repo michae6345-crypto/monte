@@ -175,12 +175,18 @@ export function WrappedSection() {
       readout={<>{n} cards · every figure from the engine</>}
     >
       <div className="grid items-center gap-10 lg:grid-cols-[1fr_380px]">
-        <ol className="m-mono hidden space-y-2 text-[13px] lg:block">
+        {/* the story's contents, big enough to read across a room; the current card in bold */}
+        <ol className="hidden space-y-1 lg:block">
           {slides.map((x, k) => (
             <li key={x.key}>
-              <button onClick={() => setI(k)} className={`transition ${k === cur ? "text-ace-ink" : "text-ace-dim hover:text-ace-ink"}`}>
-                <span className="mr-3 text-ace-dim">{String(k + 1).padStart(2, "0")}</span>
+              <button
+                onClick={() => setI(k)}
+                className="flex items-baseline gap-4 text-left text-[1.9rem] leading-tight tracking-[-0.03em] text-ace-ink hover:underline"
+                style={{ fontFamily: "var(--m-font-display)", fontWeight: k === cur ? 600 : 300 }}
+              >
+                <span className="m-num w-6 text-[12px] tracking-normal">{String(k + 1).padStart(2, "0")}</span>
                 {x.kicker}
+                {k === cur && <span className="m-num text-[1.2rem] text-[var(--m-accent)]">←</span>}
               </button>
             </li>
           ))}

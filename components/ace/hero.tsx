@@ -24,6 +24,7 @@ export function Nav() {
           <a href="#spend" className="hover:underline">Spend</a>
           <a href="#plan" className="hover:underline">Plan</a>
           <a href="#next" className="hover:underline">Next year</a>
+          <a href="#look" className="hover:underline">Look back</a>
           <a href="#how" className="hover:underline">How</a>
         </nav>
         <HandPicker />
