@@ -79,7 +79,7 @@ export function MoneySection() {
         {/* subscriptions */}
         <div className="m-panel p-5">
           <div className="mb-4 flex items-baseline justify-between">
-            <div className="m-label">Keeps charging you</div>
+            <div className="m-label">Recurring charges</div>
             <span className="mono text-sm">
               <Num value={subs.reduce((a, s) => a + s.perYear, 0)} />
               <span className="text-ace-dim">/yr</span>
@@ -98,7 +98,7 @@ export function MoneySection() {
                       {s.priceHike && <span className="m-label ml-2 rounded-full px-1.5 py-0.5 shadow-[0_0_0_1px_var(--m-line-strong)]">price up</span>}
                     </div>
                     <div className="mono truncate text-[10px] text-ace-dim">
-                      every {s.cadenceDays}d · best on {shortName(best.cardId)}
+                      every {s.cadenceDays}d{wallet.length > 1 ? ` · best on ${shortName(best.cardId)}` : ""}
                     </div>
                   </div>
                   <span className="mono shrink-0">{money(s.amount, { cents: true })}</span>

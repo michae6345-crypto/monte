@@ -311,8 +311,8 @@ export function WhyNotRealCard() {
           ))}
         </ul>
         <p className="mt-auto pt-8 text-sm leading-relaxed text-[#c3cbff]">
-          The Monte Card above is where this goes next. The engine part already works: it ranks your cards in a few milliseconds. What&apos;s left is
-          keeping the store&apos;s category code attached when Monte charges your real card.
+          The engine part works today: it ranked these cards in under a millisecond. Those four problems are why the Monte Card stays a
+          simulation.
         </p>
       </div>
     </div>

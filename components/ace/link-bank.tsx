@@ -50,7 +50,7 @@ export function LinkBank() {
       {s.k === "linking" && <Sampler label="Reading the sandbox bank" />}
       {s.k === "done" && (
         <span className="text-xs text-ace-dim">
-          Plaid sandbox read · <Bracketed>{s.n}</Bracketed> purchases on <Bracketed>{s.cards}</Bracketed> cards. Every section now runs on it.
+          Plaid sandbox read · <Bracketed>{s.n}</Bracketed> purchases on <Bracketed>{s.cards}</Bracketed> card{s.cards === 1 ? "" : "s"}. Every section now runs on it.
         </span>
       )}
       {s.k === "error" && (
@@ -60,7 +60,7 @@ export function LinkBank() {
           </span>{" "}
           {s.code === "plaid_not_configured"
             ? "This deployment has no Plaid keys yet. The demo people and the CSV upload still work."
-            : "Plaid didn't answer. Try the CSV export instead."}
+            : "Plaid didn't answer. Upload a statement CSV instead."}
         </span>
       )}
 

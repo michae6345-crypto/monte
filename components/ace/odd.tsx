@@ -61,7 +61,7 @@ export function findOddCharges(txns: Txn[], planted: Set<string> = new Set()): F
         id: `test-${s[0].id}`,
         kind: "test",
         title: `${money(s[0].amount, { cents: true })} at ${m}`,
-        why: `A first-ever charge under $2 at a store you've never used: the pattern of someone checking whether a stolen card number works.`,
+        why: `First charge ever at this store, under $2: the amount used to test a stolen card number.`,
         txns: [s[0]],
         planted: planted.has(s[0].id),
       });
@@ -75,7 +75,7 @@ export function findOddCharges(txns: Txn[], planted: Set<string> = new Set()): F
             id: `far-${t.id}`,
             kind: "far",
             title: `${money(t.amount, { cents: true })} at ${m}`,
-            why: `${(t.amount / med).toFixed(1)}× the ${money(med, { cents: true })} it usually charges you (${s.length} visits). Worth a look, probably fine.`,
+            why: `${(t.amount / med).toFixed(1)}× the ${money(med, { cents: true })} it usually charges (${s.length} purchases).`,
             txns: [t],
             planted: planted.has(t.id),
           });

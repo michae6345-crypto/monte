@@ -157,14 +157,14 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
                   <div className="text-4xl" style={display}>
                     {cur.count}
                   </div>
-                  <div className="mt-1 text-sm text-ace-dim">visits · {money(cur.total / cur.count)} each</div>
+                  <div className="mt-1 text-sm text-ace-dim">purchases · {money(cur.total / cur.count)} each</div>
                 </div>
               </div>
-              {pick && (
+              {pick && wallet.length > 1 && (
                 <div className="mt-auto flex items-center gap-3 rounded-[14px] bg-[var(--m-wash)] p-3 pt-3">
                   <CardArt id={pick.cardId} size="sm" className="w-16 shrink-0 shadow-none" />
                   <div className="min-w-0 text-sm">
-                    <div className="text-ace-dim">Monte pays here with</div>
+                    <div className="text-ace-dim">Best card here</div>
                     <div className="truncate font-medium">
                       {shortName(pick.cardId)} · {pick.mult % 1 ? pick.mult.toFixed(1) : pick.mult}×
                     </div>

@@ -59,7 +59,7 @@ export function WrappedSection() {
             <span className="mb-5 block">
               <MerchantLogo name={top.merchant} size={64} className="rounded-[16px]" />
             </span>
-            {top.count} trips to {top.merchant}.
+            {top.count} purchases at {top.merchant}.
             <span className="m-second block">
               <Bracketed>{money(top.total)}</Bracketed> all year.
             </span>
@@ -85,7 +85,7 @@ export function WrappedSection() {
           <>
             {subs.length} subscriptions.
             <span className="m-second block">
-              <Bracketed>{money(subYear)}</Bracketed> a year, on autopay.
+              <Bracketed>{money(subYear)}</Bracketed> a year in recurring charges.
             </span>
           </>
         ),
@@ -93,7 +93,7 @@ export function WrappedSection() {
     if (miss.gap > 0.01)
       out.push({
         key: "miss",
-        kicker: "the one that got away",
+        kicker: "biggest single miss",
         body: (
           <>
             {money(miss.amount, { cents: true })} at {miss.merchant} went on the {shortName(miss.used)}.

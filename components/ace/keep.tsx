@@ -14,7 +14,8 @@ import { Estimator } from "@/components/brand";
 import { monteCarloSamples } from "@/lib/engine/montecarlo";
 
 export function KeepSection() {
-  const { wallet, txns, valuation, r } = useAce();
+  const { wallet, txns, valuation, r, persona } = useAce();
+  const who = nameOf(persona);
   const mc = useMonteCarlo();
   const rows = useMemo(
     () => wallet.map((h) => ({ h, m: marginalValue(wallet, txns, h.cardId), interest: interestFor(h) })),
@@ -42,7 +43,7 @@ export function KeepSection() {
       id="keep"
       index="06"
       kicker="Keep or cancel"
-      title={<>Is each card earning its spot?</>}
+      title={<>{wallet.length === 1 ? `Is the ${shortName(wallet[0].cardId)} earning its spot?` : "Is each card earning its spot?"}</>}
       readout={
         <>
           <R tone="loss">{money(rows.reduce((a, x) => a + x.m.fee, 0))}</R> in fees a year · <R>{rows.length}</R> cards · {mc.years.toLocaleString()} years simulated
@@ -65,12 +66,12 @@ export function KeepSection() {
             interest > 0
               ? { label: "Pay it down", tone: "loss", why: `The balance costs ${money(interest)} a year in interest${interest > r.rewards ? ", more than the whole wallet earned" : ""}. Clear it before anything else.` }
               : wallet.length === 1 && m.fee <= 0
-                ? { label: "Keep", tone: "gain", why: "Your only card. No fee, so there is nothing to cancel; it earns on everything." }
+                ? { label: "Keep", tone: "gain", why: `${who.Whose} only card, no annual fee: nothing to cancel.` }
                 : m.net >= 25
-                ? { label: "Keep", tone: "gain", why: `Adds ${money(m.rewardsAdded)}${wallet.length > 1 ? " over your other cards" : ""}${m.credits ? ` plus ${money(m.credits)} of perks you use` : ""}.` }
+                ? { label: "Keep", tone: "gain", why: `Adds ${money(m.rewardsAdded)}${wallet.length > 1 ? ` over ${who.whose} other cards` : ""}${m.credits ? ` plus ${money(m.credits)} of perks you use` : ""}.` }
                 : m.fee > 0
-                  ? { label: "Downgrade", tone: "loss", why: `The ${money(m.fee)} fee buys ${money(value)} of value for you. Ask for a retention offer, or move to a no-fee ${issuer} card and keep the credit history.` }
-                  : { label: "Keep, quietly", tone: "dim", why: "No fee, so it costs nothing to keep open, and it helps your credit age. Your other cards out-earn it." };
+                  ? { label: "Downgrade", tone: "loss", why: `The ${money(m.fee)} fee buys ${money(value)} of value for ${who.who}. Ask for a retention offer, or move to a no-fee ${issuer} card and keep the credit history.` }
+                  : { label: "Keep", tone: "dim", why: "No annual fee, so keeping it costs nothing. The other cards earn more everywhere, so it sits unused." };
           return (
             <motion.div
               key={h.cardId}
@@ -272,7 +273,7 @@ export function ForYouSection() {
         });
       const m = marginalValue(wallet, txns, h.cardId);
       if (c.annual_fee > 0 && m.net < 25)
-        out.push({ tag: "Before it renews", tone: "loss", text: `${shortName(h.cardId)} is worth ${money(m.net)} a year to you after its ${money(c.annual_fee)} fee. Call for a retention offer, or downgrade.` });
+        out.push({ tag: "Before it renews", tone: "loss", text: `${shortName(h.cardId)} is worth ${money(m.net)} a year to ${nameOf(persona).who} after its ${money(c.annual_fee)} fee. Call for a retention offer, or downgrade.` });
     }
     if (recs[0] && recs[0].total > 40 && !wallet.some((h) => h.balance))
       out.push({ tag: "Opportunity", tone: "gain", text: `${shortName(recs[0].id)} would add about ${money(recs[0].total)} a year on ${nameOf(persona).whose} spending${card(recs[0].id).annual_fee ? ", after its fee" : ""}.` });

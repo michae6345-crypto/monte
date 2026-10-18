@@ -131,7 +131,6 @@ export function HowSection() {
             <span>
               <span className="text-white">$</span> {b.name.toLowerCase()} trace {t.id}
             </span>
-            <span>deterministic · same input, same output</span>
           </div>
           <motion.dl key={t.id} className="mono min-w-[640px] space-y-1.5 px-5 py-4" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.09 } } }}>
             <Line k="purchase">
