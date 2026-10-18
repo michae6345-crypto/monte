@@ -76,7 +76,7 @@ cap usage.
 
 `eligibleCards()` removes any card carrying a balance from best-play routing (unless every
 card has one). New purchases on a revolving card accrue interest from day one, so 2% back
-is a loss at 25% APR. The same rule blocks "apply for a new card" suggestions while you
+is a loss at 26.24% APR (Jordan: $734.72 of interest against $552.69 of rewards). The same rule blocks "apply for a new card" suggestions while you
 carry a balance.
 
 ### Monte Carlo: block bootstrap that replays the engine

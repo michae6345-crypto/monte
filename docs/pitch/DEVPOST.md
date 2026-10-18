@@ -81,4 +81,4 @@ prove it.
 ## Built with
 
 TypeScript, Next.js, React, Supabase (Postgres with row-level security), Plaid,
-javascript-lp-solver, D3 (d3-sankey), Tailwind CSS, shadcn/ui, framer-motion.
+javascript-lp-solver, D3 (d3-sankey), Tailwind CSS, shadcn/ui, framer-motion. Deployed on Vercel.
