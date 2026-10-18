@@ -289,6 +289,7 @@ export function WhyNotRealCard() {
           ))}
         </ol>
         <div className="m-mono mt-6 rounded-[10px] bg-m-wash p-4 text-[12px] leading-[1.8]">
+          <div className="m-label mb-1">for example, with an Amex Gold</div>
           <div>
             <span className="text-m-slate">you tap  </span>Trader Joe&apos;s · mcc <span className="text-m-ink">5411</span> → Monte Card
           </div>
