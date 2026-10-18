@@ -19,9 +19,6 @@ const ROWS: [string, string, string, string][] = [
   ["Useful with one card, or with a balance", "yes", "not advertised", "sells a new card"],
   ["Finds double charges and price rises", "yes", "not advertised", "no"],
   ["Counts interest on a carried balance", "yes", "not advertised", "no"],
-  ["Values perks at what you actually use", "yes", "lists perks", "lists perks"],
-  ["Ranks cards on your own year of spending", "yes", "not advertised", "on a profile"],
-  ["Card rules linked to the issuer page, with the date checked", "yes", "not advertised", "not advertised"],
   ["Paid by card referrals", "no", "unknown", "yes"],
 ];
 
@@ -70,9 +67,7 @@ export function MoatSection() {
       <p className="mt-5 text-lg">
         45% of cardholders carried a balance last year (Federal Reserve, May 2026). For them, interest beats any reward.
       </p>
-      <p className="mono mt-3 text-[11px] uppercase tracking-wider text-ace-dim">
-        Uno Wallet (YC Spring 2026) from what its site advertises; it is waitlist-only. Comparison sites means referral-funded sites such as NerdWallet.
-      </p>
+      <p className="mono mt-3 text-[11px] uppercase tracking-wider text-ace-dim">Uno Wallet: from its site. Comparison sites: e.g. NerdWallet.</p>
     </Section>
   );
 }
@@ -118,8 +113,7 @@ function TwoAnswers() {
           pickerCard: top.cardId,
           monte: (
             <>
-              Use the {shortName(res.pick.cardId)}, +{money(res.pick.reward, { cents: true })}. The {shortName(top.cardId)} carries {money(h.balance)} at {h.apr}%, so
-              anything new on it charges interest from day one.
+              Use the {shortName(res.pick.cardId)}. The {shortName(top.cardId)} has a {money(h.balance)} balance at {h.apr}%.
             </>
           ),
           monteCard: res.pick.cardId,
@@ -213,10 +207,10 @@ function Proof() {
   const gap = check ? check.bound - routed : 0;
   const steps: [string, string][] = [
     [txns.length.toLocaleString(), "purchases"],
-    [String(cats), "categories, by store code"],
-    [String(CARDS.length), "cards' published rules"],
-    [money(routed, { cents: true }), "rewards last year on the right card, within card limits"],
-    [money(r.net, { cents: true, sign: true }), "net last year, after fees and interest"],
+    [String(cats), "categories"],
+    [String(CARDS.length), "card rulebooks"],
+    [money(routed, { cents: true }), "rewards, right card"],
+    [money(r.net, { cents: true, sign: true }), "net last year"],
   ];
   return (
     <div className="mb-10">
@@ -234,11 +228,9 @@ function Proof() {
       <p className="m-mono mt-3 min-h-[2.5em] text-[12px] leading-relaxed">
         {check ? (
           <>
-            check: a solver tried every way to put these purchases on these cards, card limits included.{" "}
-            {Math.abs(gap) < 0.005
-              ? `None earns more than the right-card picks (${money(routed, { cents: true })}).`
-              : `The best possible is ${money(check.bound, { cents: true })}, ${money(gap, { cents: true })} above the right-card picks.`}{" "}
-            {Math.max(1, Math.round(check.ms))} ms in this browser.
+            ✓ solver check: no other way of using these cards earns more.{" "}
+            {Math.abs(gap) < 0.005 ? "" : `(best possible ${money(check.bound, { cents: true })}) `}
+            {Math.max(1, Math.round(check.ms))} ms.
           </>
         ) : (
           "check: running…"

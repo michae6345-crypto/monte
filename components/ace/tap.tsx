@@ -105,11 +105,9 @@ export function TapSection() {
                 k === i ? "bg-ace-panel shadow-[0_0_0_1.5px_var(--m-ink)]" : "bg-ace-panel shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
               }`}
             >
-              <span className={`m-num w-10 shrink-0 text-[11px] ${k === i ? "text-ace-ink" : "text-ace-dim"}`} title="Store code: what the card company sees">{s.mcc}</span>
               <MerchantLogo name={s.merchant} size={26} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{s.merchant}</span>
-                <span className="mono block text-[11px] uppercase tracking-wider text-ace-dim">{s.where}</span>
               </span>
               <span className="mono text-sm text-ace-dim">{money(s.amount, { cents: true })}</span>
             </button>

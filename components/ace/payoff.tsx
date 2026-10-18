@@ -261,17 +261,16 @@ export function PayoffSection() {
         </div>
 
         <div className={`m-panel p-5 transition-opacity duration-500 md:p-6`}>
-          <p className="m-label">once it&apos;s clear</p>
+          <p className="m-label">once it&apos;s paid off · a typical year, right card</p>
           {proj && proj.after.hypothetical ? (
             <>
-              <p className="mt-3 text-sm">Once the {proj.after.hypothetical.cards.map(nick).join(" and ")} is paid off:</p>
               <div className="mt-5 space-y-2 text-xl">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm">typical next year on the right card, balance still owed</span>
+                  <span className="text-sm">still owing</span>
                   <span className={`m-num ${proj.now.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.now.current.p50, { sign: true })}</span>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm">typical next year on the right card, balance paid off</span>
+                  <span className="text-sm">paid off</span>
                   <span className={`m-num ${proj.after.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.after.current.p50, { sign: true })}</span>
                 </div>
               </div>
@@ -280,11 +279,10 @@ export function PayoffSection() {
                 <div className="flex items-center gap-4">
                   <CardArt id={proj.add.id.slice(4)} size="sm" className="w-20 shrink-0" />
                   <div className="min-w-0">
-                    <p className="m-label">then the first card worth adding</p>
+                    <p className="m-label">then add</p>
                     <p className="mt-1 font-medium">{shortName(proj.add.id.slice(4))}</p>
                     <p className="m-num mt-0.5 text-[12px] text-ace-dim">
-                      {money(proj.add.p50 - proj.after.current.p50, { sign: true })} a year, typical · better in{" "}
-                      {Math.round(proj.add.winShare * proj.after.years).toLocaleString()} of {proj.after.years.toLocaleString()} years
+                      {money(proj.add.p50 - proj.after.current.p50, { sign: true })} a typical year
                     </p>
                   </div>
                 </div>
