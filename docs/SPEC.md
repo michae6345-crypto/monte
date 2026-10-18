@@ -19,7 +19,7 @@ simulations of next year, so every recommendation comes with odds, not a guess.
 
 **Name:** Monte Carlo simulation (finance and poker solvers), with a casino wink.
 
-**Copies:** Uno Wallet (YC Spring 2026) picks the best card at tap time. Monte adds the
+**Category:** tap-time card pickers choose the best card at the register. Monte adds the
 cost side. Others in the space are Pointwise (YC W23), CardStack, Wallaby and Kudos:
 they compete on rewards, we compete on net cost.
 
