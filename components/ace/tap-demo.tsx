@@ -1,18 +1,17 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Arrow } from "@/components/brand";
 import { tap } from "@/lib/engine";
-import { card } from "@/lib/engine/catalog";
 import { CardArt, CardMini, shortName } from "./card-art";
 import { MerchantLogo } from "./merchant-logo";
 import { money, nameOf, useAce } from "./store";
 import { spotsFor } from "./spots";
 
-// The tap, played out on one stage: the store's reader and the phone in the middle, and each
-// step Monte takes annotated beside them, slow enough to talk over. The numbers are the engine's
-// own `tap()` on the selected person's wallet.
+// The tap, played out on one stage: the store's reader and the phone in the middle, each step
+// Monte takes marked beside them with a pencil arrow and a few words. The numbers are the
+// engine's own `tap()` on the selected person's wallet.
 
 const BASE = [
   { merchant: "Trader Joe's", category: "groceries", amount: 64.2, where: "Los Feliz", mcc: "5411" },
@@ -26,11 +25,11 @@ const BASE = [
 
 // side: where the step's note sits, so the notes alternate around the phone
 const STEPS = [
-  { k: "read", t: "The reader sends a store code", short: "Store code", side: "right", phone: "Reading the reader" },
-  { k: "wallet", t: "Monte opens your wallet", short: "Wallet", side: "left", phone: "Opening your wallet" },
-  { k: "caps", t: "It counts what this month already used", short: "Caps", side: "right", phone: "Checking this month" },
-  { k: "rank", t: "It ranks every card for this purchase", short: "Rank", side: "left", phone: "Ranking your cards" },
-  { k: "pay", t: "It pays with the winner", short: "Pay", side: "right", phone: "Paying with" },
+  { k: "read", t: "reader sends the store code", short: "Store code", side: "right" },
+  { k: "wallet", t: "opens your wallet", short: "Wallet", side: "left" },
+  { k: "caps", t: "counts this month's caps", short: "Caps", side: "right" },
+  { k: "rank", t: "ranks every card", short: "Rank", side: "left" },
+  { k: "pay", t: "pays with the winner", short: "Pay", side: "right" },
 ] as const;
 type StepKey = (typeof STEPS)[number]["k"];
 
@@ -64,6 +63,27 @@ export function TapDemo() {
   );
 }
 
+/** The reader's approval beep: two short tones, quiet. */
+function beep() {
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctx();
+    [0, 0.14].forEach((at) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 1760;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + at);
+      g.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + at + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + at + 0.11);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + at);
+      o.stop(ctx.currentTime + at + 0.12);
+    });
+    window.setTimeout(() => ctx.close(), 600);
+  } catch {}
+}
+
 function Dashboard({ onClose }: { onClose: () => void }) {
   const { wallet, txns, persona, valuation, r: year } = useAce();
   const nm = nameOf(persona);
@@ -88,15 +108,14 @@ function Dashboard({ onClose }: { onClose: () => void }) {
     return [...n.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? wallet[0]?.cardId;
   }, [txns, wallet]);
   const usualOpt = res.ranked.find((x) => x.cardId === usual);
-  const gain = usualOpt ? pick.reward - usualOpt.reward : 0;
   const maxReward = Math.max(0.01, ...res.ranked.map((x) => x.reward));
   const offLimits = wallet.filter((h) => (h.balance ?? 0) > 0);
   const summary: Record<StepKey, string> = {
-    read: `${spot.mcc} · ${spot.category.replace(/_/g, " ")} · ${money(spot.amount, { cents: true })}`,
-    wallet: `${wallet.length - offLimits.length} of ${wallet.length} cards can play`,
-    caps: `${history.length} purchases replayed`,
-    rank: `${shortName(pick.cardId)} first`,
-    pay: `+${money(pick.reward, { cents: true })} earned`,
+    read: `${spot.mcc} · ${spot.category.replace(/_/g, " ")}`,
+    wallet: `${wallet.length - offLimits.length} of ${wallet.length} can play`,
+    caps: `${history.length} purchases`,
+    rank: shortName(pick.cardId),
+    pay: `+${money(pick.reward, { cents: true })}`,
   };
 
   const reset = useCallback(() => setPhase(-1), []);
@@ -112,6 +131,16 @@ function Dashboard({ onClose }: { onClose: () => void }) {
     const t = window.setTimeout(() => setPhase((p) => p + 1), STEP_MS);
     return () => clearTimeout(t);
   }, [phase, playing]);
+
+  // the beep, once, when the reader approves
+  const beeped = useRef(false);
+  useEffect(() => {
+    if (phase >= 5 && !beeped.current) {
+      beeped.current = true;
+      beep();
+    }
+    if (phase < 5) beeped.current = false;
+  }, [phase]);
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -142,70 +171,45 @@ function Dashboard({ onClose }: { onClose: () => void }) {
   const tapped = phase >= 0;
   const paid = phase >= 5;
 
-  // what each step's note says, in full
+  // each step's note: a few words and the one thing worth pointing at
   const body: Record<StepKey, ReactNode> = {
     read: (
-      <>
-        <div className="mono flex flex-wrap gap-1.5 text-[12px] text-ace-ink">
-          <Chip>{spot.merchant}</Chip>
-          <Chip strong>store code {spot.mcc}</Chip>
-          <Chip>{spot.category.replace(/_/g, " ")}</Chip>
-          <Chip>{money(spot.amount, { cents: true })}</Chip>
-        </div>
-        <p className="mt-2.5">
-          Every reader sends a four-digit merchant code with the amount. That code, not the store&apos;s name, decides which reward category each card pays.
-        </p>
-      </>
+      <div className="mono flex flex-wrap items-center gap-1.5 text-[12px] text-ace-ink">
+        <Chip strong>{spot.mcc}</Chip>
+        <span className="text-ace-dim">→</span>
+        <Chip>{spot.category.replace(/_/g, " ")}</Chip>
+        <Chip>{money(spot.amount, { cents: true })}</Chip>
+      </div>
     ),
     wallet: (
-      <>
-        <div className="space-y-1.5">
-          {wallet.map((h) => (
-            <div key={h.cardId} className={`flex items-center gap-2.5 text-[13px] text-ace-ink ${h.balance ? "opacity-60" : ""}`}>
-              <CardMini id={h.cardId} width={32} />
-              <span className="flex-1 truncate">{shortName(h.cardId)}</span>
-              {h.balance ? (
-                <span className="mono rounded bg-ace-loss/10 px-1.5 py-0.5 text-[11px] text-ace-loss">off limits</span>
-              ) : (
-                <span className="mono text-[11px] text-ace-gain">can play</span>
-              )}
-            </div>
-          ))}
-        </div>
-        <p className="mt-2.5">
-          {offLimits.length
-            ? `${offLimits.map((h) => shortName(h.cardId)).join(" and ")} carries a balance. New spending there charges interest from today, so Monte never picks it.`
-            : "Every card is paid in full, so all of them compete."}
-        </p>
-      </>
+      <div className="flex flex-wrap gap-2.5">
+        {wallet.map((h) => (
+          <div key={h.cardId} className="flex flex-col items-center gap-1">
+            <span className={h.balance ? "opacity-40 grayscale" : ""}>
+              <CardMini id={h.cardId} width={46} />
+            </span>
+            <span className={`mono text-[10px] ${h.balance ? "text-ace-loss" : "text-ace-gain"}`}>{h.balance ? "✕ balance" : "✓"}</span>
+          </div>
+        ))}
+      </div>
     ),
     caps: (
-      <>
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl text-ace-ink" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
-            {history.length}
-          </span>
-          <span className="mono text-[12px]">purchase{history.length === 1 ? "" : "s"} since 1 Oct, replayed</span>
-        </div>
-        <p className="mt-2">Bonus categories have spending caps. Monte replays this month on the best cards first, so a cap that&apos;s already full stops paying the bonus rate.</p>
-        {res.capNotes.map((n) => (
-          <p key={n} className="mt-1.5 text-ace-ink">
-            {n}
-          </p>
-        ))}
-      </>
+      <div className="flex items-baseline gap-2">
+        <span className="text-4xl text-ace-ink" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
+          {history.length}
+        </span>
+        <span className="mono text-[11px] text-ace-dim">purchases this month, replayed</span>
+      </div>
     ),
     rank: (
-      <div className="space-y-2">
+      <div className="w-full max-w-[300px] space-y-1.5">
         {res.ranked.map((x, r) => (
           <div key={x.cardId}>
-            <div className="flex items-baseline justify-between gap-2 text-[13px]">
-              <span className={`truncate ${x.blocked ? "line-through" : "text-ace-ink"}`}>{shortName(x.cardId)}</span>
-              <span className={`mono shrink-0 ${x.cardId === pick.cardId ? "font-semibold text-ace-gain" : ""}`}>
-                {x.mult.toFixed(x.mult % 1 ? 1 : 0)}× · {money(x.reward, { cents: true })}
-              </span>
+            <div className="flex items-baseline justify-between gap-2 text-[12px]">
+              <span className={`truncate ${x.blocked ? "text-ace-dim line-through" : "text-ace-ink"}`}>{shortName(x.cardId)}</span>
+              <span className={`mono shrink-0 ${x.cardId === pick.cardId ? "font-semibold text-ace-gain" : "text-ace-dim"}`}>{money(x.reward, { cents: true })}</span>
             </div>
-            <div className="mt-1 h-2 overflow-hidden rounded-full bg-ace-line/60">
+            <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-ace-line/60">
               <motion.div
                 className={`h-full rounded-full ${x.blocked ? "bg-ace-loss/45" : x.cardId === pick.cardId ? "bg-ace-gain" : "bg-ace-dim/40"}`}
                 initial={{ width: 0 }}
@@ -215,42 +219,32 @@ function Dashboard({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         ))}
-        <p className="pt-1">
-          Each card&apos;s rate comes from its issuer&apos;s published terms ({new URL(card(pick.cardId).source_urls[0] ?? "https://example.com").hostname} for the winner). The
-          engine does the math, not an AI.
-        </p>
       </div>
     ),
     pay: (
-      <>
-        <div className="flex items-center gap-3">
-          <CardMini id={pick.cardId} width={48} />
-          <div className="min-w-0">
-            <div className="truncate text-[15px] font-semibold text-ace-ink">{shortName(pick.cardId)}</div>
-            <div className="mono truncate text-[11px]">{pick.rule}</div>
-          </div>
-          <div className="ml-auto text-2xl text-ace-gain" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
+      <div>
+        <div className="flex items-center gap-2.5">
+          <CardMini id={pick.cardId} width={46} />
+          <span className="text-3xl text-ace-gain" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
             +{money(pick.reward, { cents: true })}
+          </span>
+        </div>
+        {usualOpt && usual !== pick.cardId && (
+          <div className="mono mt-1.5 text-[11px] text-ace-dim">
+            {nm.whose} usual card: {money(usualOpt.reward, { cents: true })}
           </div>
-        </div>
-        <p className="mt-2.5">
-          {usual && usual !== pick.cardId && gain > 0.004
-            ? `${nm.Who} usually reaches for the ${shortName(usual)}${usualOpt?.blocked ? ", which carries a balance" : ""}. This tap earns ${money(gain, { cents: true })} more, with nothing to remember.`
-            : usual === pick.cardId
-              ? `That's the card ${nm.who} usually reaches for, and here it's the right one.`
-              : "The phone hands this card to the reader. Nothing to remember at the register."}
-        </p>
-        <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg bg-ace-bg p-2.5 ring-1 ring-ace-line">
-          <YearStat label="every tap right, last year" value={`+${money(year.leftOnTable)}`} tone="gain" />
-          <YearStat label="interest paid" value={`−${money(year.interest)}`} tone={year.interest > 0 ? "loss" : "ink"} />
-          <YearStat label="net from the cards" value={money(year.net, { sign: true })} tone={year.net < 0 ? "loss" : "gain"} />
-        </div>
-      </>
+        )}
+        {paid && year.leftOnTable > 0 && (
+          <div className="mono mt-0.5 text-[11px] text-ace-dim">
+            every tap right, last year: <span className="text-ace-gain">+{money(year.leftOnTable)}</span>
+          </div>
+        )}
+      </div>
     ),
   };
 
   const notes = (side: "left" | "right") => (
-    <div className={`flex min-h-0 flex-col justify-center gap-2.5 ${side === "left" ? "items-end" : "items-start"}`}>
+    <div className={`flex min-h-0 flex-col justify-center gap-3 ${side === "left" ? "items-end" : "items-start"}`}>
       <AnimatePresence initial={false}>
         {STEPS.map((s, k) => {
           if (s.side !== side) return null;
@@ -266,7 +260,7 @@ function Dashboard({ onClose }: { onClose: () => void }) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 24 }}
-              className="w-full max-w-[400px]"
+              className="w-full max-w-[380px]"
             >
               <Note step={k} title={s.t} side={side} open={open} summary={summary[s.k]} onClick={() => setPhase(k)}>
                 {body[s.k]}
@@ -304,8 +298,8 @@ function Dashboard({ onClose }: { onClose: () => void }) {
             <Contactless className="h-4 w-4" />
           </span>
           <div className="min-w-0 shrink-0">
-            <div className="text-sm font-semibold leading-tight">Tap to pay, step by step</div>
-            <div className="mono truncate text-[11px] text-ace-dim">{nm.whose} wallet · simulated reader, real card rules</div>
+            <div className="text-sm font-semibold leading-tight">Tap to pay</div>
+            <div className="mono truncate text-[11px] text-ace-dim">{nm.whose} wallet</div>
           </div>
           <div className="mx-2 flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 [scrollbar-width:none]">
             {spots.map((s, k) => (
@@ -331,20 +325,20 @@ function Dashboard({ onClose }: { onClose: () => void }) {
 
         {/* the stage */}
         <div
-          className="relative grid gap-4 px-4 py-5 lg:min-h-[560px] lg:grid-cols-[minmax(0,1fr)_260px_minmax(0,1fr)] lg:gap-6"
+          className="relative grid gap-4 px-4 py-5 lg:min-h-[580px] lg:grid-cols-[minmax(0,1fr)_260px_minmax(0,1fr)] lg:gap-6"
           style={{ background: "radial-gradient(60% 70% at 50% 45%, color-mix(in oklab, var(--m-accent) 9%, transparent), transparent 70%)" }}
         >
           <div className="hidden lg:flex lg:flex-col lg:justify-center">{notes("left")}</div>
 
           <div className="relative flex flex-col items-center">
-            <Reader merchant={spot.merchant} amount={spot.amount} mcc={spot.mcc} tapped={tapped} paid={paid} />
+            <Reader merchant={spot.merchant} amount={spot.amount} phase={phase} />
             <motion.div
-              className="relative z-10 -mt-3"
-              animate={tapped && !paid ? { y: -30, rotateX: 14, scale: 0.98 } : { y: 0, rotateX: 0, scale: 1 }}
-              style={{ transformPerspective: 900 }}
+              className="relative z-10 -mt-4"
+              animate={tapped && !paid ? { y: -34, rotateX: 18, scale: 0.97 } : paid ? { y: -6, rotateX: 0, scale: 1 } : { y: 0, rotateX: 0, scale: 1 }}
+              style={{ transformPerspective: 900, transformOrigin: "50% 0%" }}
               transition={{ type: "spring", stiffness: 110, damping: 16 }}
             >
-              <Phone wallet={wallet.map((h) => h.cardId)} blocked={offLimits.map((h) => h.cardId)} ranked={res.ranked.map((x) => x.cardId)} pick={pick.cardId} reward={pick.reward} phase={phase} />
+              <Phone wallet={wallet.map((h) => h.cardId)} pick={pick.cardId} reward={pick.reward} phase={phase} />
             </motion.div>
           </div>
 
@@ -360,9 +354,15 @@ function Dashboard({ onClose }: { onClose: () => void }) {
           )}
 
           {phase === -1 && (
-            <div className="pointer-events-none absolute inset-x-0 top-1/2 hidden -translate-y-1/2 justify-between px-10 lg:flex">
-              <p className="m-note max-w-[260px] -rotate-2 text-[17px] text-ace-dim">You&apos;re at the register at {spot.merchant}, about to pay {money(spot.amount, { cents: true })}.</p>
-              <p className="m-note max-w-[240px] rotate-2 text-right text-[17px] text-ace-dim">Tap, and watch what Monte does before the beep.</p>
+            <div className="pointer-events-none absolute inset-x-0 top-[44%] hidden justify-between px-12 lg:flex">
+              <span className="flex items-center gap-1 text-ace-dim">
+                <span className="m-note -rotate-2 text-[19px]">at the register</span>
+                <Arrow dir="right" className="h-8 w-11" />
+              </span>
+              <span className="flex items-center gap-1 text-ace-dim">
+                <Arrow dir="left" className="h-8 w-11" />
+                <span className="m-note rotate-2 text-[19px]">tap to pay</span>
+              </span>
             </div>
           )}
         </div>
@@ -372,7 +372,7 @@ function Dashboard({ onClose }: { onClose: () => void }) {
           <div className="flex items-center gap-1.5">
             {phase === -1 || paid ? (
               <button onClick={start} className="btn btn-primary btn-sm">
-                <Contactless className="mr-1.5 h-3.5 w-3.5" /> {paid ? "Tap again" : "Tap to pay"}
+                <Contactless className="mr-1.5 h-3.5 w-3.5" /> {paid ? "Tap again" : "Tap"}
               </button>
             ) : (
               <>
@@ -421,15 +421,14 @@ function Dashboard({ onClose }: { onClose: () => void }) {
               );
             })}
           </ol>
-          <div className="mono hidden text-[10px] text-ace-dim md:block">space play/pause · ← → step</div>
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-/** One step's annotation: a numbered card with a pencil arrow toward the phone. Open while it
- *  is being explained, folded to one line after. */
+/** One step's mark: a handwritten label and a pencil arrow toward the phone, with the one thing
+ *  worth pointing at under it. Folded to a single line once the next step starts. */
 function Note({
   step,
   title,
@@ -447,37 +446,31 @@ function Note({
   onClick?: () => void;
   children: ReactNode;
 }) {
-  const arrow = (
-    <span className="hidden text-ace-dim lg:block">
-      <Arrow dir={side === "left" ? "right" : "left"} className="h-8 w-11" />
-    </span>
-  );
+  const right = side === "left";
   return (
-    <div className={`flex items-center gap-1 ${side === "left" ? "flex-row" : "flex-row-reverse"}`}>
-      <div
-        onClick={open ? undefined : onClick}
-        className={`min-w-0 flex-1 rounded-2xl bg-ace-panel transition ${
-          open ? "p-4 shadow-[0_0_0_1.5px_var(--m-ink),0_18px_40px_-24px_rgba(12,14,20,.45)]" : "cursor-pointer px-3.5 py-2.5 shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
-        }`}
-      >
-        <div className="flex items-center gap-2.5">
-          <span
-            className={`mono flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${open ? "bg-ace-ink text-ace-bg" : "bg-ace-gain text-white"}`}
-          >
-            {open ? String(step + 1).padStart(2, "0") : "✓"}
-          </span>
-          <span className={`font-medium ${open ? "text-[16px]" : "text-[13px]"}`}>{title}</span>
-          {!open && summary && <span className="mono ml-auto truncate pl-2 text-[11px] text-ace-dim">{summary}</span>}
+    <div className={`flex items-center gap-1.5 ${right ? "flex-row" : "flex-row-reverse"}`}>
+      <div onClick={open ? undefined : onClick} className={`min-w-0 flex-1 ${right ? "text-right" : "text-left"} ${open ? "" : "cursor-pointer opacity-60 hover:opacity-100"}`}>
+        <div className={`flex items-baseline gap-2 ${right ? "justify-end" : ""}`}>
+          <span className={`mono shrink-0 text-[11px] ${open ? "text-ace-ink" : "text-ace-gain"}`}>{open ? String(step + 1).padStart(2, "0") : "✓"}</span>
+          <span className={`m-note leading-tight text-ace-ink ${open ? "text-[22px]" : "shrink-0 whitespace-nowrap text-[15px]"}`}>{title}</span>
+          {!open && summary && <span className="mono min-w-0 truncate text-[11px] text-ace-dim">· {summary}</span>}
         </div>
         <AnimatePresence initial={false}>
           {open && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-              <div className="pt-3 text-[13.5px] leading-relaxed text-ace-dim">{children}</div>
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className={`flex overflow-hidden ${right ? "justify-end" : ""}`}
+            >
+              <div className="pt-2.5">{children}</div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-      {open && arrow}
+      <span className={`hidden shrink-0 text-ace-dim lg:block ${open ? "" : "invisible"}`}>
+        <Arrow dir={right ? "right" : "left"} className="h-9 w-12" />
+      </span>
     </div>
   );
 }
@@ -496,94 +489,104 @@ function Ctl({ label, onClick, disabled, wide, children }: { label: string; onCl
   );
 }
 
-function YearStat({ label, value, tone }: { label: string; value: string; tone: "gain" | "loss" | "ink" }) {
-  return (
-    <div>
-      <div className={`text-[15px] font-semibold ${tone === "gain" ? "text-ace-gain" : tone === "loss" ? "text-ace-loss" : "text-ace-ink"}`}>{value}</div>
-      <div className="mono text-[10px] leading-tight text-ace-dim">{label}</div>
-    </div>
-  );
-}
-
 function Chip({ children, strong }: { children: ReactNode; strong?: boolean }) {
-  return <span className={`rounded-md px-2 py-0.5 ${strong ? "bg-ace-ink text-ace-bg" : "bg-ace-bg ring-1 ring-ace-line"}`}>{children}</span>;
+  return <span className={`rounded-md px-2 py-0.5 ${strong ? "bg-ace-ink text-ace-bg" : "bg-ace-panel ring-1 ring-ace-line"}`}>{children}</span>;
 }
 
-/** The store's card reader: amount on its screen, contactless mark, rings while the phone is near. */
-function Reader({ merchant, amount, mcc, tapped, paid }: { merchant: string; amount: number; mcc: string; tapped: boolean; paid: boolean }) {
+/** A countertop card reader: the four contactless lights light one by one while the phone is
+ *  held there, then all four go green with the approval. */
+function Reader({ merchant, amount, phase }: { merchant: string; amount: number; phase: number }) {
+  const tapped = phase >= 0;
+  const paid = phase >= 5;
+  const lit = paid ? 4 : tapped ? Math.min(4, phase + 1) : 0;
   return (
-    <div className="relative z-0 w-[230px] rounded-[22px] bg-gradient-to-b from-[#2a2e37] to-[#16181e] p-2.5 pb-3 shadow-[0_24px_44px_-22px_rgba(12,14,20,.7),inset_0_1px_0_rgba(255,255,255,.08)]">
-      <div className="rounded-[14px] bg-[#0b0d11] px-3 py-2.5 text-center ring-1 ring-white/5">
-        <AnimatePresence mode="wait">
-          {paid ? (
-            <motion.div key="ok" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#22c55e] text-lg font-bold text-white">✓</div>
-              <div className="mono mt-1.5 text-[11px] uppercase tracking-[0.2em] text-[#9ef0b8]">Approved</div>
-            </motion.div>
-          ) : (
-            <motion.div key={merchant} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="mono truncate text-[10px] uppercase tracking-[0.2em] text-[#8a93a6]">
-                {merchant} · {mcc}
-              </div>
-              <div className="mono mt-1 text-2xl text-white">{money(amount, { cents: true })}</div>
-              <div className="mono mt-0.5 text-[10px] text-[#8a93a6]">{tapped ? "reading…" : "tap to pay"}</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      <div className="relative mx-auto mt-2 flex h-9 w-9 items-center justify-center">
-        {tapped &&
-          !paid &&
-          [0, 1, 2].map((k) => (
-            <motion.span
+    <div className="relative z-0 w-[240px]">
+      <div className="rounded-[26px] bg-gradient-to-b from-[#30343d] via-[#1e2128] to-[#14161b] p-3 pb-4 shadow-[0_30px_50px_-24px_rgba(12,14,20,.75),inset_0_1px_0_rgba(255,255,255,.12),inset_0_-2px_0_rgba(0,0,0,.4)]">
+        {/* contactless status lights */}
+        <div className="mb-2.5 flex justify-center gap-2.5">
+          {[0, 1, 2, 3].map((k) => (
+            <span
               key={k}
-              className="absolute inset-0 rounded-full border-2 border-[#7aa7ff]"
-              initial={{ scale: 0.6, opacity: 0.8 }}
-              animate={{ scale: 2.4, opacity: 0 }}
-              transition={{ repeat: Infinity, duration: 1.6, delay: k * 0.53 }}
+              className="h-1.5 w-5 rounded-full transition-all duration-300"
+              style={{
+                background: k < lit ? (paid ? "#22c55e" : "#7aa7ff") : "#3a3f49",
+                boxShadow: k < lit ? `0 0 10px ${paid ? "#22c55e" : "#7aa7ff"}` : "none",
+              }}
             />
           ))}
-        <Contactless className="h-6 w-6 text-white/80" />
+        </div>
+        <div className="rounded-[14px] bg-[#0b0d11] px-3 py-3 text-center ring-1 ring-white/5">
+          <AnimatePresence mode="wait">
+            {paid ? (
+              <motion.div key="ok" initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+                <div className="mono text-[10px] uppercase tracking-[0.2em] text-[#8a93a6]">{merchant}</div>
+                <div className="mono mt-1 text-xl text-[#86efac]">Approved</div>
+                <div className="mono mt-0.5 text-[10px] text-[#8a93a6]">{money(amount, { cents: true })}</div>
+              </motion.div>
+            ) : (
+              <motion.div key={merchant + tapped} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div className="mono truncate text-[10px] uppercase tracking-[0.2em] text-[#8a93a6]">{merchant}</div>
+                <div className="mono mt-1 text-[26px] leading-none text-white">{money(amount, { cents: true })}</div>
+                <div className="mono mt-1.5 text-[10px] text-[#8a93a6]">{tapped ? "Processing… hold card" : "Tap, insert or swipe"}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        {/* the tap target */}
+        <div className="relative mx-auto mt-3 flex h-10 w-10 items-center justify-center rounded-full ring-1 ring-white/10">
+          {tapped &&
+            !paid &&
+            [0, 1, 2].map((k) => (
+              <motion.span
+                key={k}
+                className="absolute inset-0 rounded-full border-2 border-[#7aa7ff]"
+                initial={{ scale: 0.7, opacity: 0.8 }}
+                animate={{ scale: 2.3, opacity: 0 }}
+                transition={{ repeat: Infinity, duration: 1.6, delay: k * 0.53 }}
+              />
+            ))}
+          <Contactless className="h-5 w-5 text-white/80" />
+        </div>
       </div>
     </div>
   );
 }
 
-/** The phone: a dark wallet screen whose cards stack, jostle while Monte works, then the winner
- *  lifts out and pays. */
-function Phone({
-  wallet,
-  blocked,
-  ranked,
-  pick,
-  reward,
-  phase,
-}: {
-  wallet: string[];
-  blocked: string[];
-  ranked: string[];
-  pick: string;
-  reward: number;
-  phase: number;
-}) {
-  const status = phase < 0 ? "Hold near reader" : phase >= 5 ? "Done" : STEPS[phase].phone;
+/** The phone, Apple Pay style: Monte's card on top with "Hold Near Reader"; while the reader
+ *  holds, Monte flips through the wallet; the winner lands on top, then the drawn check and Done. */
+function Phone({ wallet, pick, reward, phase }: { wallet: string[]; pick: string; reward: number; phase: number }) {
   const working = phase >= 0 && phase <= 3;
   const settled = phase >= 4;
+  const paid = phase >= 5;
   const n = wallet.length;
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!working || phase < 1) return;
+    const t = window.setInterval(() => setTick((x) => x + 1), 650);
+    return () => clearInterval(t);
+  }, [working, phase]);
+  // the card on top: Monte's own until the wallet opens, flipping through it while it ranks
+  const top = settled ? pick : working && phase >= 1 ? wallet[tick % n] : "monte";
+  const rest = settled ? wallet.filter((id) => id !== pick) : wallet;
+
   return (
     <div className="relative">
       {/* side buttons */}
-      <span className="absolute -left-[3px] top-[96px] h-7 w-[3px] rounded-l bg-[#9aa0aa]" />
-      <span className="absolute -left-[3px] top-[136px] h-12 w-[3px] rounded-l bg-[#9aa0aa]" />
-      <span className="absolute -left-[3px] top-[192px] h-12 w-[3px] rounded-l bg-[#9aa0aa]" />
-      <span className="absolute -right-[3px] top-[150px] h-16 w-[3px] rounded-r bg-[#9aa0aa]" />
+      <span className="absolute -left-[3px] top-[88px] h-6 w-[3px] rounded-l-sm bg-gradient-to-b from-[#a8adb6] to-[#7d838d]" />
+      <span className="absolute -left-[3px] top-[124px] h-11 w-[3px] rounded-l-sm bg-gradient-to-b from-[#a8adb6] to-[#7d838d]" />
+      <span className="absolute -left-[3px] top-[176px] h-11 w-[3px] rounded-l-sm bg-gradient-to-b from-[#a8adb6] to-[#7d838d]" />
+      <motion.span
+        className="absolute -right-[3px] top-[140px] h-16 w-[3px] rounded-r-sm bg-gradient-to-b from-[#a8adb6] to-[#7d838d]"
+        animate={phase === 0 ? { x: [-0, -1.5, 0, -1.5, 0] } : { x: 0 }}
+        transition={{ duration: 0.6 }}
+      />
       {/* titanium frame */}
-      <div className="relative h-[430px] w-[214px] rounded-[44px] bg-gradient-to-br from-[#c9cdd4] via-[#8d939d] to-[#c3c7ce] p-[3px] shadow-[0_40px_70px_-30px_rgba(12,14,20,.6),0_0_0_1px_rgba(12,14,20,.15)]">
-        <div className="relative h-full w-full rounded-[41px] bg-[#0a0b0e] p-[7px]">
+      <div className="relative h-[440px] w-[216px] rounded-[46px] bg-gradient-to-br from-[#d4d7dc] via-[#8f959e] to-[#c6c9cf] p-[2.5px] shadow-[0_44px_70px_-30px_rgba(12,14,20,.65),0_0_0_1px_rgba(12,14,20,.18)]">
+        <div className="relative h-full w-full rounded-[43.5px] bg-[#050506] p-[6px]">
           {/* screen */}
-          <div className="relative h-full w-full overflow-hidden rounded-[34px] bg-[radial-gradient(120%_70%_at_50%_0%,#1d2230,#0b0d12_60%)] text-white">
+          <div className="relative h-full w-full overflow-hidden rounded-[38px] bg-black text-white">
             {/* status bar */}
-            <div className="flex items-center justify-between px-5 pt-3 text-[11px] font-semibold">
+            <div className="relative z-20 flex items-center justify-between px-6 pt-[11px] text-[11px] font-semibold tracking-tight">
               <span>12:04</span>
               <span className="flex items-center gap-1">
                 <svg viewBox="0 0 18 12" className="h-2.5 w-3.5" fill="currentColor" aria-hidden>
@@ -592,108 +595,137 @@ function Phone({
                   <rect x="10" y="2.5" width="3" height="9.5" rx="1" />
                   <rect x="15" y="0" width="3" height="12" rx="1" />
                 </svg>
-                <span className="relative h-2.5 w-5 rounded-[3px] border border-white/60 p-[1px]">
-                  <span className="block h-full w-[70%] rounded-[1.5px] bg-white" />
+                <svg viewBox="0 0 16 12" className="h-2.5 w-3.5" fill="currentColor" aria-hidden>
+                  <path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0L8 11.5Zm-4.2-4.3L2.2 5.6a8.2 8.2 0 0 1 11.6 0l-1.6 1.6a5.9 5.9 0 0 0-8.4 0ZM.6 4 -.9 2.4a12.6 12.6 0 0 1 17.8 0L15.4 4A10.4 10.4 0 0 0 .6 4Z" />
+                </svg>
+                <span className="relative ml-0.5 h-[10px] w-[20px] rounded-[3px] border border-white/55 p-[1px]">
+                  <span className="block h-full w-[78%] rounded-[1.5px] bg-white" />
                 </span>
               </span>
             </div>
             {/* dynamic island */}
-            <div className="absolute left-1/2 top-2 z-30 flex h-[22px] w-[74px] -translate-x-1/2 items-center justify-end rounded-full bg-black pr-2">
+            <motion.div
+              className="absolute left-1/2 top-[8px] z-30 flex h-[24px] -translate-x-1/2 items-center justify-end rounded-full bg-black pr-2 ring-1 ring-white/[.04]"
+              animate={{ width: working ? 96 : 76 }}
+              transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            >
               <AnimatePresence>
                 {working && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: [1, 1.3, 1] }}
-                    exit={{ scale: 0 }}
-                    transition={{ repeat: Infinity, duration: 1 }}
-                    className="h-1.5 w-1.5 rounded-full bg-[#7aa7ff]"
-                  />
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <Contactless className="h-3 w-3 text-[#7aa7ff]" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* top card */}
+            <div className="relative mx-auto mt-8 w-[184px]" style={{ perspective: 800 }}>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div
+                  key={top}
+                  initial={{ rotateY: -70, opacity: 0, y: 6 }}
+                  animate={{ rotateY: 0, opacity: 1, y: 0 }}
+                  exit={{ rotateY: 70, opacity: 0, y: -4 }}
+                  transition={{ duration: 0.32, ease: "easeOut" }}
+                >
+                  {top === "monte" ? <MonteCard /> : <CardArt id={top} size="sm" />}
+                </motion.div>
+              </AnimatePresence>
+              {settled && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mono absolute -bottom-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#22c55e] px-2 py-[2px] text-[9px] font-semibold text-black"
+                >
+                  +{money(reward, { cents: true })} rewards
+                </motion.div>
+              )}
+            </div>
+
+            {/* status: hold / choosing / done */}
+            <div className="mt-9 flex h-[104px] flex-col items-center justify-start">
+              <AnimatePresence mode="wait">
+                {paid ? (
+                  <motion.div key="done" className="flex flex-col items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <svg viewBox="0 0 52 52" className="h-14 w-14" aria-hidden>
+                      <motion.circle cx="26" cy="26" r="23" fill="none" stroke="#0a84ff" strokeWidth="3" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.45 }} />
+                      <motion.path
+                        d="M15 27l7.5 7.5L38 19"
+                        fill="none"
+                        stroke="#0a84ff"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.3, delay: 0.4 }}
+                      />
+                    </svg>
+                    <div className="mt-1.5 text-[15px] font-semibold">Done</div>
+                  </motion.div>
+                ) : working || settled ? (
+                  <motion.div key="busy" className="flex flex-col items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.span
+                      className="block h-11 w-11 rounded-full border-[3px] border-white/15 border-t-[#0a84ff]"
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 0.9, ease: "linear" }}
+                    />
+                    <div className="mt-2.5 text-[13px] font-semibold">{settled ? shortName(pick) : "Choosing a card"}</div>
+                  </motion.div>
+                ) : (
+                  <motion.div key="hold" className="flex flex-col items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}>
+                      <HoldIcon />
+                    </motion.div>
+                    <div className="mt-2 text-[15px] font-semibold">Hold Near Reader</div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            <div className="mt-4 text-center">
-              <div className="mono text-[9px] uppercase tracking-[0.3em] text-white/45">Monte</div>
-              <AnimatePresence mode="wait">
-                <motion.div key={status} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="mt-0.5 text-[14px] font-semibold">
-                  {status}
-                </motion.div>
-              </AnimatePresence>
+            {/* the rest of the wallet, peeking at the bottom */}
+            <div className="absolute inset-x-0 bottom-6 mx-auto w-[184px]">
+              {rest.slice(0, 4).map((id, k) => (
+                <div key={id} className="h-[14px] overflow-hidden rounded-t-[8px] opacity-80" style={{ marginTop: k ? -2 : 0 }}>
+                  <CardArt id={id} size="sm" />
+                </div>
+              ))}
             </div>
-
-            {/* cards */}
-            <div className="relative mx-auto mt-4 h-[210px] w-[176px]">
-              {wallet.map((id, k) => {
-                const isPick = id === pick;
-                const r = Math.max(0, ranked.indexOf(id));
-                const off = blocked.includes(id);
-                // idle: a neat stack; working: cards jostle; settled: the winner lifts out on top
-                const y = settled ? (isPick ? 4 : 112 + r * 10) : working ? 14 + ((k + Math.max(phase, 0)) % n) * 30 : 20 + k * 26;
-                const rotate = settled ? (isPick ? 0 : r % 2 ? 4 : -4) : working ? ((k + phase) % 2 ? 3 : -3) : 0;
-                return (
-                  <motion.div
-                    key={id}
-                    className="absolute inset-x-0"
-                    animate={{
-                      y,
-                      rotate,
-                      scale: settled && !isPick ? 0.84 : 1,
-                      opacity: phase >= 1 && off && !settled ? 0.45 : 1,
-                      zIndex: settled ? (isPick ? 30 : 20 - r) : working ? (k + Math.max(phase, 0)) % n : k,
-                    }}
-                    transition={{ type: "spring", stiffness: 140, damping: 17 }}
-                  >
-                    <CardArt id={id} size="sm" dim={settled && !isPick} />
-                    {phase >= 1 && phase < 4 && off && (
-                      <span className="mono absolute right-1.5 top-1.5 rounded-full bg-[#ef4444] px-1.5 py-[1px] text-[8px] font-semibold uppercase tracking-wider text-white">
-                        balance
-                      </span>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* bottom: hint, then the result sheet */}
-            <AnimatePresence mode="wait">
-              {settled ? (
-                <motion.div
-                  key="sheet"
-                  initial={{ y: 60, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 60, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 170, damping: 20 }}
-                  className="absolute inset-x-2 bottom-2 z-40 rounded-[26px] bg-white/[.09] p-3.5 backdrop-blur-md ring-1 ring-white/10"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="truncate text-[12px] font-semibold">{shortName(pick)}</span>
-                    {phase >= 5 && (
-                      <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex h-5 w-5 items-center justify-center rounded-full bg-[#22c55e] text-[11px] font-bold">
-                        ✓
-                      </motion.span>
-                    )}
-                  </div>
-                  <div className="text-[26px] leading-tight text-[#6ee7a0]" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
-                    +{money(reward, { cents: true })}
-                  </div>
-                  <div className="mono text-[9.5px] text-white/55">{phase >= 5 ? "earned · paid in full" : "the best card for this purchase"}</div>
-                </motion.div>
-              ) : (
-                <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-x-0 bottom-5 flex flex-col items-center gap-1.5">
-                  <motion.span animate={phase < 0 ? { y: [0, -4, 0] } : { rotate: 360 }} transition={{ repeat: Infinity, duration: phase < 0 ? 1.6 : 1.4, ease: phase < 0 ? "easeInOut" : "linear" }}>
-                    {phase < 0 ? <Contactless className="h-6 w-6 text-white/70" /> : <span className="block h-5 w-5 rounded-full border-2 border-white/20 border-t-[#7aa7ff]" />}
-                  </motion.span>
-                  <span className="mono text-[9.5px] text-white/50">{phase < 0 ? "hold the top near the reader" : "picking before the beep"}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
             {/* home bar + glass */}
-            <div className="absolute bottom-1.5 left-1/2 z-50 h-1 w-20 -translate-x-1/2 rounded-full bg-white/40" />
-            <div className="pointer-events-none absolute inset-0 z-50 bg-[linear-gradient(115deg,rgba(255,255,255,.10),transparent_38%)]" />
+            <div className="absolute bottom-[7px] left-1/2 z-50 h-[4px] w-[76px] -translate-x-1/2 rounded-full bg-white/70" />
+            <div className="pointer-events-none absolute inset-0 z-40 bg-[linear-gradient(118deg,rgba(255,255,255,.09),transparent_36%)]" />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/** Monte's own card, the one the phone presents before it knows which real card to route to. */
+function MonteCard() {
+  return (
+    <div className="relative aspect-[1.586/1] overflow-hidden rounded-[7%/11%] bg-[linear-gradient(135deg,#1c3faa,#0b1a4a_60%,#05070f)] p-3 shadow-[0_14px_30px_-12px_rgba(0,0,0,.8)] ring-1 ring-white/10">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_15%_0%,rgba(255,255,255,.28),transparent_55%)]" />
+      <div className="relative flex h-full flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <span className="mono text-[12px] font-semibold tracking-tight text-white">[ monte ]</span>
+          <Contactless className="h-3.5 w-3.5 text-white/80" />
+        </div>
+        <div className="h-4 w-6 rounded-[3px] bg-gradient-to-br from-[#e8d08a] via-[#b89a4a] to-[#f3e3a8]" />
+        <div className="mono text-[8px] uppercase tracking-[0.2em] text-white/60">routes to your best card</div>
+      </div>
+    </div>
+  );
+}
+
+/** Apple Pay's "hold near reader" glyph: the top of a phone with waves above it. */
+function HoldIcon() {
+  return (
+    <svg viewBox="0 0 48 48" className="h-12 w-12 text-[#0a84ff]" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+      <rect x="15" y="20" width="18" height="26" rx="4" />
+      <path d="M17 13a10 10 0 0 1 14 0" />
+      <path d="M12 8a17 17 0 0 1 24 0" />
+    </svg>
   );
 }
 
