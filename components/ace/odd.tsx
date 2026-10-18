@@ -158,7 +158,7 @@ export function OddChargesSection() {
           {run.n} purchases checked · charged twice · price rises · card testing · far above usual
         </>
       }
-      lede={`${nameOf(persona).Whose} year is synthetic and clean, so turn on the test charges to watch the check work. On your own statement it runs as soon as you load it.`}
+      lede={`${nameOf(persona).Whose} year came back clean, so plant the test charges to watch the check catch them. On your own statement it runs the moment you load it.`}
     >
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <span className="relative">
