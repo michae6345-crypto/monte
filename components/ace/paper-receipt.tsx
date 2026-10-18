@@ -173,12 +173,6 @@ export function PaperReceipt({
 
         <div className="mt-6 text-ace-ink">
           <Barcode seed={seed} />
-          <div className="m-mono mt-1.5 text-center text-[10px] tracking-[0.3em] text-ace-dim">
-            {Math.abs(seed.split("").reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) | 0, 7))
-              .toString()
-              .padStart(10, "0")
-              .slice(0, 12)}
-          </div>
           <div className="m-mono mt-3 text-center text-[10px] uppercase tracking-[0.22em] text-ace-dim">every number traced to the issuer&apos;s terms</div>
         </div>
       </div>

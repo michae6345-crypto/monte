@@ -128,8 +128,8 @@ export function TapSection() {
                   >
                     <CardArt id={h.cardId} dim={!isPick} />
                     {h.balance ? (
-                      <div className="mono absolute right-2 top-2 rotate-6 rounded border-2 border-ace-loss px-1.5 text-[10px] font-bold uppercase text-ace-loss">
-                        balance
+                      <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[10px] text-ace-loss shadow-[0_0_0_1px_var(--m-line-strong)]">
+                        carries a balance
                       </div>
                     ) : null}
                   </motion.div>
