@@ -138,16 +138,3 @@ is fully verified.
 | `scripts/` | Verification scripts and the smoke test |
 | `tests/` | 36 tests, including hand-computed cases |
 | `docs/` | Spec, deploy runbook, brand, judge Q&A |
-
-## Layout
-
-```
-app/            screens and the Plaid + health API routes
-components/     UI
-lib/engine/     the rules engine, Monte Carlo, LP, provenance
-lib/data/       demo people, Plaid mapping
-data/           card catalog and category map, with sources
-scripts/        verification scripts (see above)
-tests/          36 tests, including hand-computed cases
-docs/           SPEC.md, HACKATHON.md, deploy.md, BRAND.md
-```
