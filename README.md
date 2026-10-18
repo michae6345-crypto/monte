@@ -107,7 +107,7 @@ node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy, with
 ## Connecting a bank
 
 The Plaid sandbox routes are in `app/api/plaid/`. Without keys every route returns
-`503 plaid_not_configured` and the app stays on its demo people, so nothing breaks.
+`503 plaid_not_configured` and the app stays on its demo people.
 With keys, `loadPlaidSandbox()` returns transactions and a wallet in the same shape the
 demo people use. Setup and a curl walkthrough: [`docs/deploy.md`](docs/deploy.md).
 
