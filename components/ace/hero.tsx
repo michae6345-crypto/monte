@@ -25,7 +25,7 @@ export function Nav() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
         <a href="#top" className="flex items-center gap-2">
           <b.Mark size={28} />
-          <span className="serif text-2xl leading-none">{b.name}</span>
+          <span className="text-xl font-bold leading-none tracking-tight" style={{ fontFamily: "var(--brand-head)" }}>{b.wordmark}</span>
         </a>
         <nav className="mono hidden gap-6 text-[11px] uppercase tracking-[0.18em] text-ace-dim md:flex">
           <a href="#receipt" className="hover:text-ace-ink">Receipt</a>

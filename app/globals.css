@@ -128,23 +128,23 @@
     @apply font-sans;
   }
 }
-/* ---------- Ace ---------- */
+/* ---------- Kicker (defaults = Night lime + Space Grotesk) ---------- */
 :root {
-  --ace-bg: #07070a;
-  --ace-panel: #0f0f14;
-  --ace-line: rgba(255, 255, 255, 0.08);
-  --ace-ink: #f4f1ea;
-  --ace-dim: rgba(244, 241, 234, 0.55);
-  --ace-gain: #3ee58f;
-  --ace-loss: #ff5a52;
-  --ace-gold: #e9c46a;
-  --ace-paper: #f3efe6;
-  --ace-on-accent: #0b0a07;
-  --brand-body: var(--font-geist-sans);
-  --brand-head: var(--font-geist-sans);
-  --brand-accent: var(--font-serif);
-  --brand-accent-style: italic;
-  --brand-accent-weight: 400;
+  --ace-bg: #090c18;
+  --ace-panel: #10152a;
+  --ace-line: rgba(200, 255, 46, 0.12);
+  --ace-ink: #eef2ff;
+  --ace-dim: rgba(238, 242, 255, 0.58);
+  --ace-gain: #2ee6a8;
+  --ace-loss: #ff5c7a;
+  --ace-gold: #c8ff2e;
+  --ace-paper: #f1f4ff;
+  --ace-on-accent: #0a0d02;
+  --brand-body: var(--font-grotesk);
+  --brand-head: var(--font-grotesk);
+  --brand-accent: var(--font-grotesk);
+  --brand-accent-style: normal;
+  --brand-accent-weight: 700;
 }
 
 @theme inline {
