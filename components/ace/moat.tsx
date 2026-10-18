@@ -296,7 +296,7 @@ export function HowSection() {
       kicker="How it works"
       title={<>Follow one purchase through the math.</>}
       readout={<>no model decides a dollar amount</>}
-      lede={`Pick one of ${nameOf(persona).whose} purchases and follow it through: merchant, merchant code, category, every card's published rule, and the cents.`}
+      lede={`Pick one of ${nameOf(persona).whose} purchases and follow it through: merchant, store code, category, every card's published rule, and the cents.`}
     >
       <Proof />
       <div className="mb-3 flex flex-wrap gap-1.5">
