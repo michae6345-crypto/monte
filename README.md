@@ -4,6 +4,8 @@
 
 **[Live site](https://ace-eta-beryl.vercel.app)** · **[Demo video](https://youtu.be/Tn4YrpoLjh8)** · [Devpost](https://devpost.com/software/monte-calygj)
 
+![Monte: rewards $553, interest $735](docs/img/monte.png)
+
 Built at ACM@USC TrojanHacks 2026 (Finance vertical) by Adrian Erlikhman and Michael
 Tarekegn.
 
