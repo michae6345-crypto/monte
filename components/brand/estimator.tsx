@@ -140,7 +140,7 @@ export function Estimator({
       </svg>
 
       <div>
-        <div className="m-label mb-2">running average</div>
+        <div className="m-label mb-2">average so far</div>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-14 w-full" aria-hidden>
           <line x1={0} x2={100} y1={50} y2={50} stroke="var(--m-line-strong)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
           <polyline points={pathShown} fill="none" stroke="var(--m-ink)" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />

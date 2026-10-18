@@ -5,7 +5,7 @@
 // to where that same year lands under the new play.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { creditsUsed, interestFor, simulate, type Holding, type Txn } from "@/lib/engine";
+import { creditsUsed, interestFor, pointValue, simulate, type Holding, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { monteCarloSamples, resampledYears } from "@/lib/engine/montecarlo";
 import { HandNote, Sampler } from "@/components/brand";
@@ -79,17 +79,31 @@ async function computeRuns(strategies: Strategy[], txns: Txn[], alive: () => boo
   return out;
 }
 
+const RUNS = new WeakMap<Txn[], Map<string, Run[]>>();
+const runKey = (st: Strategy[]) =>
+  JSON.stringify(st.map((x) => [x.id, x.policy, x.paidOff ?? false, x.wallet])) + "|" + pointValue(card("amex_gold"));
+
 /** Runs after first paint, in slices, so the page never waits on it. */
 export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
   // runs are tagged with the strategies they answer, so a new person never sees the last one's
   const [done, setDone] = useState<{ for: Strategy[]; runs: Run[] } | null>(null);
   useEffect(() => {
     let alive = true;
-    const id = window.setTimeout(() => {
-      computeRuns(strategies, txns, () => alive).then((r) => {
-        if (alive && r) setDone({ for: strategies, runs: r });
-      });
-    }, 60);
+    // a person seen before (same purchases, same strategies, same point values) comes back instantly
+    const key = runKey(strategies);
+    const hit = RUNS.get(txns)?.get(key);
+    const id = window.setTimeout(
+      () => {
+        if (hit) return setDone({ for: strategies, runs: hit });
+        computeRuns(strategies, txns, () => alive).then((r) => {
+          if (!alive || !r) return;
+          if (!RUNS.has(txns)) RUNS.set(txns, new Map());
+          RUNS.get(txns)!.set(key, r);
+          setDone({ for: strategies, runs: r });
+        });
+      },
+      hit ? 0 : 60,
+    );
     return () => {
       alive = false;
       clearTimeout(id);
@@ -338,7 +352,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
             <span>{String(i + 1).padStart(2, "0")}</span> {s.short}
           </button>
         ))}
-        <span className="m-label ml-auto normal-case tracking-normal">spending held at last year&apos;s pattern</span>
+        <span className="m-label ml-auto normal-case tracking-normal">same spending as last year</span>
       </div>
 
       <div
@@ -379,7 +393,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           <dd className={`mt-0.5 text-base tnum ${r.p50 < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(r.p50, { sign: true })}</dd>
         </div>
         <div className="border-r border-ace-line px-4 py-3">
-          <dt className="text-ace-dim">9 in 10 years</dt>
+          <dt className="text-ace-dim">most years</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {money(r.p5)} … {money(r.p95)}
           </dd>

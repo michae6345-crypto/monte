@@ -33,7 +33,7 @@ const STEPS: Step[] = [
   { id: "spend", tab: "replay", target: "replay-view", persona: "sam", title: "Only one card", cue: "Sam, 19, one student card. Nothing to move, so Monte asks the next question: a Savor beside it would have added $131 last year." },
   { id: "plan", tab: "payoff", target: "payoff-view", persona: "rosa", title: "Income that swings", cue: "Rosa's spending runs from $738 to $3,792 a month. Her $1,900 balance costs her more in interest than her cards earned. Paying in step with her months, $76 to $391, clears it in 9 months for $6 more interest than a flat $250, which a slow month may not cover.", play: 4 },
   { id: "how", tab: "trace", target: "how-view", title: "How it works", cue: "The pipeline, and a solver checking live that no other way of using these cards earns more. Then one purchase traced to its rule and source." },
-  { id: "how", tab: "real", target: "real-view", title: "Real vs simulated", cue: "Card terms, engine, Monte Carlo, the solver check and 36 tests are real. The five people are synthetic. Plaid code is real; this deployment has no Plaid keys." },
+  { id: "how", tab: "real", target: "real-view", block: "center", title: "Real vs simulated", cue: "Card terms, engine, Monte Carlo, the solver check and 36 tests are real. The five people are synthetic. Plaid code is real; this deployment has no Plaid keys." },
 ];
 
 const noop = () => () => {};

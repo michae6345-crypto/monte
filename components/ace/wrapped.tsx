@@ -4,7 +4,7 @@
 // their music year. Every figure is the engine's, for whichever person is selected.
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState, type ReactNode, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, type ReactNode, useSyncExternalStore, useRef } from "react";
 import { byCategory, subscriptions, topMerchants } from "@/lib/engine/insights";
 import { Bracketed, Lockup } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
@@ -31,7 +31,17 @@ export function WrappedSection() {
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     () => false,
   );
-  const still = held || paused || reduce;
+  // it starts when it's on screen, so it opens on slide 1, not wherever it got to while scrolled past
+  const card = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = card.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.5 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const still = held || paused || reduce || !inView;
 
   const slides = useMemo<Slide[]>(() => {
     const top = topMerchants(txns, 1)[0];
@@ -219,6 +229,7 @@ export function WrappedSection() {
             const rect = e.currentTarget.getBoundingClientRect();
             setI((x) => (e.clientX - rect.left < rect.width / 3 ? (x - 1 + n) % n : (x + 1) % n));
           }}
+          ref={card}
           role="region"
           aria-label={`${nm.Whose} year in review, card ${cur + 1} of ${n}`}
         >

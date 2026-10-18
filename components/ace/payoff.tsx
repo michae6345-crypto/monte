@@ -198,9 +198,19 @@ export function PayoffSection() {
             {done && (
               <>
                 <line x1={x(mine.months)} x2={x(mine.months)} y1={y(total)} y2={y(0)} strokeDasharray="2 3" style={{ stroke: "var(--m-accent)" }} />
-                <text x={Math.min(x(mine.months) + 6, W - 90)} y={y(total * 0.85)} fontSize={11} className="m-mono" style={{ fill: "var(--m-accent)", stroke: "var(--m-panel)", strokeWidth: 4, paintOrder: "stroke" }}>
-                  paid off · {span(mine.months)}
-                </text>
+                {(() => {
+                  const label = `paid off · ${span(mine.months)}`;
+                  const lx = Math.min(x(mine.months) + 6, W - 8 - label.length * 6.8);
+                  const ly = y(total * 0.85);
+                  return (
+                    <>
+                      <rect x={lx - 4} y={ly - 12} width={label.length * 6.8 + 8} height={17} rx={4} style={{ fill: "var(--m-panel)" }} />
+                      <text x={lx} y={ly} fontSize={11} className="m-mono" style={{ fill: "var(--m-accent)" }}>
+                        {label}
+                      </text>
+                    </>
+                  );
+                })()}
               </>
             )}
             <text x={8} y={H - 6} fontSize={11} className="m-mono" style={{ fill: "var(--m-ink)" }}>

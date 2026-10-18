@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { marginalValue, interestFor, pointValue } from "@/lib/engine";
 import { CARDS, card, creditPerYear } from "@/lib/engine/catalog";
-import { CardArt, shortName } from "./card-art";
+import { CardArt, nick, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { money, nameOf, useAce, v } from "./store";
 import { DriftToggle, FanChart, useDrift, useMonteCarlo } from "./odds";
@@ -223,7 +223,7 @@ export function KeepSection() {
               both ways.
             </p>
           </div>
-          <Estimator of="net of keeping" samples={keepCase.diff} bins={28} />
+          <Estimator of={`keeping the ${nick(keepCase.cardId)}, a year`} samples={keepCase.diff} bins={28} />
         </div>
       )}
     </Section>
