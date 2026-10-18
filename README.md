@@ -130,6 +130,7 @@ is fully verified.
 | Path | What's there |
 |---|---|
 | `app/` | Pages (`/`, `/dashboard`, `/brand`) and the Plaid + health API routes |
+| `components/ace/` | The product's sections: receipt, replay, tap, keep, odds, presenter mode |
 
 ## Layout
 
