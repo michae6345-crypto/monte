@@ -14,6 +14,7 @@ import { WrappedSection } from "@/components/ace/wrapped";
 import { PayoffSection } from "@/components/ace/payoff";
 import { OddChargesSection } from "@/components/ace/odd";
 import { Presenter } from "@/components/ace/presenter";
+import { TapDemo } from "@/components/ace/tap-demo";
 import { Chapters } from "@/components/ace/chapters";
 import { LeaksSection } from "@/components/ace/leaks";
 
@@ -50,6 +51,7 @@ export default function Home() {
           <Footer />
           <KitGate />
           <Presenter />
+          <TapDemo />
         </div>
       </AceProvider>
     </BrandProvider>

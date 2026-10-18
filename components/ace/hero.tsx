@@ -26,6 +26,9 @@ export function Nav() {
           <a href="#next" className="hover:underline">Next year</a>
           <a href="#look" className="hover:underline">Look back</a>
           <a href="#how" className="hover:underline">How</a>
+          <button onClick={() => window.dispatchEvent(new Event("monte:tapdemo"))} className="uppercase hover:underline">
+            Tap demo
+          </button>
         </nav>
         <HandPicker />
       </div>
