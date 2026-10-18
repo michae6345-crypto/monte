@@ -134,6 +134,7 @@ is fully verified.
 | `components/brand/`, `components/ui/` | The Monte mark, hand-drawn notes, and base UI parts |
 | `lib/engine/` | Rules engine, Monte Carlo, LP optimizer, provenance, statement CSV parser |
 | `lib/data/` | The five demo people and the Plaid mapping |
+| `data/` | Card catalog and category map, each rule with its source |
 
 ## Layout
 
