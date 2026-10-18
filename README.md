@@ -140,6 +140,8 @@ is fully verified.
 | `tests/` | 36 tests, including hand-computed cases |
 | `docs/` | Spec, deploy runbook, brand, judge Q&A |
 
+Each folder has its own README with a line per file.
+
 ## Team
 
 Built at **ACM@USC TrojanHacks 2026** (Finance) by Michael Tarekegn (backend: Plaid, Monte Carlo,
