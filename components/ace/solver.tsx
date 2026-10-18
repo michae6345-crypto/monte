@@ -5,10 +5,11 @@
 // to where that same year lands under the new play.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Holding, Txn } from "@/lib/engine";
-import { draws, ledger, paths } from "./mc";
+import { creditsUsed, interestFor, simulate, type Holding, type Txn } from "@/lib/engine";
+import { card } from "@/lib/engine/catalog";
+import { monteCarloSamples, resampledYears } from "@/lib/engine/montecarlo";
+import { Sampler } from "@/components/brand";
 import { money } from "./store";
-import { DriftToggle, useDrift } from "./odds";
 import { shortName } from "./card-art";
 
 export type Strategy = { id: string; label: string; short: string; wallet: Holding[]; policy: "actual" | "best" };
@@ -37,20 +38,40 @@ function cssVar(name: string, fallback: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
 
-export function useSolver(strategies: Strategy[], txns: Txn[], drift = 0, seed = 42) {
-  return useMemo(() => {
-    const ds = draws(YEARS, seed, drift);
-    return strategies.map((s) => {
-      const finals = paths(ledger(s.wallet, txns, s.policy), ds).map((p) => p[11]);
-      const sorted = [...finals].sort((a, b) => a - b);
-      return { ...s, finals, p5: sorted[50], p50: sorted[500], p95: sorted[949] };
-    });
-  }, [strategies, txns, drift, seed]);
+type Run = Strategy & { finals: number[]; p5: number; p50: number; p95: number };
+
+/** The engine's Monte Carlo (lib/engine/montecarlo.ts): every strategy is scored on the same
+ *  1,000 resampled years (same seed, same months), so moving between strategies is paired.
+ *  "Monte's routing" is the engine's best play; "habits" replays the card Jordan actually
+ *  used on each purchase through simulate(), on the engine's own resampled years. */
+function computeRuns(strategies: Strategy[], txns: Txn[], seed = 42): Run[] {
+  const years = strategies.some((s) => s.policy === "actual") ? resampledYears(txns, YEARS, seed) : null;
+  return strategies.map((s) => {
+    let finals: number[];
+    if (s.policy === "actual") {
+      const fixed = s.wallet.reduce((a, h) => a + creditsUsed(h) - card(h.cardId).annual_fee - interestFor(h), 0);
+      finals = years!.map((y) => simulate(s.wallet, y, "actual").total + fixed);
+    } else {
+      finals = Array.from(monteCarloSamples(s.wallet, txns, { years: YEARS, seed }).options[0].net);
+    }
+    const sorted = [...finals].sort((a, b) => a - b);
+    return { ...s, finals, p5: sorted[50], p50: sorted[500], p95: sorted[949] };
+  });
+}
+
+/** Runs after first paint (about half a second of work), so the page never waits on it. */
+export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
+  const [runs, setRuns] = useState<Run[] | null>(null);
+  useEffect(() => {
+    const id = window.setTimeout(() => setRuns(computeRuns(strategies, txns)), 60);
+    return () => clearTimeout(id);
+  }, [strategies, txns]);
+  return runs;
 }
 
 export function Solver({ strategies, txns, title }: { strategies: Strategy[]; txns: Txn[]; title: string }) {
-  const drift = useDrift();
-  const runs = useSolver(strategies, txns, drift);
+  const ready = useSolver(strategies, txns);
+  const runs = useMemo(() => ready ?? [], [ready]);
   const [k, setK] = useState(0);
   const [shown, setShown] = useState(YEARS);
   const [hover, setHover] = useState<{ lo: number; hi: number; n: number; x: number; w: number } | null>(null);
@@ -66,6 +87,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
 
   // shared x domain and bins across strategies, so moving between them is a real shift
   const geo = useMemo(() => {
+    if (!runs.length) return { lo: 0, hi: 1, step: 1, nb: 1, counts: [[0]], maxCount: 1 };
     const all = runs.flatMap((r) => r.finals).sort((a, b) => a - b);
     let lo = all[Math.floor(all.length * 0.005)];
     let hi = all[Math.ceil(all.length * 0.995) - 1];
@@ -102,7 +124,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
   useEffect(() => {
     const c = canvas.current;
     const w = wrap.current;
-    if (!c || !w) return;
+    if (!c || !w || !runs.length) return;
     const st = state.current;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const next = target(k);
@@ -112,7 +134,8 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
     const firstRun = !st.from;
 
     const colors = {
-      dot: k === 0 ? cssVar("--ace-loss", "#ff5c7a") : cssVar("--ace-gain", "#2ee6a8"),
+      dot: cssVar("--ace-ink", "#0e0f12"),
+      accent: cssVar("--ace-gold", "#2f45ff"),
       ink: cssVar("--ace-ink", "#eef2ff"),
       dim: cssVar("--ace-dim", "rgba(238,242,255,.58)"),
       line: cssVar("--ace-line", "rgba(255,255,255,.12)"),
@@ -209,7 +232,8 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
       // median marker
       const r = runs[k];
       const xm = ((r.p50 - geo.lo) / (geo.hi - geo.lo)) * W;
-      ctx.strokeStyle = colors.ink;
+      ctx.strokeStyle = k === 0 ? colors.ink : colors.accent;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(xm, 4);
       ctx.lineTo(xm, base);
@@ -231,6 +255,24 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [k, geo, runs]);
+
+  if (!ready || !runs[k])
+    return (
+      <div className="overflow-hidden m-panel">
+        <div className="mono flex items-center justify-between gap-3 border-b border-ace-line px-4 py-2.5 text-[11px] text-ace-dim">
+          <span className="truncate">
+            <span className="text-ace-gold">$</span> {title}
+          </span>
+          <span className="shrink-0 tnum">0 / {YEARS.toLocaleString()} years</span>
+        </div>
+        <div className="grid h-[360px] place-items-center md:h-[392px]">
+          <div className="flex flex-col items-center gap-3">
+            <Sampler label="Simulating 1,000 years" className="text-4xl" />
+            <span className="m-label">simulating 1,000 years</span>
+          </div>
+        </div>
+      </div>
+    );
 
   const r = runs[k];
   const beats = k === 0 ? null : r.finals.filter((v, i) => v > runs[0].finals[i] + 0.5).length / YEARS;
@@ -261,9 +303,7 @@ export function Solver({ strategies, txns, title }: { strategies: Strategy[]; tx
             <span className="opacity-60">{String(i + 1).padStart(2, "0")}</span> {s.short}
           </button>
         ))}
-        <span className="ml-auto">
-          <DriftToggle />
-        </span>
+        <span className="m-label ml-auto normal-case tracking-normal">engine · no drift</span>
       </div>
 
       <div
