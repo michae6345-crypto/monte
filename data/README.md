@@ -5,3 +5,4 @@ checked it (2026-10-17).
 
 | File | What's in it |
 |---|---|
+| `cards.json` | 29 US credit cards: earn rules, caps, rotations, fees, credits, point values |
