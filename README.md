@@ -17,7 +17,9 @@
 
 <p align="center"><sub>ACM@USC TrojanHacks 2026 · Finance</sub></p>
 
-![Monte: rewards $553, interest $735](docs/img/monte.png)
+![Jordan's year: $553 in rewards, $735 in interest](docs/img/monte.png)
+
+<p align="center"><sub>Jordan's year: $553 earned in rewards, $735 paid in interest.</sub></p>
 
 ## The problem
 
