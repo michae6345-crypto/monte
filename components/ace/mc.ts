@@ -77,14 +77,16 @@ const CATS = [
   "everything_else",
 ];
 
-/** Spending habits drift: each category moves by a log-normal factor (sd 0.3) each year. */
-export function draws(years: number, seed: number): Draw[] {
+/** Each simulated year redraws 12 of your real months. With drift on (sd > 0), each category
+ *  also moves by a log-normal factor that year, and so does a carried balance. Off by default,
+ *  as in the engine: one year of data can't estimate how much habits drift between years. */
+export function draws(years: number, seed: number, sd = 0): Draw[] {
   const r = rng(seed);
   const gauss = () => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI * r());
   return Array.from({ length: years }, () => ({
     months: Array.from({ length: 12 }, () => Math.floor(r() * 12)),
-    scale: Object.fromEntries(CATS.map((c) => [c, Math.exp(0.3 * gauss() - 0.045)])),
-    balance: Math.exp(0.35 * gauss() - 0.06),
+    scale: Object.fromEntries(CATS.map((c) => [c, sd ? Math.exp(sd * gauss() - (sd * sd) / 2) : 1])),
+    balance: sd ? Math.exp(sd * 1.15 * gauss() - (sd * 1.15) ** 2 / 2) : 1,
   }));
 }
 
@@ -125,11 +127,11 @@ function outcome(id: string, label: string, ps: number[][], base: number[] | nul
 export function monteCarlo(
   wallet: Holding[],
   txns: Txn[],
-  opts: { years?: number; seed?: number; candidates?: string[] } = {},
+  opts: { years?: number; seed?: number; candidates?: string[]; driftSd?: number } = {},
 ): MonteCarloResult {
   const years = opts.years ?? 1000;
   const seed = opts.seed ?? 42;
-  const idx = draws(years, seed);
+  const idx = draws(years, seed, opts.driftSd ?? 0);
 
   const curPaths = paths(ledger(wallet, txns), idx);
   const current = outcome("current", "Your wallet", curPaths, null);

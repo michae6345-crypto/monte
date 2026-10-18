@@ -151,13 +151,13 @@ export function ReceiptSection() {
 
         {/* the receipt */}
         <motion.div
-          initial={{ opacity: 0, y: 40, rotate: -1.5 }}
-          whileInView={{ opacity: 1, y: 0, rotate: -1.5 }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="relative mx-auto w-full max-w-[440px] lg:sticky lg:top-24 lg:self-start"
         >
-          <div className="receipt-edge rounded-t-sm bg-ace-paper px-7 pb-12 pt-8 text-[#1d1b16] shadow-[0_40px_80px_-20px_rgba(0,0,0,.8)]">
+          <div className="receipt-edge rounded-t-sm border border-b-0 border-ace-line bg-ace-paper px-7 pb-12 pt-8 text-[#1d1b16] shadow-[0_24px_60px_-28px_rgba(12,14,20,.35)]">
             <div className="mono text-center text-[11px] uppercase tracking-[0.3em] text-black/50">{b.name} · annual receipt</div>
             <div className="serif mt-1 text-center text-3xl">{persona.name}</div>
             <div className="mono mt-1 text-center text-[10px] uppercase tracking-widest text-black/40">18 Oct 2025 – 17 Oct 2026</div>

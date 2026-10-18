@@ -7,7 +7,6 @@ import { byCategory, byMonth, subscriptions, topMerchants } from "@/lib/engine/i
 import { parseStatement } from "@/lib/engine/statement";
 import { tap } from "@/lib/engine";
 import { CARDS } from "@/lib/engine/catalog";
-import { PERSONAS } from "@/lib/data/personas";
 import { useBrand } from "./brands";
 import { shortName } from "./card-art";
 import { Num } from "./num";
@@ -18,9 +17,9 @@ import { money, useAce } from "./store";
 // getting around, bills, and shopping in steps of ink.
 const TONE = {
   food: "var(--ace-gold)",
-  move: "color-mix(in oklab, var(--ace-ink) 78%, var(--ace-panel))",
-  bills: "color-mix(in oklab, var(--ace-ink) 48%, var(--ace-panel))",
-  shop: "color-mix(in oklab, var(--ace-ink) 26%, var(--ace-panel))",
+  move: "color-mix(in oklab, var(--ace-gold) 45%, var(--ace-panel))",
+  bills: "color-mix(in oklab, var(--ace-ink) 20%, var(--ace-panel))",
+  shop: "color-mix(in oklab, var(--ace-ink) 9%, var(--ace-panel))",
 };
 const GROUP: Record<string, keyof typeof TONE> = {
   dining: "food", groceries: "food", online_groceries: "food", wholesale_clubs: "food",
@@ -29,12 +28,12 @@ const GROUP: Record<string, keyof typeof TONE> = {
   online_retail: "shop", home_improvement: "shop", entertainment: "shop", everything_else: "shop", other: "shop",
 };
 export const CAT_COLOR: Record<string, string> = Object.fromEntries(Object.entries(GROUP).map(([c, g]) => [c, TONE[g]]));
-export const CAT_TEXT = (c: string) => (GROUP[c] === "shop" || GROUP[c] === "bills" ? "var(--ace-ink)" : "var(--ace-bg)");
+export const CAT_TEXT = (c: string) => (GROUP[c] === "food" ? "var(--ace-on-accent)" : "var(--ace-ink)");
 
 export const label = (c: string) => c.replace(/_/g, " ");
 
 export function MoneySection() {
-  const { txns, persona, setPersona, useStatement, wallet } = useAce();
+  const { txns, persona, useStatement, wallet } = useAce();
   const { brand: b } = useBrand();
   const [hover, setHover] = useState<string | null>(null);
   const cats = useMemo(() => byCategory(txns), [txns]);
@@ -70,15 +69,6 @@ export function MoneySection() {
       lede={`${b.name} reads a year of purchases and shows you what you actually spend on, where, and what keeps charging you every month. Try a demo person, or drop in your own statement.`}
     >
       <div className="mb-8 flex flex-wrap items-center gap-2">
-        {PERSONAS.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => setPersona(p.id)}
-            className={`rounded-md border px-4 py-2 text-sm transition ${persona.id === p.id ? "border-ace-gold bg-ace-gold/10" : "border-ace-line text-ace-dim hover:text-ace-ink"}`}
-          >
-            {p.name}
-          </button>
-        ))}
         <StatementUpload onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
       </div>
 

@@ -3,6 +3,8 @@
 import { useBrand } from "./brands";
 import { Solver, jordanStrategies } from "./solver";
 import { DropHero } from "./drop";
+import { PERSONAS } from "@/lib/data/personas";
+import { useAce } from "./store";
 import { JORDAN, yearOf } from "@/lib/data/personas";
 import { useMemo } from "react";
 
@@ -32,9 +34,7 @@ export function Nav() {
           <a href="#foryou" className="hover:text-ace-ink">Apply</a>
           <a href="#moat" className="hover:text-ace-ink">Why {b.name}</a>
         </nav>
-        <a href="#money" className="rounded-md bg-ace-ink px-4 py-1.5 text-sm font-medium text-ace-bg transition hover:bg-ace-gold">
-          Audit a wallet
-        </a>
+        <HandPicker />
       </div>
     </header>
   );
@@ -98,5 +98,27 @@ function SolverBand() {
         </div>
       </div>
     </section>
+  );
+}
+
+/** One switch for the whole page: whose year every section is showing. */
+function HandPicker() {
+  const { persona, setPersona } = useAce();
+  return (
+    <div className="mono flex items-center gap-1 rounded-md border border-ace-line bg-ace-panel p-0.5 text-[11px]" role="radiogroup" aria-label="Whose year">
+      <span className="hidden px-1.5 text-ace-dim lg:inline">year of</span>
+      {PERSONAS.map((p) => (
+        <button
+          key={p.id}
+          role="radio"
+          aria-checked={persona.id === p.id}
+          onClick={() => setPersona(p.id)}
+          className={`rounded px-2 py-1 transition ${persona.id === p.id ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
+        >
+          {p.name.replace("The ", "")}
+        </button>
+      ))}
+      {persona.id === "you" && <span className="rounded bg-ace-ink px-2 py-1 text-ace-bg">You</span>}
+    </div>
   );
 }
