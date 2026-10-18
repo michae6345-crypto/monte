@@ -68,9 +68,11 @@ export function Chapter({
             role="tablist"
             aria-label={kicker}
             onKeyDown={(e) => {
-              if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+              if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(e.key)) return;
+              e.preventDefault();
               const k = tabs.findIndex((t) => t.key === cur.key);
-              const next = tabs[(k + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+              const next =
+                e.key === "Home" ? tabs[0] : e.key === "End" ? tabs[tabs.length - 1] : tabs[(k + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
               setKey(next.key);
               document.getElementById(`${id}-tab-${next.key}`)?.focus();
             }}
