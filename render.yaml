@@ -1,0 +1,38 @@
+# Render Blueprint for Monte (Next.js 16 App Router, one long-running Node process).
+# Render dashboard -> New -> Blueprint -> pick the monte repo -> fill the Plaid secrets -> Apply.
+# Production lives here, not on Vercel; see docs/deploy.md for the runbook and the REST calls.
+#
+# plan: starter on purpose. Free instances sleep after ~15 minutes idle and cold-start
+# badly (tens of seconds), which is unacceptable for a live demo at 12:45.
+# region: oregon to match the rest of our Render workspace.
+# startCommand: plain `npm start`. `next start` reads the PORT env var (commander
+# `.env('PORT')` on its -p option, verified in node_modules/next/dist/bin/next) and binds
+# 0.0.0.0 by default, so it picks up Render's $PORT with no flags.
+services:
+  - type: web
+    name: monte
+    runtime: node
+    region: oregon
+    plan: starter
+    branch: main
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    # Cheap and dependency-free: no Plaid call, no engine run, so a missing Plaid key
+    # can never fail the health check and take the service down.
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      # Plaid sandbox credentials. sync: false = Render prompts for them on Apply and
+      # never stores them in this file. The repo is public: no keys here, ever.
+      # With these unset the app still builds and runs on the personas, and every
+      # /api/plaid/* route answers 503 {"error":"plaid_not_configured"}.
+      - key: PLAID_CLIENT_ID
+        sync: false
+      - key: PLAID_SECRET
+        sync: false
+      - key: PLAID_ENV
+        sync: false
