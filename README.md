@@ -103,6 +103,10 @@ selected person's wallet. Open it from the nav, the floating *Try tap to pay* bu
 | 4. Rank | Every card is scored for this purchase; a card carrying a balance is blocked |
 | 5. Pay | The top unblocked card pays |
 
+On screen: a countertop reader with four contactless lights and the approval beep, and an
+Apple Pay-style phone holding the Monte card (*Hold Near Reader*), whose cards flip while it
+ranks. Nothing is timed: Next, space or the arrow keys move each step on.
+
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
