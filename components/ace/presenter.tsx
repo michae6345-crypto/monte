@@ -51,7 +51,7 @@ function playStage(el: HTMLElement, sec: number) {
   const end = top + stage.offsetHeight - window.innerHeight;
   if (end <= top) return;
   const me = ++playing;
-  const from = window.scrollY < top ? top : window.scrollY;
+  const from = window.scrollY;
   const t0 = performance.now();
   const tick = () => {
     if (me !== playing) return;
@@ -126,10 +126,18 @@ export function Presenter() {
     // the presenter's own scroll takes over from the auto-play
     window.addEventListener("wheel", stopPlay, { passive: true });
     window.addEventListener("touchstart", stopPlay, { passive: true });
+    window.addEventListener("pointerdown", stopPlay, { passive: true });
+    const keyStop = (e: KeyboardEvent) => {
+      if (!["ArrowRight", "ArrowLeft", "PageDown", "PageUp", " ", "Home", "c", "C"].includes(e.key)) stopPlay();
+    };
+    window.addEventListener("keydown", keyStop);
     return () => {
+      stopPlay();
       window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", keyStop);
       window.removeEventListener("wheel", stopPlay);
       window.removeEventListener("touchstart", stopPlay);
+      window.removeEventListener("pointerdown", stopPlay);
     };
   }, [on, i, urlOn]);
 

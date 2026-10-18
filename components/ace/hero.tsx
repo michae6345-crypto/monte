@@ -43,10 +43,12 @@ export function Hero() {
 
 /** Right under the cards: the same wallet, next year, simulated 1,000 times. */
 export function NextYear() {
-  const { wallet, txns, persona } = useAce();
+  const { wallet, txns, persona, valuation } = useAce();
   const nm = useMemo(() => nameOf(persona), [persona]);
   const name = nm.Who;
-  const strategies = useMemo(() => jordanStrategies(wallet, nm, txns), [wallet, nm, txns]);
+  // valuation is read inside the engine, so a cash/travel switch must rebuild the strategies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const strategies = useMemo(() => jordanStrategies(wallet, nm, txns), [wallet, nm, txns, valuation]);
   const carried = wallet.find((h) => (h.balance ?? 0) > 0);
   const adds = strategies.find((x) => x.adds)?.adds;
   const words = [

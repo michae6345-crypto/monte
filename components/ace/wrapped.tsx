@@ -252,17 +252,20 @@ export function WrappedSection() {
           <div className="absolute inset-x-7 bottom-7 flex items-center justify-between">
             <span className="m-label flex items-center gap-3">
               {cur + 1} / {n}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHeld((h) => !h);
-                }}
-                className="underline"
-                aria-pressed={held}
-              >
-                {held || reduce ? "play" : "pause"}
-              </button>
+              {/* under reduced motion the story never plays by itself, so there is nothing to pause */}
+              {!reduce && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHeld((h) => !h);
+                  }}
+                  className="underline"
+                  aria-pressed={held}
+                >
+                  {held ? "play" : "pause"}
+                </button>
+              )}
             </span>
             {s.foot ?? <span className="m-label">tap →</span>}
           </div>

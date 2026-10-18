@@ -22,10 +22,11 @@ function secondCard(wallet: ReturnType<typeof useAce>["wallet"], txns: ReturnTyp
 }
 
 export function OneCardView() {
-  const { held: wallet, txns, persona, r } = useAce();
+  const { held: wallet, txns, persona, r, valuation } = useAce();
   const nm = nameOf(persona);
   const only = wallet[0];
-  const best = useMemo(() => bestSecondCard(wallet, txns), [wallet, txns]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const best = useMemo(() => bestSecondCard(wallet, txns), [wallet, txns, valuation]);
   const carrying = (only?.balance ?? 0) > 0;
   if (!only) return null;
   return (

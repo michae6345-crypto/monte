@@ -212,15 +212,16 @@ function TwoAnswers() {
 function Proof() {
   const { held: wallet, txns, r, valuation } = useAce();
   // run after paint, and timed: the milliseconds shown are this browser's
-  const [check, setCheck] = useState<{ bound: number; method: string; ms: number; key: unknown } | null>(null);
+  const [checked, setCheck] = useState<{ bound: number; method: string; ms: number; txns: unknown; wallet: unknown; valuation: unknown } | null>(null);
   useEffect(() => {
     const id = window.setTimeout(() => {
       const t0 = performance.now();
       const o = optimalReplay(wallet, txns);
-      setCheck({ bound: o.bound ?? o.total, method: o.method, ms: performance.now() - t0, key: txns });
+      setCheck({ bound: o.bound ?? o.total, method: o.method, ms: performance.now() - t0, txns, wallet, valuation });
     }, 120);
     return () => clearTimeout(id);
   }, [wallet, txns, valuation]);
+  const check = checked && checked.txns === txns && checked.wallet === wallet && checked.valuation === valuation ? checked : null;
   const cats = new Set(txns.map((t) => t.category)).size;
   const routed = r.best.total;
   const gap = check ? check.bound - routed : 0;

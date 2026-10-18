@@ -182,6 +182,7 @@ export function LeaksSection() {
             animate={{ opacity: i < k ? 1 : 0, x: i < k ? 0 : -16 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             aria-hidden={i >= k}
+            inert={i >= k}
             className="grid items-center gap-4 p-5 md:grid-cols-[minmax(0,1fr)_8rem_11rem] md:gap-8"
           >
             <div className="flex min-w-0 items-center gap-4">

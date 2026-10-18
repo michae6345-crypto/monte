@@ -134,7 +134,7 @@ export function OddChargesSection() {
     <Stage vh={160}>
       {(p) => {
         const cursor = Math.min(1, Math.max(0, (p - 0.08) / 0.4));
-        const planted = manual ?? p > 0.43;
+        const planted = manual ?? (persona.id !== "you" && p > 0.43);
         const run = planted ? withTests : clean;
         return (
     <Section
@@ -182,7 +182,7 @@ export function OddChargesSection() {
         </span>
       </div>
 
-      <div className="m-panel divide-y divide-[var(--m-line)] overflow-hidden">
+      <div className="m-panel min-h-[300px] divide-y divide-[var(--m-line)] overflow-hidden">
         <AnimatePresence initial={false}>
           {run.flags.length === 0 && (
             <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-5 p-8">

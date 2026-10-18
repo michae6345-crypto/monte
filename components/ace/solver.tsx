@@ -100,7 +100,9 @@ export function useSolver(strategies: Strategy[], txns: Txn[]): Run[] | null {
 export function Solver({ strategies, txns, title, step }: { strategies: Strategy[]; txns: Txn[]; title: string; step?: number }) {
   const ready = useSolver(strategies, txns);
   const runs = useMemo(() => ready ?? [], [ready]);
-  const [k, setK] = useState(step ?? 0);
+  const [kPicked, setK] = useState(step ?? 0);
+  // a person with fewer strategies than the last one: clamp, so the chart never waits on runs[k]
+  const k = Math.min(kPicked, Math.max(0, strategies.length - 1));
   // a scroll stage can drive the strategy; a click still overrides until the next step
   const [lastStep, setLastStep] = useState(step);
   if (step !== undefined && step !== lastStep) {

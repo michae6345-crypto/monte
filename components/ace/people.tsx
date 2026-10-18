@@ -33,7 +33,7 @@ function nets(current: "cash" | "travel") {
 
 /** Five people, five kinds of wallet. A tap switches every section to that person's year. */
 export function People() {
-  const { persona, setPersona, valuation } = useAce();
+  const { persona, setPersona, valuation, r } = useAce();
   const net = nets(valuation);
   return (
     <div>
@@ -60,7 +60,7 @@ export function People() {
               <PersonaAvatar id={p.id} size={26} />
               <span className="font-medium">{p.name}</span>
               <span>· {SITUATION[p.id] ?? p.blurb} ·</span>
-              <span className={`m-num ${on ? "" : net[p.id] < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(net[p.id], { sign: true })}</span>
+              <span className={`m-num ${on ? "" : net[p.id] < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(on ? r.net : net[p.id], { sign: true })}</span>
               <span>net last year</span>
             </button>
           );

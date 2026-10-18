@@ -265,7 +265,7 @@ export function TapSection() {
                   setManual(true);
                   setOwn((o) => {
                     const cur = o ?? [];
-                    return cur.includes(c.id) ? cur.filter((x) => x !== c.id) : [...cur, c.id];
+                    return cur.includes(c.id) ? cur.filter((x) => x !== c.id) : cur.length >= 5 ? cur : [...cur, c.id];
                   });
                 }}
                 aria-pressed={on}

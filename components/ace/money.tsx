@@ -59,7 +59,7 @@ export function MoneySection() {
       lede="A year of purchases by category, merchant and month, and the subscriptions still billing. Switch person in the bar above, or drop in your own statement."
     >
       <div className="mb-8 flex flex-wrap items-center gap-2">
-        <StatementUpload key={persona.id} onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
+        <StatementUpload onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
         <LinkBank />
       </div>
 
@@ -116,6 +116,12 @@ function StatementUpload({ onLoad, defaultCard, active }: { onLoad: (t: import("
   const ref = useRef<HTMLInputElement>(null);
   const [card, setCard] = useState(defaultCard);
   const [msg, setMsg] = useState<string | null>(null);
+  // a new person: their first card becomes the default, without remounting (which would drop the message)
+  const [prev, setPrev] = useState(defaultCard);
+  if (defaultCard !== prev) {
+    setPrev(defaultCard);
+    setCard(defaultCard);
+  }
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
