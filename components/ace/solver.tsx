@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { creditsUsed, interestFor, simulate, type Holding, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { monteCarloSamples, resampledYears } from "@/lib/engine/montecarlo";
-import { Sampler } from "@/components/brand";
+import { HandNote, Sampler } from "@/components/brand";
 import { money } from "./store";
 import { nick, shortName } from "./card-art";
 import { bestSecondCard } from "./one-card";
@@ -354,7 +354,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           ref={canvas}
           className="absolute inset-0 h-full w-full"
           role="img"
-          aria-label={`${YEARS} simulated years. ${r.label}: median ${money(r.p50)}, 90% of years between ${money(r.p5)} and ${money(r.p95)}.`}
+          aria-label={`${YEARS} simulated years. ${r.label}: typical year ${money(r.p50)}, 9 in 10 years between ${money(r.p5)} and ${money(r.p95)}.`}
         />
         {hover && (
           <div
@@ -364,6 +364,10 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
             {hover.n} years net {money(hover.lo)} to {money(hover.hi)}
           </div>
         )}
+        {/* the one thing to know to read the chart */}
+        <HandNote dir="down-left" className="absolute right-4 top-2 hidden md:flex" delay={0.4}>
+          each dot is one simulated year
+        </HandNote>
       </div>
 
       <dl className="mono grid grid-cols-3 border-t border-ace-line text-[11px]">

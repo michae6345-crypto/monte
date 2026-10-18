@@ -84,7 +84,7 @@ export function ReceiptSection() {
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="grid max-h-[340px] grid-cols-3 gap-3 overflow-y-auto rounded-md border border-ace-line bg-ace-panel p-4 sm:grid-cols-4 md:grid-cols-5">
+                <div className="grid max-h-[340px] grid-cols-3 gap-3 overflow-y-auto rounded-[14px] border border-ace-line bg-ace-panel p-4 sm:grid-cols-4 md:grid-cols-5">
                   {CARDS.filter((c) => !wallet.some((h) => h.cardId === c.id)).map((c) => (
                     <button
                       key={c.id}

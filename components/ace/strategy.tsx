@@ -129,7 +129,7 @@ export function StrategyChart() {
           </tbody>
         </table>
       </div>
-      <div className="mono mt-3 min-h-[3.5rem] rounded-md border border-dashed border-ace-line px-4 py-3 text-[12px] leading-relaxed text-ace-dim">
+      <div className="mono mt-3 min-h-[3.5rem] rounded-[14px] border border-dashed border-ace-line px-4 py-3 text-[12px] leading-relaxed text-ace-dim">
         {detail && detailCard && sel ? (
           <>
             <span className="text-ace-ink">

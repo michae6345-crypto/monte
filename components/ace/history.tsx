@@ -211,7 +211,7 @@ export function HistorySection() {
           </AnimatePresence>
         </div>
         {filtered.length > limit && (
-          <button onClick={() => setLimit((l) => l + 40)} className="mt-4 w-full rounded-md border border-ace-line py-2 text-sm text-ace-dim hover:text-ace-ink">
+          <button onClick={() => setLimit((l) => l + 40)} className="btn btn-ghost mt-4 w-full">
             Show more ({filtered.length - limit} left)
           </button>
         )}

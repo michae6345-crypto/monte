@@ -362,7 +362,7 @@ export function ForYouSection() {
                 <motion.div
                   layout
                   key={x.id}
-                  className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-md border border-ace-line p-3 pr-4"
+                  className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-[14px] border border-ace-line p-3 pr-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
@@ -417,7 +417,7 @@ export function ForYouSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: k * 0.08 }}
-                  className="rounded-md border border-ace-line bg-ace-panel p-4"
+                  className="rounded-[14px] border border-ace-line bg-ace-panel p-4"
                 >
                   <div
                     className="m-label"
