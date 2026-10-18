@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check": "tsc --noEmit && eslint && next build"
+    "check": "next typegen && tsc --noEmit && eslint && next build",
+    "test": "node --import ./scripts/_alias.mjs scripts/test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
