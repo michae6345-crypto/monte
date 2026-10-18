@@ -10,6 +10,7 @@ import { CARDS } from "@/lib/engine/catalog";
 import { shortName } from "./card-art";
 import { Num } from "./num";
 import { R, Section } from "./section";
+import { LinkBank } from "./link-bank";
 import { money, useAce } from "./store";
 
 // Four tones, grouped by what the money is for, not a rainbow: food in the accent, then
@@ -68,6 +69,7 @@ export function MoneySection() {
     >
       <div className="mb-8 flex flex-wrap items-center gap-2">
         <StatementUpload onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
+        <LinkBank />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
