@@ -14,3 +14,4 @@ its working.
 | `stmt-test.ts` | Statement CSV parsing on Chase- and Amex-style exports |
 | `plaid-fixture-test.ts` | The Plaid mapping on hand-written fixtures; no keys needed |
 | `smoke.ts` | The demo path against a deployment; exits 1 if it isn't safe to present (`npm run smoke`) |
+| `_fp.ts` | A hash of every engine output, to confirm a refactor changed no number |
