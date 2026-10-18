@@ -7,7 +7,7 @@ import { WhatIfBar } from "./keep";
 import { useAce } from "./store";
 
 type S = Record<
-  "money" | "wrapped" | "receipt" | "replay" | "history" | "odd" | "tap" | "card" | "payoff" | "keep" | "apply" | "next" | "how" | "real" | "moat" | "chart" | "leaks",
+  "money" | "wrapped" | "receipt" | "replay" | "history" | "odd" | "tap" | "payoff" | "keep" | "apply" | "next" | "how" | "real" | "moat" | "leaks",
   ReactNode
 >;
 
@@ -60,12 +60,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         }
         tabs={[
           { key: "replay", label: "Replay", node: s.replay },
-          ...(one
-            ? []
-            : [
-                { key: "tap", label: "Tap", node: s.tap },
-                { key: "card", label: "The Monte Card", node: s.card },
-              ]),
+          ...(one ? [] : [{ key: "tap", label: "Tap", node: s.tap }]),
           { key: "purchases", label: "Every purchase", node: s.history },
         ]}
       />
@@ -111,7 +106,6 @@ export function Chapters({ sections: s }: { sections: S }) {
         }
         tabs={[
           { key: "trace", label: "Trace a purchase", node: s.how },
-          { key: "chart", label: "Strategy chart", node: s.chart },
           { key: "real", label: "Real vs simulated", node: s.real },
           { key: "moat", label: "Monte vs the rest", node: s.moat },
         ]}

@@ -13,10 +13,8 @@ import { RealSection } from "@/components/ace/real";
 import { WrappedSection } from "@/components/ace/wrapped";
 import { PayoffSection } from "@/components/ace/payoff";
 import { OddChargesSection } from "@/components/ace/odd";
-import { MonteCardSection } from "@/components/ace/monte-card-section";
 import { Presenter } from "@/components/ace/presenter";
 import { Chapters } from "@/components/ace/chapters";
-import { StrategyChart } from "@/components/ace/strategy";
 import { LeaksSection } from "@/components/ace/leaks";
 
 // The pitch in seven beats: the cards, your year, the receipt, the misses, the register,
@@ -38,7 +36,6 @@ export default function Home() {
                 history: <HistorySection />,
                 odd: <OddChargesSection />,
                 tap: <TapSection />,
-                card: <MonteCardSection />,
                 payoff: <PayoffSection />,
                 keep: <KeepSection />,
                 apply: <ForYouSection />,
@@ -46,7 +43,6 @@ export default function Home() {
                 how: <HowSection />,
                 real: <RealSection />,
                 moat: <MoatSection />,
-                chart: <StrategyChart />,
                 leaks: <LeaksSection />,
               }}
             />

@@ -81,7 +81,6 @@ export function PayoffSection() {
   );
   const total = debts.reduce((a, d) => a + d.balance, 0);
   const firstInterest = debts.reduce((a, d) => a + (d.balance * d.apr) / 1200, 0);
-  const firstMinimum = debts.reduce((a, d) => a + Math.max(35, (d.balance * d.apr) / 1200 + d.balance * 0.01), 0);
   // spending that swings month to month (irregular income): full months only
   const swing = useMemo(() => {
     const by = new Map<string, number>();
@@ -244,25 +243,19 @@ export function PayoffSection() {
               {`${money(saved)} less interest than paying the minimum`}
             </HandNote>
           )}
-          <p className="mt-3 text-[12px] leading-relaxed text-ace-dim">
-            Interest charged monthly at the card&apos;s APR; the minimum is the month&apos;s interest plus 1% of the balance, at least $35 (a common
-            issuer formula).{wallet.length > 1 ? " Monte puts new purchases on the other cards until it is paid off." : ""}
-          </p>
           {swing && (
             <p className="mt-3 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-[13px] leading-relaxed">
-              {nm.Whose} spending runs from {money(swing.loV)} ({mon(swing.lo)}) to {money(swing.hiV)} ({mon(swing.hi)}).
+              <span className="block">
+                {nm.Whose} months run {money(swing.loV)} ({mon(swing.lo)}) to {money(swing.hiV)} ({mon(swing.hi)}).
+              </span>
               {stepped && (
-                <>
-                  {" "}
-                  Paying in step with those months ({money(stepped.lo)} in the slowest, {money(stepped.hi)} in the busiest, {money(monthly)} on
-                  average) clears it in <span className="m-num">{span(stepped.months)}</span> with{" "}
-                  <span className="m-num">{money(stepped.interest)}</span> of interest
+                <span className="block font-medium">
+                  Pay in step: {money(stepped.lo)} to {money(stepped.hi)} a month clears it in {span(stepped.months)}
                   {Math.round(stepped.interest) !== Math.round(mine.interest)
-                    ? `, ${money(Math.abs(Math.round(stepped.interest) - Math.round(mine.interest)))} ${stepped.interest > mine.interest ? "more" : "less"} interest than a flat ${money(monthly)}, which a slow month may not cover.`
-                    : `, the same interest as a flat ${money(monthly)}.`}
-                </>
-              )}{" "}
-              Never less than the {money(firstMinimum)} minimum: a missed one adds a late fee.
+                    ? `, ${money(Math.abs(Math.round(stepped.interest) - Math.round(mine.interest)))} ${stepped.interest > mine.interest ? "more" : "less"} interest than a flat ${money(monthly)}.`
+                    : "."}
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -271,10 +264,7 @@ export function PayoffSection() {
           <p className="m-label">once it&apos;s clear</p>
           {proj && proj.after.hypothetical ? (
             <>
-              <p className="mt-3 text-sm leading-relaxed text-ace-dim">
-                Projection, not today: the same purchases with {money(proj.after.hypothetical.clearedBalance)} cleared on the{" "}
-                {proj.after.hypothetical.cards.map(shortName).join(" and ")}.
-              </p>
+              <p className="mt-3 text-sm">Once the {proj.after.hypothetical.cards.map(nick).join(" and ")} is paid off:</p>
               <div className="mt-5 space-y-2 text-xl">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="text-sm">typical next year on the right card, balance still owed</span>

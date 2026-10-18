@@ -3,7 +3,7 @@
 import { useBrand } from "./brands";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { CARDS, card } from "@/lib/engine/catalog";
+import { CARDS } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { PaperReceipt } from "./paper-receipt";
 import { R, Section } from "./section";
@@ -116,10 +116,6 @@ export function ReceiptSection() {
               </button>
             ))}
           </div>
-          <p className="max-w-xl text-sm leading-relaxed text-ace-dim">
-            Every rule comes from the issuer&apos;s own terms for {CARDS.length} cards, checked {card("amex_gold").checked ?? "17 Oct 2026"}.
-            Purchases are a synthetic year at real LA merchants. Interest is the balance carried all year × APR.
-          </p>
         </div>
 
         {/* the receipt */}

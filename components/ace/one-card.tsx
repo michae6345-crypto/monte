@@ -8,7 +8,7 @@ import { whatIf } from "@/lib/engine";
 import { CARDS, card, openToNewApplicants } from "@/lib/engine/catalog";
 import { Bracketed } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
-import { money, nameOf, useAce, v } from "./store";
+import { money, useAce } from "./store";
 import { addMedians, cached } from "./adds";
 
 export function bestSecondCard(wallet: ReturnType<typeof useAce>["wallet"], txns: ReturnType<typeof useAce>["txns"]) {
@@ -22,8 +22,7 @@ function secondCard(wallet: ReturnType<typeof useAce>["wallet"], txns: ReturnTyp
 }
 
 export function OneCardView() {
-  const { held: wallet, txns, persona, r, valuation } = useAce();
-  const nm = nameOf(persona);
+  const { held: wallet, txns, r, valuation } = useAce();
   const only = wallet[0];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const best = useMemo(() => bestSecondCard(wallet, txns), [wallet, txns, valuation]);
@@ -45,7 +44,7 @@ export function OneCardView() {
             <div className="text-2xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
               {shortName(only.cardId)}
             </div>
-            <p className="mt-1 text-sm">Every one of {txns.length} purchases. Nothing to move: it&apos;s already the only card.</p>
+            <p className="mt-1 text-sm">All {txns.length} purchases. Nothing to move.</p>
           </div>
         </div>
         <div className="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-[10px] bg-[var(--m-line)] text-sm">
@@ -65,8 +64,7 @@ export function OneCardView() {
         <p className="m-label">a second card</p>
         {carrying ? (
           <p className="mt-4 text-lg">
-            Not yet. {`${nm.Who} ${v(nm, "carries", "carry")}`} a balance, and its interest outweighs anything a new card earns. Pay it down
-            first, then come back.
+            Not yet: pay the balance down first.
           </p>
         ) : best && best.w.net > 1 ? (
           <div className="mt-4 flex items-center gap-4">
@@ -76,20 +74,18 @@ export function OneCardView() {
                 {shortName(best.id)}
               </div>
               <p className="mt-1 text-sm">
-                On last year&apos;s purchases it would have added <Bracketed>{money(best.w.net, { sign: true })}</Bracketed>{card(best.id).annual_fee ? " after its fee" : ""}, used only
-                where it beats the {shortName(only.cardId)}.
+                <Bracketed>{money(best.w.net, { sign: true })}</Bracketed> on last year&apos;s purchases{card(best.id).annual_fee ? ", after its fee" : ""}.
               </p>
               {sim && (
                 <p className="mt-2 text-sm">
-                  About <span className="m-num">{money(sim.gain, { sign: true })}</span> in a typical next year, better in{" "}
-                  {Math.round(sim.win * 1000).toLocaleString()} of 1,000 simulated years.
+                  About <span className="m-num">{money(sim.gain, { sign: true })}</span> in a typical next year.
                 </p>
               )}
-              <p className="mt-2 text-xs">Only if both are paid in full each month. A carried balance costs more than this earns.</p>
+              <p className="mt-2 text-xs">If both are paid in full.</p>
             </div>
           </div>
         ) : (
-          <p className="mt-4 text-lg">No second card beats this one on {nm.whose} spending. One card is the right call.</p>
+          <p className="mt-4 text-lg">None beats this one. One card is the right call.</p>
         )}
       </div>
     </div>

@@ -25,14 +25,6 @@ const ROWS: [string, string, string, string][] = [
   ["Paid by card referrals", "no", "unknown", "yes"],
 ];
 
-// each note hangs on the row it explains
-const NOTES: [string, string][] = [
-  ["Best card at the register", "Card companies decide categories by store code and don't publish the map. Fix a store's category once (Spend › Every purchase) and every purchase there is replayed."],
-  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Federal Reserve survey, May 2026). When a balance carries over, a ranking by points alone can pick a card whose interest costs more than it earns."],
-  ["Paid by card referrals", "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card."],
-];
-const noteOf = (row: string) => NOTES.findIndex(([r]) => r === row);
-
 export function MoatSection() {
   const { brand: b } = useBrand();
   return (
@@ -68,7 +60,6 @@ export function MoatSection() {
                   <td key={k} className={`px-5 py-3 ${k === 0 ? "text-ace-ink" : k === 1 ? "mono font-medium text-ace-ink" : "mono text-ace-dim"}`}>
                     {/* Monte's answers are circled by hand as each row lands, Monte's "no" to referral fees included */}
                     {k === 1 ? <PenMark delay={0.3 + r * 0.07}>{c}</PenMark> : c}
-                    {k === 0 && noteOf(row[0]) >= 0 ? <sup className="mono ml-1 text-[11px] text-ace-dim">{noteOf(row[0]) + 1}</sup> : null}
                   </td>
                 ))}
               </motion.tr>
@@ -76,15 +67,10 @@ export function MoatSection() {
           </tbody>
         </table>
       </div>
-      <ol className="mt-5 grid gap-3 text-[13px] leading-relaxed text-ace-dim md:grid-cols-3">
-        {NOTES.map(([, n], i) => (
-          <li key={i} className="flex gap-2">
-            <span className="mono text-ace-ink">{i + 1}</span>
-            <span>{n}</span>
-          </li>
-        ))}
-      </ol>
-      <p className="mono mt-5 text-[11px] uppercase tracking-wider text-ace-dim">
+      <p className="mt-5 text-lg">
+        45% of cardholders carried a balance last year (Federal Reserve, May 2026). For them, interest beats any reward.
+      </p>
+      <p className="mono mt-3 text-[11px] uppercase tracking-wider text-ace-dim">
         Uno Wallet (YC Spring 2026) from what its site advertises; it is waitlist-only. Comparison sites means referral-funded sites such as NerdWallet.
       </p>
     </Section>

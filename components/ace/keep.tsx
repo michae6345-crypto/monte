@@ -216,12 +216,6 @@ export function KeepSection() {
                   : `${Math.round((1 - keepCase.p) * 1000).toLocaleString()} of 1,000 years say drop it.`}
               </span>
             </h3>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-ace-dim">
-              Each bar counts simulated years: the year with the {shortName(keepCase.cardId)}{" "}
-              in the wallet minus the same year without it, fee and perks
-              included. The engine replays every purchase through the card rules
-              both ways.
-            </p>
           </div>
           <Estimator of={`keeping the ${nick(keepCase.cardId)}, a year`} samples={keepCase.diff} bins={28} />
         </div>
@@ -358,69 +352,6 @@ export function ForYouSection() {
     .sort((a, b) => b.score - a.score);
   // a wallet carrying a balance gets the engine's paid-off projection, clearly labelled
   const paidOff = wallet.some((h) => h.balance) ? priced.mc : null;
-
-  const nudges = useMemo(() => {
-    const out: { tag: string; tone: "gain" | "loss" | "gold"; text: string }[] =
-      [];
-    for (const h of wallet) {
-      const c = card(h.cardId);
-      if (h.balance && h.balance > 0) {
-        const apr = (h.apr ?? c.purchase_apr_range[1]) / 100 / 12;
-        const pay = 250;
-        let left = h.balance;
-        let months = 0;
-        let interestPaid = 0;
-        while (left > 0.005 && months < 600) {
-          const i = left * apr;
-          interestPaid += i;
-          left = Math.max(0, left + i - pay);
-          months++;
-        }
-        out.push({
-          tag: "Pay this first",
-          tone: "loss",
-          text: `${shortName(h.cardId)}: ${money(h.balance)} at ${h.apr}% costs about ${money(interestFor(h))} a year. $${pay}/month clears it in ${months} months with ${money(interestPaid)} of interest.`,
-        });
-      }
-      if (c.rotating?.activation_required)
-        out.push({
-          tag: "Activate",
-          tone: "gold",
-          text: `${shortName(h.cardId)}: 5% on ${(c.rotating.q4_2026_labels ?? c.rotating.q4_2026).slice(0, 2).join(" and ").toLowerCase()} this quarter, up to $${c.rotating.cap?.toLocaleString()}. Only after activation.`,
-        });
-      const unused = c.credits.filter(
-        (cr) =>
-          cr.period === "month" &&
-          (h.creditsUsed?.[cr.name] ?? 0) < creditPerYear(cr),
-      );
-      if (unused.length)
-        out.push({
-          tag: "Monthly perks",
-          tone: "gold",
-          text: `${shortName(h.cardId)}: ${unused
-            .map(
-              (cr) =>
-                `${cr.name} used $${Math.round(h.creditsUsed?.[cr.name] ?? 0)} of $${creditPerYear(cr)} this year`,
-            )
-            .join("; ")}. Each month's credit expires at month end.`,
-        });
-      const m = marginalValue(wallet, txns, h.cardId);
-      if (c.annual_fee > 0 && m.net < 25)
-        out.push({
-          tag: "Before it renews",
-          tone: "loss",
-          text: `${shortName(h.cardId)} is worth ${money(m.net)} a year to ${nameOf(persona).who} after its ${money(c.annual_fee)} fee. Call for a retention offer, or downgrade.`,
-        });
-    }
-    if (recs[0] && recs[0].total > 40 && !wallet.some((h) => h.balance))
-      out.push({
-        tag: "Opportunity",
-        tone: "gain",
-        text: `${shortName(recs[0].id)} would add about ${money(recs[0].total)} a year on ${nameOf(persona).whose} spending${card(recs[0].id).annual_fee ? ", after its fee" : ""}.`,
-      });
-    return out.slice(0, 6);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallet, txns, recs, valuation]);
 
   return (
     <Section
@@ -578,26 +509,6 @@ export function ForYouSection() {
               ))}
             </div>
           </div>
-          <div>
-            <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">
-              Do next
-            </div>
-            <div className="space-y-3">
-              {nudges.map((n, k) => (
-                <motion.div
-                  key={n.text}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: k * 0.08 }}
-                  className="rounded-[14px] border border-ace-line bg-ace-panel p-4"
-                >
-                  <div className="m-label">{n.tag}</div>
-                  <p className="mt-1.5 text-sm leading-relaxed">{n.text}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -606,21 +517,10 @@ export function ForYouSection() {
           <span>Next year, played {mc.years.toLocaleString()} times</span>
           <DriftToggle />
         </div>
-        <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ace-dim">
-          Each simulated year redraws twelve of {nameOf(persona).whose} months;
-          turn on ±30% to let each category&apos;s spending rise or fall each
-          year. {nameOf(persona).Whose} wallet is dashed; the card added is
-          blue. A card with no fee can only help; a card with a fee has to earn
-          it.
-        </p>
+        <p className="mb-5 text-sm">Dashed: as is. Blue: with the new card.</p>
         {paidOff && paidOff.hypothetical ? (
           <>
-            <p className="mb-4 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-sm">
-              Projection: the same purchases after {nameOf(persona).who}{" "}
-              {v(nameOf(persona), "clears", "clear")}{" "}
-              {money(paidOff.hypothetical.clearedBalance)} on the{" "}
-              {paidOff.hypothetical.cards.map(shortName).join(" and ")}.
-            </p>
+            <p className="mb-4 text-sm">Once the {paidOff.hypothetical.cards.map(nick).join(" and ")} is paid off.</p>
             <FanChart
               mc={paidOff}
               kind="add"

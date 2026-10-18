@@ -87,7 +87,6 @@ export function NextYear() {
                       <span className="m-num mr-3 text-base">{String(step + 1).padStart(2, "0")}</span>
                       {words[step].h}
                     </p>
-                    <p className="mt-2 max-w-md text-lg leading-relaxed text-ace-dim">{words[step].d}</p>
                   </div>
                 </div>
                 <Solver strategies={strategies} txns={txns} step={step} title={`monte solve --wallet ${name.toLowerCase().replace(/^the /, "")} --next-year --runs 1000`} />

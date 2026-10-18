@@ -207,8 +207,7 @@ export function ReplaySection() {
           <p className="text-ace-dim">
             {view === "best" ? (
               <>
-                <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. {b.name}{" "}
-                stays within each card&apos;s bonus limits and this quarter&apos;s bonus categories{wallet.some((h) => h.balance) ? ", and never puts new purchases on a card with a balance: those charge interest from the day of purchase" : ""}.
+                <span className="text-ace-ink">{moved} of {dots.length}</span> purchases move to a better card{wallet.some((h) => h.balance) ? ", never the one with a balance" : ""}.
               </>
             ) : (
               <>Flip to “On the right card” to move each purchase.</>

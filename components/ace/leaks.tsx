@@ -66,8 +66,8 @@ export function LeaksSection() {
           title: `The ${shortName(h.cardId)}'s fee`,
           why:
             wallet.length > 1
-              ? `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of value for ${who}, over the next-best card already held.`
-              : `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of rewards and perks used.`,
+              ? `${money(c.annual_fee)} fee, ${money(m.rewardsAdded + m.credits)} of value over the other cards.`
+              : `${money(c.annual_fee)} fee, ${money(m.rewardsAdded + m.credits)} of rewards and perks used.`,
           fix: { label: "Keep or cancel", chapter: "plan", tab: "keep" },
           art: { card: h.cardId },
         });
@@ -79,7 +79,7 @@ export function LeaksSection() {
           amount: unused,
           counts: false,
           title: `Unused ${shortName(h.cardId)} perks`,
-          why: `${c.credits.map((cr) => cr.name).join(", ")}: ${money(unused)} a year of perks the fee pays for, not used. Only a loss if ${who} would have spent there anyway.`,
+          why: `${c.credits.map((cr) => cr.name).join(", ")}: ${money(unused)} a year of perks not used.`,
           fix: { label: "Keep or cancel", chapter: "plan", tab: "keep" },
           art: { card: h.cardId },
         });
@@ -91,7 +91,7 @@ export function LeaksSection() {
         amount: r.leftOnTable,
         counts: true,
         title: wallet.length > 1 ? "The wrong card at the register" : "One card for everything",
-        why: `The same purchases on the right card in this wallet would have earned ${money(r.leftOnTable)} more.`,
+        why: `Same purchases, right card: ${money(r.leftOnTable, { sign: true })}.`,
         fix: { label: "Spend it right", chapter: "spend", tab: "replay" },
       });
     // one card: what a second card would add (an opportunity, not counted as a leak)

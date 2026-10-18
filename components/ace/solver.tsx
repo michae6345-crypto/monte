@@ -405,7 +405,6 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           </dd>
         </div>
       </dl>
-      <p className="border-t border-ace-line px-4 py-2.5 text-[12px] leading-relaxed text-ace-dim">{r.label}</p>
     </div>
   );
 }
