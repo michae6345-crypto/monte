@@ -126,6 +126,11 @@ workaround, one Monte card that charges your best card behind the scenes, breaks
    approval and identity checks. Curve runs this model in the UK and Europe, and some issuers
    have blocked it.
 
+So Monte works around the wallet: before you tap it shows the right card for the place you're
+at, so you pick it in Apple Pay; after you tap each purchase gets a verdict; once a year it
+replays the year to show what each card cost. The Monte card itself is simulated at
+[`/brand`](https://ace-eta-beryl.vercel.app/brand).
+
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
