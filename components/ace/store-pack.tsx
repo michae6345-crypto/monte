@@ -22,7 +22,8 @@ const H = 560;
 const display = { fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.03em" } as const;
 const hand = { fontFamily: "var(--m-font-note)", fontVariationSettings: '"INFM" 100, "BNCE" 30', fontWeight: 600 } as const;
 
-export function StorePack({ txns, wallet }: { txns: Txn[]; wallet: Holding[] }) {
+/** month: 0..12 — how many months of the year have "happened" (12 = the whole year). */
+export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: Holding[]; month?: number }) {
   const stores = useMemo(() => {
     const m = new Map<string, Store>();
     for (const t of txns) {
@@ -33,6 +34,19 @@ export function StorePack({ txns, wallet }: { txns: Txn[]; wallet: Holding[] }) 
     }
     return [...m.values()];
   }, [txns]);
+
+  const monthKeys = useMemo(() => [...new Set(txns.map((t) => t.date.slice(0, 7)))].sort().slice(-12), [txns]);
+  const upTo = useMemo(() => {
+    const keep = new Set(monthKeys.slice(0, month));
+    const m = new Map<string, number>();
+    let total = 0;
+    for (const t of txns)
+      if (keep.has(t.date.slice(0, 7))) {
+        m.set(t.merchant, (m.get(t.merchant) ?? 0) + t.amount);
+        total += t.amount;
+      }
+    return { m, total, label: monthKeys[Math.max(0, month - 1)] };
+  }, [txns, monthKeys, month]);
 
   const layout = useMemo(() => {
     const byCat = new Map<string, Store[]>();
@@ -59,6 +73,14 @@ export function StorePack({ txns, wallet }: { txns: Txn[]; wallet: Holding[] }) 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr] [&>*]:min-w-0">
       <div className="m-panel relative overflow-hidden p-3 md:p-5">
+        {month < 12 && upTo.label && (
+          <div className="pointer-events-none absolute left-5 top-4 z-10" style={display}>
+            <div className="text-4xl">{money(upTo.total)}</div>
+            <div className="text-sm" style={{ fontFamily: "var(--m-font-body)", fontWeight: 400, letterSpacing: 0 }}>
+              spent by the end of {new Date(upTo.label + "-15T12:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" })}
+            </div>
+          </div>
+        )}
         <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`${stores.length} stores, sized by spend and grouped by category.`}>
           {layout.cats.map((c) => (
             <g key={c.data.name}>
@@ -69,7 +91,10 @@ export function StorePack({ txns, wallet }: { txns: Txn[]; wallet: Holding[] }) 
             const s = l.data.store!;
             const on = cur?.merchant === s.merchant;
             const file = MERCHANT_LOGOS[merchantSlug(s.merchant)];
-            const logo = l.r * 1.05;
+            // a bubble grows as the year's spending there happens
+            const grown = month >= 12 ? l.r : l.r * Math.sqrt((upTo.m.get(s.merchant) ?? 0) / s.total);
+            if (grown < 0.5) return null;
+            const logo = grown * 1.05;
             return (
               <motion.g
                 key={s.merchant}
@@ -84,13 +109,13 @@ export function StorePack({ txns, wallet }: { txns: Txn[]; wallet: Holding[] }) 
                 <circle
                   cx={l.x}
                   cy={l.y}
-                  r={l.r}
+                  r={grown}
                   style={{ fill: "var(--m-panel)", stroke: on ? "var(--m-ink)" : "var(--m-line-strong)", strokeWidth: on ? 2.5 : 1 }}
                 />
-                {file && l.r > 9 ? (
+                {file && grown > 9 ? (
                   <image href={`/merchants/${file}`} x={l.x - logo / 2} y={l.y - logo / 2} width={logo} height={logo} preserveAspectRatio="xMidYMid meet" style={{ pointerEvents: "none" }} />
-                ) : l.r > 9 ? (
-                  <text x={l.x} y={l.y + l.r * 0.18} textAnchor="middle" fontSize={l.r * 0.6} style={{ ...display, fill: "var(--m-slate)" }}>
+                ) : grown > 9 ? (
+                  <text x={l.x} y={l.y + grown * 0.18} textAnchor="middle" fontSize={grown * 0.6} style={{ ...display, fill: "var(--m-slate)" }}>
                     {s.merchant.charAt(0)}
                   </text>
                 ) : null}

@@ -11,6 +11,7 @@ import { Bracketed } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
 import { R, Section } from "./section";
 import { MonthStrip, StorePack } from "./store-pack";
+import { Stage, StageSteps } from "./stage";
 import { LinkBank } from "./link-bank";
 import { money, useAce } from "./store";
 
@@ -62,7 +63,16 @@ export function MoneySection() {
         <LinkBank />
       </div>
 
-      <StorePack txns={txns} wallet={wallet} />
+      <Stage vh={170}>
+        {(p) => (
+          <div>
+            <div className="mb-5">
+              <StageSteps steps={["month 1", "month 4", "month 8", "month 12"]} p={p} />
+            </div>
+            <StorePack txns={txns} wallet={wallet} month={Math.max(1, Math.min(12, Math.ceil(((p - 0.05) / 0.85) * 12)))} />
+          </div>
+        )}
+      </Stage>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         <MonthStrip txns={txns} />
