@@ -168,7 +168,7 @@ export function PaperReceipt({
             <span className="text-ace-ink">{c2(r.leftOnTable)}</span>
           </div>
           <p className="mt-1 text-ace-dim">
-            Same purchases, the right card in this same wallet{carried ? `, never the ${shortName(carried.cardId)}` : ""}.{" "}
+            On the right card.{" "}
             <a href="#spend" className="text-ace-ink underline underline-offset-2">
               replay ↓
             </a>

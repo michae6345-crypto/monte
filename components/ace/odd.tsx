@@ -150,7 +150,6 @@ export function OddChargesSection() {
           ) : (
             <>No odd charges in {nameOf(persona).whose} year.</>
           )}
-          <span className="m-second block">Four plain rules, every flag traced to the purchases.</span>
         </>
       }
       readout={
@@ -178,7 +177,7 @@ export function OddChargesSection() {
           )}
         </span>
         <span className="text-sm text-ace-dim">
-          {planted ? "Planted for this demo, marked below. Nothing else in the year changes." : `Checking ${who} ${txns.length} purchases.`}
+          {planted ? "3 test charges planted for the demo." : `Checking ${who} ${txns.length} purchases.`}
         </span>
       </div>
 

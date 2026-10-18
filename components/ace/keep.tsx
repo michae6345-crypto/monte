@@ -8,14 +8,13 @@ import { CARDS, card, creditPerYear } from "@/lib/engine/catalog";
 import { CardArt, nick, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { money, nameOf, useAce, v } from "./store";
-import { DriftToggle, FanChart, useDrift, useMonteCarlo } from "./odds";
+import { useDrift, useMonteCarlo } from "./odds";
 import { addMedians, addShortlist } from "./adds";
 import { Estimator } from "@/components/brand";
 import { monteCarloSamples } from "@/lib/engine/montecarlo";
 
 export function KeepSection() {
-  const { held: wallet, txns, valuation, r, persona } = useAce();
-  const who = nameOf(persona);
+  const { held: wallet, txns, valuation } = useAce();
   const mc = useMonteCarlo(wallet);
   const drift = useDrift();
   const rows = useMemo(
@@ -100,30 +99,30 @@ export function KeepSection() {
               ? {
                   label: "Pay it down",
                   tone: "loss",
-                  why: `The balance costs ${money(interest)} a year in interest${interest > r.rewards ? ", more than the whole wallet earned" : ""}. Clear it before anything else.`,
+                  why: `${money(interest)} a year in interest. Clear it first.`,
                 }
               : wallet.length === 1 && m.fee <= 0
                 ? {
                     label: "Keep",
                     tone: "gain",
-                    why: `${who.Whose} only card, no annual fee: nothing to cancel.`,
+                    why: "Only card, no fee.",
                   }
                 : m.net >= 25
                   ? {
                       label: "Keep",
                       tone: "gain",
-                      why: `Adds ${money(m.rewardsAdded)}${wallet.length > 1 ? ` over ${who.whose} other cards` : ""}${m.credits ? ` plus ${money(m.credits)} of perks ${who.who} ${v(who, "uses", "use")}` : ""}.`,
+                      why: `Adds ${money(m.rewardsAdded + m.credits)}.`,
                     }
                   : m.fee > 0
                     ? {
                         label: "Downgrade",
                         tone: "loss",
-                        why: `The ${money(m.fee)} fee buys ${money(value)} of value for ${who.who}. Ask for a retention offer, or move to a no-fee ${issuer} card and keep the credit history.`,
+                        why: `${money(m.fee)} fee, ${money(value)} of value. Switch to a no-fee ${issuer} card.`,
                       }
                     : {
                         label: "Keep",
                         tone: "dim",
-                        why: `No annual fee, so keeping it costs nothing. It adds ${money(m.rewardsAdded)} over ${who.whose} other cards.`,
+                        why: `No fee. Adds ${money(m.rewardsAdded)}.`,
                       };
           return (
             <motion.div
@@ -168,7 +167,7 @@ export function KeepSection() {
                       {money(value - cost, { sign: true })}/yr
                     </span>
                     <span className="block text-[11px] text-ace-dim">
-                      last year, on the right card
+                      last year
                     </span>
                   </span>
                 </div>
@@ -176,25 +175,12 @@ export function KeepSection() {
                   {verdict.why}
                 </p>
                 {drop && (
-                  <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
-                    <span>
-                      pays for itself in{" "}
-                      <span className="m-num">
-                        {Math.round(
-                          (1 - drop.winShare) * mc.years,
-                        ).toLocaleString()}{" "}
-                        of {mc.years.toLocaleString()}
-                      </span>{" "}
-                      simulated years
-                    </span>
-                    <span>
-                      a typical next year without it:{" "}
-                      <span
-                        className={`m-num ${drop.p50 - mc.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}
-                      >
-                        {money(drop.p50 - mc.current.p50, { sign: true })}/yr
-                      </span>
-                    </span>
+                  <p className="mt-2 text-[13px]">
+                    drop it:{" "}
+                    <span className={`m-num ${drop.p50 - mc.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>
+                      {money(drop.p50 - mc.current.p50, { sign: true })}
+                    </span>{" "}
+                    a typical year
                   </p>
                 )}
               </div>
@@ -265,7 +251,6 @@ export function ForYouSection() {
   const { brand: b } = useBrand();
   const [perks, setPerks] = useState<0 | 0.5 | 1>(0);
   const [horizon, setHorizon] = useState<"year" | "first">("year");
-  const mc = useMonteCarlo();
 
   const spend = useMemo(() => {
     const m: Record<string, number> = {};
@@ -350,8 +335,6 @@ export function ForYouSection() {
       };
     })
     .sort((a, b) => b.score - a.score);
-  // a wallet carrying a balance gets the engine's paid-off projection, clearly labelled
-  const paidOff = wallet.some((h) => h.balance) ? priced.mc : null;
 
   return (
     <Section
@@ -433,10 +416,7 @@ export function ForYouSection() {
             </div>
             {wallet.some((h) => h.balance) && (
               <div className="mb-3 rounded-[10px] bg-[var(--m-wash)] p-4 text-sm leading-relaxed">
-                <span className="m-mono text-ace-dim">[ no new card yet ]</span>{" "}
-                {nameOf(persona).Who} {v(nameOf(persona), "carries", "carry")} a
-                balance, and the interest outweighs any card below. Pay it down
-                first; this list is what to apply for after.
+                <span className="font-medium">Pay the balance first.</span> Then:
               </div>
             )}
             <div className="space-y-3">
@@ -455,29 +435,9 @@ export function ForYouSection() {
                       {shortName(x.id)}
                     </div>
                     <div className="mono text-[11px] text-ace-dim">
-                      {money(x.rewardsAdded, { sign: true })} rewards last year
-                      ·{" "}
-                      {x.fee
-                        ? `${money(-x.fee, { sign: true })} fee`
-                        : "no annual fee"}
-                      {x.perkValue
-                        ? ` · ${money(x.perkValue, { sign: true })} perks`
-                        : ""}
+                      {x.fee ? `${money(x.fee)} fee` : "no fee"}
+                      {x.bonus ? ` · ${x.bonus.label.startsWith("$") ? x.bonus.label : money(x.bonus.value)} bonus${x.hits ? " ✓" : ""}` : ""}
                     </div>
-                    {x.bonus && (
-                      <div className="mono mt-0.5 text-[11px] text-ace-ink">
-                        bonus {x.bonus.label}
-                        {x.bonus.label.startsWith("$")
-                          ? ""
-                          : ` ≈ ${money(x.bonus.value)}`}{" "}
-                        ·{" "}
-                        {x.hits
-                          ? x.bonus.spend
-                            ? `${nameOf(persona).Who} would reach $${x.bonus.spend.toLocaleString()} in ${spanOf(x.bonus.need)} (${x.bonus.months} months allowed) ✓`
-                            : "first-year cash back matched, no minimum ✓"
-                          : `needs $${x.bonus.spend.toLocaleString()} in ${x.bonus.months} months; at ${nameOf(persona).whose} pace it takes ${spanOf(x.bonus.need)}`}
-                      </div>
-                    )}
                   </div>
                   <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
                     <span className="sm:text-right">
@@ -487,12 +447,7 @@ export function ForYouSection() {
                         {money(x.score, { sign: true })}
                       </span>
                       <span className="mono block text-[11px] text-ace-dim">
-                        {horizon === "first"
-                          ? "typical first year"
-                          : "typical next year"}
-                        {x.win !== undefined
-                          ? ` · better in ${Math.round(x.win * priced.mc.years).toLocaleString()} of ${priced.mc.years.toLocaleString()} years`
-                          : ""}
+                        {horizon === "first" ? "first year" : "a year"}
                       </span>
                     </span>
                     <button
@@ -512,36 +467,9 @@ export function ForYouSection() {
         </div>
       </div>
 
-      <div className="mt-10 m-panel p-5 md:p-6">
-        <div className="mono mb-1 flex flex-wrap items-baseline justify-between gap-2 text-[11px] uppercase tracking-[0.18em] text-ace-dim">
-          <span>Next year, played {mc.years.toLocaleString()} times</span>
-          <DriftToggle />
-        </div>
-        <p className="mb-5 text-sm">Dashed: as is. Blue: with the new card.</p>
-        {paidOff && paidOff.hypothetical ? (
-          <>
-            <p className="mb-4 text-sm">Once the {paidOff.hypothetical.cards.map(nick).join(" and ")} is paid off.</p>
-            <FanChart
-              mc={paidOff}
-              kind="add"
-              pick={recs[0] && `add:${recs[0].id}`}
-            />
-          </>
-        ) : (
-          <FanChart
-            mc={priced.mc}
-            kind="add"
-            pick={recs[0] && `add:${recs[0].id}`}
-          />
-        )}
-      </div>
     </Section>
   );
 }
-
-/** 0.3 months → "about 9 days", 2.4 → "about 2.4 months" */
-const spanOf = (months: number) =>
-  months < 0.95 ? `about ${Math.max(1, Math.round(months * 30))} days` : months < 1.05 ? "about a month" : `about ${months.toFixed(1).replace(/\.0$/, "")} months`;
 
 function Cycle({
   value,

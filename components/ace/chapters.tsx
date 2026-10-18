@@ -24,7 +24,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             See where it goes.
-            <span className="m-second block">Every store, every month, every fee.</span>
+            <span className="m-second block">Every store, every fee.</span>
           </>
         }
         intro={<People />}
@@ -40,7 +40,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             Stop the leaks.
-            <span className="m-second block">Interest, fees and the wrong card, each with its fix.</span>
+            <span className="m-second block">Each one with its fix.</span>
           </>
         }
         tabs={[
@@ -101,7 +101,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             How it works.
-            <span className="m-second block">Every number is math on the card companies&apos; published terms.</span>
+            <span className="m-second block">Math on the card companies&apos; own terms.</span>
           </>
         }
         tabs={[
