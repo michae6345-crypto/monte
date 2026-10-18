@@ -93,7 +93,8 @@ export function CardArt({
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={`/cards/${id}.webp`}
-        alt={c.name}
+        // the card's name is always printed beside it, so the art is decoration for screen readers
+        alt=""
         draggable={false}
         className={cn(
           "block aspect-[1.586/1] w-full select-none rounded-[4.5%/7%] object-cover shadow-[0_18px_36px_-14px_rgba(12,14,20,.45),0_2px_6px_rgba(12,14,20,.12)]",
@@ -104,6 +105,7 @@ export function CardArt({
     );
   return (
     <div
+      aria-hidden
       className={cn(
         "relative aspect-[1.586/1] select-none overflow-hidden rounded-[7%/11%] shadow-[0_18px_36px_-14px_rgba(12,14,20,.45),inset_0_1px_0_rgba(255,255,255,.25)]",
         pad,
