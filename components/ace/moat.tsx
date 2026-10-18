@@ -8,7 +8,7 @@ import { card } from "@/lib/engine/catalog";
 import { Section } from "./section";
 import { MCC, hostOf } from "./strategy";
 import { Lockup } from "@/components/brand";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 
 const ROWS: [string, string, string, string][] = [
   ["Best card at the register", "yes", "yes", "no"],
@@ -23,8 +23,8 @@ const ROWS: [string, string, string, string][] = [
 
 // each note hangs on the row it explains
 const NOTES: [string, string][] = [
-  ["Best card at the register", "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Purchases and every purchase there is replayed."],
-  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Fed SHED, May 2026). For them, interest outweighs any reward, so a points-only ranking points the wrong way."],
+  ["Best card at the register", "Issuers decide categories by merchant code and don't publish the map. Fix a store's category once in Every purchase and every purchase there is replayed."],
+  ["Counts interest on a carried balance", "45% of cardholders carried a balance last year (Fed SHED, May 2026). When a balance carries over, a ranking by points alone points the wrong way."],
   ["Paid by card referrals", "Referral-funded comparison sites earn a fee on each approval. Monte ranks by what a card adds to your year after fees, and says so when the answer is no new card."],
 ];
 const noteOf = (row: string) => NOTES.findIndex(([r]) => r === row);
@@ -112,7 +112,7 @@ export function HowSection() {
       kicker="How it works"
       title={<>Every number is arithmetic on published terms.</>}
       readout={<>no model decides a dollar amount</>}
-      lede={`Pick one of ${persona.name}'s purchases and follow it through: merchant, merchant code, category, every card's published rule, and the cents.`}
+      lede={`Pick one of ${nameOf(persona).whose} purchases and follow it through: merchant, merchant code, category, every card's published rule, and the cents.`}
     >
       <div className="mb-3 flex flex-wrap gap-1.5">
         {options.map((o, i) => (

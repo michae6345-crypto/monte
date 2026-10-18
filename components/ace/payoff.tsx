@@ -11,7 +11,7 @@ import { Bracketed, Expect, HandNote } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
 import { Section } from "./section";
 import { Stage } from "./stage";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce, v } from "./store";
 
 type Debt = { cardId: string; balance: number; apr: number };
 type Path = { months: number; interest: number; series: number[]; paid: number[] };
@@ -69,7 +69,8 @@ const span = (m: number) => (m >= 24 ? `${Math.floor(m / 12)} yr ${m % 12 ? `${m
 
 export function PayoffSection() {
   const { wallet, txns, persona, valuation } = useAce();
-  const who = persona.id === "you" ? "You" : persona.name;
+  const nm = nameOf(persona);
+  const who = nm.Who;
   const debts = useMemo<Debt[]>(
     () =>
       wallet
@@ -99,7 +100,7 @@ export function PayoffSection() {
     return (
       <Section id="payoff" index="06½" kicker="Pay this first" title={<>Nothing to pay down.</>}>
         <div className="m-panel p-8 text-lg">
-          {who} {who === "You" ? "pay" : "pays"} {wallet.length === 1 ? "the card" : "every card"} in full, so there is no interest to stop. The next move is in Keep or cancel and What to apply
+          {who} {v(nm, "pays", "pay")} {wallet.length === 1 ? "the card" : "every card"} in full, so there is no interest to stop. The next move is in Keep or cancel and What to apply
           for.
         </div>
       </Section>
@@ -131,7 +132,7 @@ export function PayoffSection() {
           {money(total)} at {debts.map((d) => `${d.apr}%`).join(", ")} APR · {money(firstInterest, { cents: true })} of interest this month
         </>
       }
-      lede={`${who} carries ${money(total)}. Every month it costs ${money(firstInterest, { cents: true })} in interest, more than any card in the wallet earns. Pick a monthly payment and see how fast it goes.`}
+      lede={`${who} ${v(nm, "carries", "carry")} ${money(total)}. Every month it costs ${money(firstInterest, { cents: true })} in interest. Pick a monthly payment and see how fast it goes.`}
     >
       <Stage vh={190}>
         {(p) => {
@@ -188,7 +189,7 @@ export function PayoffSection() {
               ["your plan", span(mine.months), "ink"],
               ["interest", money(-mine.interest, { sign: true }), "loss"],
               ["minimums", mins.months >= 600 ? "50+ yr" : span(mins.months), "dim"],
-              ["their interest", money(-mins.interest, { sign: true }), "loss"],
+              ["interest at minimums", money(-mins.interest, { sign: true }), "loss"],
             ].map(([k, v, t]) => (
               <div key={k} className="bg-ace-panel px-3 py-2.5">
                 <dt className="text-ace-dim">{k}</dt>
@@ -217,13 +218,13 @@ export function PayoffSection() {
               </p>
               <div className="mt-5 space-y-2 text-xl">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-ace-dim">today</span>
+                  <span className="text-sm text-ace-dim">routed, balance kept</span>
                   <Expect of="net" tone={proj.now.current.p50 >= 0 ? "gain" : "loss"}>
                     {money(proj.now.current.p50, { sign: true })}
                   </Expect>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-ace-dim">paid off</span>
+                  <span className="text-sm text-ace-dim">routed, paid off</span>
                   <Expect of="net" tone={proj.after.current.p50 >= 0 ? "gain" : "loss"}>
                     {money(proj.after.current.p50, { sign: true })}
                   </Expect>
@@ -243,7 +244,7 @@ export function PayoffSection() {
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-ace-dim">No new card beats this wallet on {who === "You" ? "your" : `${who}'s`} spending.</p>
+                <p className="text-sm text-ace-dim">No new card beats this wallet on {nm.whose} spending.</p>
               )}
             </>
           ) : (

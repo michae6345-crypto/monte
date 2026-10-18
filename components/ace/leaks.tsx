@@ -14,7 +14,7 @@ import { CardArt, shortName } from "./card-art";
 import { MerchantLogo } from "./merchant-logo";
 import { findOddCharges } from "./odd";
 import { bestSecondCard } from "./one-card";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 
 type Leak = {
   key: string;
@@ -33,7 +33,8 @@ const go = (chapter: string, tab?: string) => {
 
 export function LeaksSection() {
   const { wallet, txns, r, persona, valuation } = useAce();
-  const who = persona.id === "you" ? "you" : persona.name;
+  const nm = nameOf(persona);
+  const who = nm.who;
 
   const leaks = useMemo<Leak[]>(() => {
     const out: Leak[] = [];
@@ -46,7 +47,7 @@ export function LeaksSection() {
           amount: i,
           counts: true,
           title: `Interest on the ${shortName(h.cardId)}`,
-          why: `$${(h.balance ?? 0).toLocaleString()} carried at ${h.apr ?? card(h.cardId).purchase_apr_range[1]}% APR. More than any card earns back.`,
+          why: `$${(h.balance ?? 0).toLocaleString()} carried at ${h.apr ?? card(h.cardId).purchase_apr_range[1]}% APR${i > r.rewards ? ", more than every card in the wallet earned" : ""}.`,
           fix: { label: "Pay this first", chapter: "plan", tab: "payoff" },
           art: { card: h.cardId },
         });
@@ -64,7 +65,7 @@ export function LeaksSection() {
           title: `The ${shortName(h.cardId)}'s fee`,
           why:
             wallet.length > 1
-              ? `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of value for ${who === "you" ? "you" : who}, over the next-best card already held.`
+              ? `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of value for ${who}, over the next-best card already held.`
               : `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of rewards and perks used.`,
           fix: { label: "Keep or cancel", chapter: "plan", tab: "keep" },
           art: { card: h.cardId },
@@ -100,9 +101,9 @@ export function LeaksSection() {
           key: "second",
           amount: best.w.net,
           counts: false,
-          title: `One card for everything`,
-          why: `A ${shortName(best.id)} beside it would have added ${money(best.w.net)} a year on the same purchases, after its fee.`,
-          fix: { label: "Spend it right", chapter: "spend", tab: "replay" },
+          title: `A second card: ${shortName(best.id)}`,
+          why: `A ${shortName(best.id)} beside it would have added ${money(best.w.net)} a year on the same purchases${card(best.id).annual_fee ? ", after its fee" : ""}. Only if both are paid in full.`,
+          fix: { label: "What to apply for", chapter: "plan", tab: "apply" },
           art: { card: best.id },
         });
     }
@@ -135,8 +136,8 @@ export function LeaksSection() {
         key: "subs",
         amount: subs.reduce((a, s) => a + s.perYear, 0),
         counts: false,
-        title: `${subs.length} subscriptions still billing`,
-        why: `${subs.map((s) => s.merchant).slice(0, 5).join(", ")}${subs.length > 5 ? "…" : ""}. Not a leak if you use them; worth a look once a year.`,
+        title: `${subs.length} recurring charges`,
+        why: `${subs.map((s) => s.merchant).slice(0, 5).join(", ")}${subs.length > 5 ? "…" : ""}. Shown, not counted.`,
         fix: { label: "Where it went", chapter: "see", tab: "stores" },
         art: { merchant: subs[0].merchant },
       });
@@ -153,19 +154,15 @@ export function LeaksSection() {
           {total >= 1 ? (
             <>
               Monte found <Bracketed>{money(total)}</Bracketed> a year leaking
-              <span className="m-second block">out of {who === "you" ? "your" : `${who}'s`} wallet.</span>
+              <span className="m-second block">out of {nm.whose} wallet.</span>
             </>
           ) : (
             <>
               Nothing is leaking
-              <span className="m-second block">from {who === "you" ? "your" : `${who}'s`} wallet. Here&apos;s what&apos;s worth a look.</span>
+              <span className="m-second block">from {nm.whose} wallet. Here&apos;s what&apos;s worth a look.</span>
             </>
           )}
         </h3>
-        <p className="max-w-xs text-sm leading-relaxed">
-          Interest, fees that cost more than they return, the wrong card, price rises and double charges. Every number from the engine, each with
-          the fix.
-        </p>
       </div>
       <div className="m-panel divide-y divide-[var(--m-line)] overflow-hidden">
         {leaks.length === 0 && <p className="p-8 text-lg">No leaks found. Every dollar here is already played right.</p>}

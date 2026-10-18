@@ -27,7 +27,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         }
         tabs={[
           { key: "stores", label: "Where it went", node: s.money },
-          { key: "receipt", label: "What your cards cost", node: s.receipt },
+          { key: "receipt", label: one ? "What the card costs" : "What the cards cost", node: s.receipt },
         ]}
       />
       <Chapter
@@ -37,7 +37,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             Stop the leaks.
-            <span className="m-second block">Interest, fees, price rises, double charges.</span>
+            <span className="m-second block">Checked for interest, fees, the wrong card, price rises and double charges.</span>
           </>
         }
         tabs={[
@@ -52,7 +52,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             Spend it right.
-            <span className="m-second block">The right card for every purchase, even if you have one.</span>
+            <span className="m-second block">{one ? "One card, and what a second would add." : "The right card for every purchase."}</span>
           </>
         }
         tabs={[

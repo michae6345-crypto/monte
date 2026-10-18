@@ -5,10 +5,10 @@
 
 import { useMemo } from "react";
 import { whatIf } from "@/lib/engine";
-import { CARDS, openToNewApplicants } from "@/lib/engine/catalog";
+import { CARDS, card, openToNewApplicants } from "@/lib/engine/catalog";
 import { Bracketed } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce, v } from "./store";
 
 export function bestSecondCard(wallet: ReturnType<typeof useAce>["wallet"], txns: ReturnType<typeof useAce>["txns"]) {
   return CARDS.filter((c) => openToNewApplicants(c) && !wallet.some((h) => h.cardId === c.id) && !/secured/i.test(c.id))
@@ -19,7 +19,7 @@ export function bestSecondCard(wallet: ReturnType<typeof useAce>["wallet"], txns
 
 export function OneCardView() {
   const { wallet, txns, persona } = useAce();
-  const who = persona.id === "you" ? "you" : persona.name;
+  const nm = nameOf(persona);
   const only = wallet[0];
   const best = useMemo(() => bestSecondCard(wallet, txns), [wallet, txns]);
   const carrying = (only?.balance ?? 0) > 0;
@@ -42,7 +42,7 @@ export function OneCardView() {
         <p className="m-label">a second card</p>
         {carrying ? (
           <p className="mt-4 text-lg">
-            Not yet. {who === "you" ? "You carry" : `${who} carries`} a balance, and its interest outweighs anything a new card earns. Pay it down
+            Not yet. {`${nm.Who} ${v(nm, "carries", "carry")}`} a balance, and its interest outweighs anything a new card earns. Pay it down
             first, then come back.
           </p>
         ) : best && best.w.net > 1 ? (
@@ -53,14 +53,14 @@ export function OneCardView() {
                 {shortName(best.id)}
               </div>
               <p className="mt-1 text-sm">
-                On the same purchases it would have added <Bracketed>{money(best.w.net, { sign: true })}</Bracketed> a year after its fee, used only
+                On the same purchases it would have added <Bracketed>{money(best.w.net, { sign: true })}</Bracketed> a year{card(best.id).annual_fee ? " after its fee" : ""}, used only
                 where it beats the {shortName(only.cardId)}.
               </p>
               <p className="mt-2 text-xs">Only if both are paid in full each month. A carried balance costs more than this earns.</p>
             </div>
           </div>
         ) : (
-          <p className="mt-4 text-lg">No second card beats this one on {who === "you" ? "your" : `${who}'s`} spending. One card is the right call.</p>
+          <p className="mt-4 text-lg">No second card beats this one on {nm.whose} spending. One card is the right call.</p>
         )}
       </div>
     </div>

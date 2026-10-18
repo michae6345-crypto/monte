@@ -49,6 +49,10 @@ export function HistorySection() {
       (!onlyMiss || x.miss > 0.005) &&
       (!merchant || x.t.merchant === merchant),
   );
+  // a different pick that earns the same isn't a mistake; moving off a card with a balance is
+  function wrong(x: (typeof rows)[number]) {
+    return x.used !== x.best && (Math.abs(x.miss) > 0.005 || balanceCards.has(x.used));
+  }
   const missTotal = filtered.reduce((s, x) => s + x.miss, 0);
   const balanceCards = new Set(wallet.filter((h) => h.balance).map((h) => h.cardId));
   const spendTotal = filtered.reduce((s, x) => s + x.t.amount, 0);
@@ -66,7 +70,7 @@ export function HistorySection() {
           </>
         ) : (
           <>
-            <Bracketed>{rows.filter((x) => x.used !== x.best).length}</Bracketed> of {rows.length} purchases
+            <Bracketed>{rows.filter(wrong).length}</Bracketed> of {rows.length} purchases
             <span className="m-second block">went on the wrong card.</span>
           </>
         )
@@ -78,7 +82,7 @@ export function HistorySection() {
           </>
         ) : (
           <>
-            <R tone="loss">{rows.filter((x) => x.used !== x.best).length}</R> of <R>{rows.length}</R> not on {b.name}&apos;s pick · <R tone="loss">{money(r.leftOnTable)}</R> left on the table
+            <R tone="loss">{rows.filter(wrong).length}</R> of <R>{rows.length}</R> not on {b.name}&apos;s pick · <R tone="loss">{money(r.leftOnTable)}</R> left on the table
           </>
         )
       }

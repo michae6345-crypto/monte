@@ -7,13 +7,13 @@ import { marginalValue, whatIf, interestFor, pointValue } from "@/lib/engine";
 import { CARDS, card, creditPerYear, openToNewApplicants } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce, v } from "./store";
 import { DriftToggle, FanChart, useMonteCarlo } from "./odds";
 import { Estimator } from "@/components/brand";
 import { monteCarlo, monteCarloSamples } from "@/lib/engine/montecarlo";
 
 export function KeepSection() {
-  const { wallet, txns, valuation } = useAce();
+  const { wallet, txns, valuation, r } = useAce();
   const mc = useMonteCarlo();
   const rows = useMemo(
     () => wallet.map((h) => ({ h, m: marginalValue(wallet, txns, h.cardId), interest: interestFor(h) })),
@@ -62,7 +62,7 @@ export function KeepSection() {
           const issuer = card(h.cardId).issuer.replace("American Express", "Amex");
           const verdict =
             interest > 0
-              ? { label: "Pay it down", tone: "loss", why: `The balance costs ${money(interest)} a year in interest, more than any card in the wallet earns. Clear it before anything else.` }
+              ? { label: "Pay it down", tone: "loss", why: `The balance costs ${money(interest)} a year in interest${interest > r.rewards ? ", more than the whole wallet earned" : ""}. Clear it before anything else.` }
               : wallet.length === 1 && m.fee <= 0
                 ? { label: "Keep", tone: "gain", why: "Your only card. No fee, so there is nothing to cancel; it earns on everything." }
                 : m.net >= 25
@@ -100,7 +100,7 @@ export function KeepSection() {
                   </span>
                   <span className="text-right">
                     <span className={`m-num block text-sm ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })}/yr</span>
-                    <span className="block text-[11px] text-ace-dim">this card, played right</span>
+                    <span className="block text-[11px] text-ace-dim">last year, played right</span>
                   </span>
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
@@ -114,7 +114,7 @@ export function KeepSection() {
                       simulated years
                     </span>
                     <span>
-                      what dropping it gains you:{" "}
+                      next year&apos;s median without it:{" "}
                       <span className={`m-num ${drop.p50 - mc.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>
                         {money(drop.p50 - mc.current.p50, { sign: true })}/yr
                       </span>
@@ -132,7 +132,11 @@ export function KeepSection() {
             <p className="m-label">the {shortName(keepCase.cardId)}, played both ways</p>
             <h3 className="mt-3 text-3xl md:text-4xl">
               Keep it or cancel it?
-              <span className="m-second block">1,000 years say {keepCase.p >= 0.5 ? "keep it" : "cancel it"}.</span>
+              <span className="m-second block">
+                {keepCase.p >= 0.5
+                  ? `${Math.round(keepCase.p * 1000).toLocaleString()} of 1,000 years say keep it.`
+                  : `${Math.round((1 - keepCase.p) * 1000).toLocaleString()} of 1,000 years say drop it.`}
+              </span>
             </h3>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ace-dim">
               Each sample is one simulated year of {shortName(keepCase.cardId)} in the wallet minus the same year without it, fee and perks
@@ -211,11 +215,11 @@ export function ForYouSection() {
           ? { value: Math.max(0, w.rewardsAdded), spend: 0, months: 12, need: 0, label: "Cashback Match" }
           : sb && typeof sb.amount === "number" && typeof sb.spend === "number" && typeof sb.months === "number"
           ? {
-              value: sb.unit === "dollars" || sb.unit === "cash" ? sb.amount : (sb.amount * pointValue(c)) / 100,
+              value: /^(dollars|cash)/.test(sb.unit) ? sb.amount : (sb.amount * pointValue(c)) / 100,
               spend: sb.spend,
               months: sb.months,
               need: monthly > 0 ? sb.spend / monthly : Infinity,
-              label: sb.unit === "dollars" || sb.unit === "cash" ? `$${sb.amount}` : `${sb.amount.toLocaleString()} pts`,
+              label: /^(dollars|cash)/.test(sb.unit) ? `$${sb.amount}` : `${sb.amount.toLocaleString()} pts`,
             }
           : null;
         const hits = bonus ? bonus.need <= bonus.months : false;
@@ -264,7 +268,7 @@ export function ForYouSection() {
         out.push({ tag: "Before it renews", tone: "loss", text: `${shortName(h.cardId)} is worth ${money(m.net)} a year to you after its ${money(c.annual_fee)} fee. Call for a retention offer, or downgrade.` });
     }
     if (recs[0] && recs[0].total > 40 && !wallet.some((h) => h.balance))
-      out.push({ tag: "Opportunity", tone: "gain", text: `${shortName(recs[0].id)} would add about ${money(recs[0].total)} a year on your actual spending, after its fee.` });
+      out.push({ tag: "Opportunity", tone: "gain", text: `${shortName(recs[0].id)} would add about ${money(recs[0].total)} a year on ${nameOf(persona).whose} spending${card(recs[0].id).annual_fee ? ", after its fee" : ""}.` });
     return out.slice(0, 6);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet, txns, recs, valuation]);
@@ -277,7 +281,7 @@ export function ForYouSection() {
       title={<>Ranked on your spending, not on referral fees.</>}
       readout={
         <>
-          <R>{CARDS.length}</R> cards scored on <R>{txns.length}</R> of {persona.name}&apos;s purchases
+          <R>{CARDS.length}</R> cards scored on <R>{txns.length}</R> of {nameOf(persona).whose} purchases
         </>
       }
       lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot here. Every number assumes the card is paid in full each month.`}
@@ -310,7 +314,7 @@ export function ForYouSection() {
           </Pref>
           <Pref label="Annual fees">
             <Pill on={!noFee} onClick={() => setNoFee(false)}>
-              Ok if worth it
+              if worth it
             </Pill>
             <Pill on={noFee} onClick={() => setNoFee(true)}>
               never
@@ -318,10 +322,10 @@ export function ForYouSection() {
           </Pref>
           <Pref label="Rank by">
             <Pill on={horizon === "year"} onClick={() => setHorizon("year")}>
-              Every year
+              every year
             </Pill>
             <Pill on={horizon === "first"} onClick={() => setHorizon("first")}>
-              First year + bonus
+              first year + bonus
             </Pill>
           </Pref>
           <Pref label="Perks I'd actually use">
@@ -352,12 +356,12 @@ export function ForYouSection() {
               </div>
             )}
             <div className="m-label mb-4">
-              Best next card for {persona.name}
+              Best next card for {nameOf(persona).who}
               {wallet.some((h) => h.balance) ? " · once the balance is paid" : ""}
             </div>
             {wallet.some((h) => h.balance) && (
               <div className="mb-3 rounded-[10px] bg-[var(--m-wash)] p-4 text-sm leading-relaxed">
-                <span className="m-mono text-ace-dim">[ no new card yet ]</span> {persona.name} carries a balance, and the interest outweighs any card
+                <span className="m-mono text-ace-dim">[ no new card yet ]</span> {nameOf(persona).Who} {v(nameOf(persona), "carries", "carry")} a balance, and the interest outweighs any card
                 below. Pay it down first; this list is what to apply for after.
               </div>
             )}
@@ -380,7 +384,7 @@ export function ForYouSection() {
                     </div>
                     {x.bonus && (
                       <div className={`mono mt-0.5 text-[10px] ${x.hits ? "text-ace-ink" : "text-ace-dim"}`}>
-                        bonus {x.bonus.label} ≈ {money(x.bonus.value)} ·{" "}
+                        bonus {x.bonus.label}{x.bonus.label.startsWith("$") ? "" : ` ≈ ${money(x.bonus.value)}`} ·{" "}
                         {x.hits
                           ? x.bonus.spend
                             ? `you'd hit $${x.bonus.spend.toLocaleString()} in ${x.bonus.need.toFixed(1)} of ${x.bonus.months} months ✓`
@@ -440,13 +444,13 @@ export function ForYouSection() {
           <DriftToggle />
         </div>
         <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ace-dim">
-          Each simulated year redraws twelve of {persona.name}&apos;s months; turn drift on to let each category move up or down too. Your
+          Each simulated year redraws twelve of {nameOf(persona).whose} months; turn drift on to let each category move up or down too. Your
           wallet is dashed, the new card is in blue. A card with no fee can only help; a card with a fee has to earn it.
         </p>
         {paidOff && paidOff.hypothetical ? (
           <>
             <p className="mb-4 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-sm">
-              Projection: once {persona.id === "you" ? "you clear" : `${persona.name} clears`} {money(paidOff.hypothetical.clearedBalance)} on the{" "}
+              Projection: once {nameOf(persona).who} {v(nameOf(persona), "clears", "clear")} {money(paidOff.hypothetical.clearedBalance)} on the{" "}
               {paidOff.hypothetical.cards.map(shortName).join(" and ")}. Until then, {b.name} recommends no new card.
             </p>
             <FanChart mc={paidOff} kind="add" />

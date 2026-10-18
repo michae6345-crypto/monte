@@ -359,7 +359,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           </dd>
         </div>
         <div className="px-4 py-3">
-          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `vs ${runs[0].short}`}</dt>
+          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `median vs ${runs[0].short}`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {beats === null ? "every other strategy is measured against this" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
           </dd>
@@ -376,9 +376,9 @@ function niceStep(raw: number) {
   return (m < 1.5 ? 1 : m < 3.5 ? 2.5 : m < 7.5 ? 5 : 10) * p;
 }
 
-export function jordanStrategies(wallet: Holding[], name: string, txns: Txn[] = []): Strategy[] {
+export function jordanStrategies(wallet: Holding[], nm: { Whose: string; who: string }, txns: Txn[] = []): Strategy[] {
   const carried = wallet.filter((h) => h.balance && h.balance > 0);
-  const habit: Strategy = { id: "habit", short: `${name}'s habits`, label: `Every purchase on the card ${name} actually reached for.`, wallet, policy: "actual" };
+  const habit: Strategy = { id: "habit", short: `${nm.Whose} habits`, label: `Every purchase on the card ${nm.who} actually reached for.`, wallet, policy: "actual" };
   // one card and nothing carried: routing changes nothing, so the next move is a second card
   const second = wallet.length === 1 && !carried.length ? bestSecondCard(wallet, txns) : undefined;
   if (second)
@@ -407,7 +407,7 @@ export function jordanStrategies(wallet: Holding[], name: string, txns: Txn[] = 
     out.push({
       id: "cleared",
       short: `+ clear the ${shortName(carried[0].cardId)}`,
-      label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" below.)`,
+      label: `Monte's routing, and the ${shortName(carried[0].cardId)} balance already paid off: no interest. (Paying it off takes cash or months; see "Pay this first" above.)`,
       wallet,
       policy: "best",
       paidOff: true,

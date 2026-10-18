@@ -9,7 +9,7 @@ import { tap } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { cardArt, shortName } from "./card-art";
 import { label } from "./money";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 
 export const MCC: Record<string, string> = {
   dining: "5812",
@@ -72,7 +72,7 @@ export function StrategyChart() {
   return (
     <div>
       <div className="mono mb-3 flex flex-wrap items-baseline justify-between gap-2 text-[11px] uppercase tracking-[0.18em] text-ace-dim">
-        <span>Strategy chart · {persona.name}&apos;s wallet · cents back per dollar, Oct 2026</span>
+        <span>Strategy chart · {nameOf(persona).whose} wallet · cents back per dollar, Oct 2026</span>
         <span className="flex items-center gap-4 normal-case tracking-normal">
           <span className="flex items-center gap-1.5">
             <span className="inline-block size-3 rounded-sm border-2 border-ace-ink" /> the play

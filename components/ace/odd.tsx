@@ -11,7 +11,7 @@ import type { Txn } from "@/lib/engine";
 import { Bracketed } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
 import { Section } from "./section";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 
 type Flag = { id: string; kind: "double" | "rise" | "test" | "far"; title: string; why: string; txns: Txn[]; planted: boolean };
 
@@ -115,7 +115,7 @@ function plant(txns: Txn[]): { txns: Txn[]; ids: Set<string> } {
 
 export function OddChargesSection() {
   const { txns, persona } = useAce();
-  const who = persona.id === "you" ? "your" : `${persona.name}'s`;
+  const who = nameOf(persona).whose;
   const [planted, setPlanted] = useState(false);
   const run = useMemo(() => {
     if (!planted) return { flags: findOddCharges(txns), n: txns.length };
@@ -135,7 +135,7 @@ export function OddChargesSection() {
               <Bracketed>{run.flags.length}</Bracketed> charge{run.flags.length === 1 ? "" : "s"} worth a second look.
             </>
           ) : (
-            <>No odd charges in {persona.id === "you" ? "your" : `${persona.name}'s`} year.</>
+            <>No odd charges in {nameOf(persona).whose} year.</>
           )}
           <span className="m-second block">Four plain rules, every flag traced to the purchases.</span>
         </>
@@ -145,14 +145,14 @@ export function OddChargesSection() {
           {run.n} purchases checked · charged twice · price rises · card testing · far above usual
         </>
       }
-      lede={`${persona.id === "you" ? "Your" : `${persona.name}'s`} year is synthetic and clean, so turn on the test charges to watch the check work. On your own statement it runs as soon as you load it.`}
+      lede={`${nameOf(persona).Whose} year is synthetic and clean, so turn on the test charges to watch the check work. On your own statement it runs as soon as you load it.`}
     >
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <button onClick={() => setPlanted((v) => !v)} className={`btn btn-sm ${planted ? "btn-primary" : "btn-ghost"}`}>
           {planted ? "Remove the 3 test charges" : "Plant 3 test charges"}
         </button>
         <span className="text-sm text-ace-dim">
-          {planted ? "Planted by us, marked below. Nothing else in the year changes." : `Checking ${who} ${txns.length} purchases.`}
+          {planted ? "Planted for this demo, marked below. Nothing else in the year changes." : `Checking ${who} ${txns.length} purchases.`}
         </span>
       </div>
 
@@ -160,8 +160,8 @@ export function OddChargesSection() {
         <AnimatePresence initial={false}>
           {run.flags.length === 0 && (
             <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-5 p-8">
-              <span className="m-num text-5xl text-ace-mute">[ ]</span>
-              <p className="text-ace-dim">Nothing odd in {who} year: no double charges, no price rises, no test charges, nothing far above a store&apos;s usual.</p>
+              <span className="m-num text-5xl">[ ]</span>
+              <p>Checked for double charges, price rises, test charges and anything far above a store&apos;s usual. Turn on the test charges to see a catch.</p>
             </motion.div>
           )}
           {run.flags.map((f, k) => (

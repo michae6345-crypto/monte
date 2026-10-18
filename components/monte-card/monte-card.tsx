@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Bracketed, HandNote, MonteMark, Sampler } from "@/components/brand";
 import { CardArt, shortName } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
-import { money, useAce } from "@/components/ace/store";
+import { money, nameOf, useAce } from "@/components/ace/store";
 import { tap, type TapOption } from "@/lib/engine";
 
 // The Monte Card, simulated. One card in Apple Pay; at the tap, the authorization request
@@ -218,7 +218,7 @@ export function MonteCardDemo() {
 
               {phase === "done" && (
                 <HandNote dir="up-left" width={260} delay={0.3}>
-                  the request is made up. the pick is the real engine on {persona.id === "you" ? "your" : `${persona.name}'s`} cards
+                  the request is made up. the pick is the real engine on {nameOf(persona).whose} cards
                 </HandNote>
               )}
             </div>

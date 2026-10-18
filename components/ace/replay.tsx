@@ -6,7 +6,7 @@ import { useMemo, useRef, useState } from "react";
 import { cardArt, shortName } from "./card-art";
 import { Bracketed, HandNote } from "@/components/brand";
 import { R, Section } from "./section";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 import { Stage, StageSteps } from "./stage";
 import { OneCardView } from "./one-card";
 
@@ -87,8 +87,8 @@ export function ReplaySection() {
       kicker="Replay"
       title={
         <>
-          {persona.id === "you" ? "You" : persona.name} left <Bracketed>{money(r.leftOnTable)}</Bracketed> on the table.
-          <span className="m-second block">Same purchases, better cards.</span>
+          {nameOf(persona).Who} left <Bracketed>{money(r.leftOnTable)}</Bracketed> on the table.
+          <span className="m-second block">Same purchases, cards already in the wallet.</span>
         </>
       }
       readout={
@@ -96,7 +96,7 @@ export function ReplaySection() {
           <R>{moved}</R> of <R>{txns.length}</R> purchases move · <R tone="gain">{money(r.leftOnTable, { sign: true })}</R> back from the table
         </>
       }
-      lede={`Each dot is one of ${persona.name}'s purchases, placed on the card that paid for it. Flip to ${b.name} and watch them move to the card that should have.`}
+      lede={`Each dot is one of ${nameOf(persona).whose} purchases, placed on the card that paid for it. Flip to ${b.name} and watch them move to the card that should have.`}
     >
       <Stage vh={190}>
         {(p) => {
@@ -120,7 +120,7 @@ export function ReplaySection() {
                 onClick={() => setMode(m)}
                 className={`rounded-full px-5 py-2 text-sm transition ${view === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
               >
-                {m === "actual" ? `What ${persona.name} did` : `What ${b.name} would do`}
+                {m === "actual" ? `What ${nameOf(persona).who} did` : `What ${b.name} would do`}
               </button>
             ))}
           </div>

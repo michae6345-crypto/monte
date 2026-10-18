@@ -22,7 +22,7 @@ export function ReceiptSection() {
       id="receipt"
       index="02"
       kicker="The Receipt"
-      title={<>What your cards really did last year.</>}
+      title={<>{wallet.length === 1 ? "What the card did last year." : "What each card did last year."}</>}
       readout={
         <>
           {persona.name} · <R>{wallet.length}</R> cards · net <R tone={r.net < 0 ? "loss" : "gain"}>{money(r.net, { sign: true })}</R>

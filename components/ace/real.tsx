@@ -24,7 +24,7 @@ export function RealSection() {
       tag: "Simulated",
       tone: "text-ace-dim",
       items: [
-        ["Jordan, Maya, the Parks", "Synthetic people with seeded spending at real LA merchants. Their numbers are reproducible."],
+        ["Jordan, Maya, the Parks, Sam, Rosa", "Synthetic people with seeded spending at real LA merchants. Their numbers are reproducible."],
         ["Tap", "A web demo of the moment at the register, not an NFC wallet."],
         ["Point values", "Cash at 1¢ a point by default; travel values are The Points Guy's published estimates."],
       ],

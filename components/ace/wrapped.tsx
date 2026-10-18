@@ -11,13 +11,13 @@ import { CardArt, shortName } from "./card-art";
 import { label } from "./money";
 import { MerchantLogo } from "./merchant-logo";
 import { Section } from "./section";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 
 type Slide = { key: string; kicker: string; body: ReactNode; foot?: ReactNode };
 
 export function WrappedSection() {
   const { txns, r, wallet, persona } = useAce();
-  const who = persona.id === "you" ? "You" : persona.name;
+  const nm = nameOf(persona);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -39,7 +39,7 @@ export function WrappedSection() {
     const out: Slide[] = [
       {
         key: "open",
-        kicker: `${who}'s year`,
+        kicker: `${nm.Whose} year`,
         body: (
           <>
             <Bracketed>{txns.length}</Bracketed> purchases.
@@ -149,7 +149,7 @@ export function WrappedSection() {
       foot: <Lockup size={18} state="resolved" />,
     });
     return out;
-  }, [txns, r, wallet, who]);
+  }, [txns, r, wallet, nm.Whose]);
 
   const n = slides.length;
   const cur = Math.min(i, n - 1);
@@ -169,8 +169,7 @@ export function WrappedSection() {
       kicker="Wrapped"
       title={
         <>
-          {who}&apos;s year, wrapped.
-          <span className="m-second block">Tap through it.</span>
+          Tap through {nm.whose} year.
         </>
       }
       readout={<>{n} cards · every figure from the engine</>}
@@ -196,7 +195,7 @@ export function WrappedSection() {
             setI((x) => (e.clientX - rect.left < rect.width / 3 ? (x - 1 + n) % n : (x + 1) % n));
           }}
           role="region"
-          aria-label={`${who}'s year in review, card ${cur + 1} of ${n}`}
+          aria-label={`${nm.Whose} year in review, card ${cur + 1} of ${n}`}
         >
           <div className="absolute inset-x-5 top-5 flex gap-1">
             {slides.map((x, k) => (

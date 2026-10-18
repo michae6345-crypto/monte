@@ -19,7 +19,7 @@ const STEPS: Step[] = [
   { id: "plan", tab: "payoff", target: "payoff-view", title: "Plan the next move", cue: "$250 a month clears it in 13 months, not 12 years. Then +$521 a year." },
   { id: "next", title: "Next year ×1000", cue: "1,000 simulated years: today, played right, paid off." },
   { id: "spend", tab: "replay", target: "replay-view", persona: "sam", title: "Only one card", cue: "Sam, 19, one student card. Nothing to re-route, so Monte asks the next question: a Savor beside it adds $131 a year." },
-  { id: "leaks", tab: "leaks", target: "leaks-list", persona: "rosa", title: "Income that swings", cue: "Rosa's busiest month is 5× her slowest. Her $1,900 balance costs $546 a year, more than her cards earn." },
+  { id: "see", tab: "stores", target: "money-view", persona: "rosa", title: "Income that swings", cue: "Rosa's biggest month is 5.1× her slowest (Feb $3,792, Nov $738). Her $1,900 balance costs $546 a year; her two cards earned $458." },
   { id: "how", tab: "trace", target: "how-view", title: "How it works", cue: "One purchase traced: merchant code, rule, cents, source. No model does the math." },
   { id: "how", tab: "real", target: "real-view", title: "Real vs simulated", cue: "Card terms and engine are real. Jordan is synthetic. Plaid is sandbox." },
 ];

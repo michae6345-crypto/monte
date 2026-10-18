@@ -117,7 +117,7 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
             className={`btn btn-sm ${a.id === o.id ? "btn-primary" : "btn-ghost"}`}
           >
             {a.label.replace(/^Add /, "+ ").replace(/^(Cancel|Drop) /, "− ").replace(/ Card| from American Express| Visa Signature/g, "")}
-            <span className="ml-1.5 opacity-70">{money(a.p50 - mc.current.p50, { sign: true })}</span>
+            <span className="ml-1.5">{money(a.p50 - mc.current.p50, { sign: true })} median</span>
           </button>
         ))}
       </div>

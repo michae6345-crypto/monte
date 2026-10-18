@@ -120,6 +120,17 @@ export function useAce() {
   return s;
 }
 
+/** How to say a person's name in a sentence. "The Parks" and "you" are plural and take
+ *  "the Parks'" / "your"; everyone else is "Maya" / "Maya's". */
+export function nameOf(p: { id: string; name: string }) {
+  if (p.id === "you") return { Who: "You", who: "you", Whose: "Your", whose: "your", plural: true };
+  const mid = p.name.replace(/^The /, "the ");
+  const plural = /s$/.test(p.name) && /^The /.test(p.name);
+  return { Who: p.name, who: mid, Whose: plural ? `${p.name}'` : `${p.name}'s`, whose: plural ? `${mid}'` : `${mid}'s`, plural };
+}
+/** verb agreement: v(n, "carries", "carry") */
+export const v = (n: { plural: boolean }, one: string, many: string) => (n.plural ? many : one);
+
 export const money = (n: number, opts: { sign?: boolean; cents?: boolean } = {}) => {
   const abs = Math.abs(n);
   const s = abs.toLocaleString("en-US", {

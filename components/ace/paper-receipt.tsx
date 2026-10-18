@@ -130,7 +130,7 @@ export function PaperReceipt({
                       <Row k="card net" v={c.net} i={i++} strong />
                     </div>
                   </div>
-                  {c.interest > 0 && carried?.cardId === c.cardId && (
+                  {c.interest > c.rewards && carried?.cardId === c.cardId && (
                     <div className="mt-1 flex justify-end pr-1">
                       <HandNote dir="up-left" delay={0.6}>
                         the balance eats every reward

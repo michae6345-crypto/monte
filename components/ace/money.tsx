@@ -13,7 +13,7 @@ import { R, Section } from "./section";
 import { MonthStrip, StorePack } from "./store-pack";
 import { Stage, StageSteps } from "./stage";
 import { LinkBank } from "./link-bank";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 
 // Four tones, grouped by what the money is for, not a rainbow: food in the accent, then
 // getting around, bills, and shopping in steps of ink.
@@ -47,7 +47,7 @@ export function MoneySection() {
       kicker="Where your money goes"
       title={
         <>
-          {persona.id === "you" ? "You" : persona.name} spent <Bracketed>{money(total)}</Bracketed> last year.
+          {nameOf(persona).Who} spent <Bracketed>{money(total)}</Bracketed> last year.
           <span className="m-second block">Here is where it went.</span>
         </>
       }
