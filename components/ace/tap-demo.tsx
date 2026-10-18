@@ -61,7 +61,7 @@ export function TapDemo() {
 }
 
 function Dashboard({ onClose }: { onClose: () => void }) {
-  const { wallet, txns, persona, valuation } = useAce();
+  const { wallet, txns, persona, valuation, r: year } = useAce();
   const nm = nameOf(persona);
   const spots = useMemo(() => spotsFor(BASE, txns, "Los Angeles"), [txns]);
   const [i, setI] = useState(0);
@@ -168,6 +168,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <a href="/dashboard" className="mono hidden rounded-md px-2 py-1 text-[11px] text-ace-dim underline hover:text-ace-ink md:inline">
+              every wallet →
+            </a>
             <div className="mono hidden items-center gap-1 rounded-md border border-ace-line p-0.5 text-[11px] sm:flex" role="radiogroup" aria-label="Playback">
               {[
                 { v: true, l: "auto" },
@@ -395,6 +398,11 @@ function Dashboard({ onClose }: { onClose: () => void }) {
                                       ? `That's the card ${nm.who} usually reaches for, and here it's the right one.`
                                       : "The phone hands this card to the reader. Nothing to remember at the register."}
                                 </p>
+                                <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg bg-ace-bg p-2.5 ring-1 ring-ace-line">
+                                  <YearStat label="every tap right, last year" value={`+${money(year.leftOnTable)}`} tone="gain" />
+                                  <YearStat label="interest paid" value={`−${money(year.interest)}`} tone={year.interest > 0 ? "loss" : "ink"} />
+                                  <YearStat label="net from the cards" value={`${year.net < 0 ? "−" : "+"}${money(Math.abs(year.net))}`} tone={year.net < 0 ? "loss" : "gain"} />
+                                </div>
                               </>
                             )}
                           </div>
@@ -412,6 +420,15 @@ function Dashboard({ onClose }: { onClose: () => void }) {
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+function YearStat({ label, value, tone }: { label: string; value: string; tone: "gain" | "loss" | "ink" }) {
+  return (
+    <div>
+      <div className={`text-[15px] font-semibold ${tone === "gain" ? "text-ace-gain" : tone === "loss" ? "text-ace-loss" : "text-ace-ink"}`}>{value}</div>
+      <div className="mono text-[10px] leading-tight text-ace-dim">{label}</div>
+    </div>
   );
 }
 
