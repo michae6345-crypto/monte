@@ -33,7 +33,7 @@ function resolveAlias(specifier) {
 /** TypeScript sources import "./catalog", not "./catalog.ts"; plain Node needs the real
  *  file name. Try the extensions in order, as the bundler would. */
 function resolveRelative(specifier, parentURL) {
-  if (!parentURL) return null;
+  if (!parentURL || parentURL.includes("/node_modules/")) return null; // leave packages (incl. CJS) to Node
   for (const ext of EXTS) {
     const candidate = new URL(specifier + ext, parentURL);
     if (isFile(candidate)) return candidate.href;
