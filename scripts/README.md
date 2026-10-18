@@ -5,3 +5,4 @@ its working.
 
 | Script | What it checks |
 |---|---|
+| `test.ts` | Runs the 36 tests in `tests/` (`npm test`) |
