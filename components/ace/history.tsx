@@ -145,7 +145,7 @@ export function HistorySection() {
                 </span>
                 <span className="tnum text-right font-semibold" style={{ fontFamily: "var(--m-font-display)" }}>{money(x.t.amount, { cents: true })}</span>
                 <CardTag id={x.used} />
-                {x.best === x.used ? <span className="m-mono text-xs text-ace-dim">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
+                {x.best === x.used ? <span className="text-[13px] font-medium text-ace-gain">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
                 {x.miss > 0.005 ? (
                   <span className="text-right text-ace-loss"><Bracketed state="rest">{money(-x.miss, { sign: true, cents: true })}</Bracketed></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (

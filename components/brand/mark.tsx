@@ -69,7 +69,7 @@ export function Lockup({
         className={cn("inline-flex items-baseline", state === "breathe" && "m-breathe")}
         style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.05em", lineHeight: 1 }}
       >
-        <span className="m-br" data-state={state === "computing" ? "computing" : undefined}>
+        <span className="m-br" data-state={closeState}>
           [
         </span>
         <span style={{ color: "var(--m-ink)" }}>monte</span>

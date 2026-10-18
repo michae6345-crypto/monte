@@ -22,7 +22,7 @@ export function Bracketed({
 }) {
   return (
     <span className={cn("inline-flex items-baseline whitespace-nowrap", className)}>
-      <span className="m-br" data-state={state === "computing" ? "computing" : undefined} aria-hidden>
+      <span className="m-br" data-state={state === "rest" ? undefined : state} aria-hidden>
         [
       </span>
       <span className={cn(mono && "m-num", "px-[0.04em]")}>{children}</span>
@@ -75,7 +75,7 @@ export function Expect({
     <span className={cn("inline-flex items-baseline gap-[0.3em]", className)}>
       <span style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.04em" }}>
         {op === "𝔼" ? <MonteMark size="0.72em" className="mr-[0.06em]" /> : op}
-        <span className="m-br" data-state={state === "computing" ? "computing" : undefined}>
+        <span className="m-br" data-state={state}>
           [
         </span>
         {of}
