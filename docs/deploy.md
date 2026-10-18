@@ -14,7 +14,7 @@ Vercel URL should be treated as frozen once Render is live. The Blueprint is
 | URL | `https://monte-rm86.onrender.com` |
 | Dashboard | `https://dashboard.render.com/web/srv-dba6n1uq1p3s73ahg31g` |
 | Workspace / owner id | `tea-d9mu9bbm8hqs73d5vcrg` ("My Workspace") |
-| Repo / branch | `https://github.com/adrian-erlikhman/monte` (public) / `main` |
+| Repo / branch | `https://github.com/michae6345-crypto/monte` (public, transferred from `adrian-erlikhman`) / `main` — **the service still stores the old URL, see below** |
 | **State** | **suspended, autoDeploy off, zero env vars set** |
 
 The service was created with `POST /v1/services` (HTTP 201) and started building commit
@@ -24,24 +24,29 @@ is serving: the URL returns 503 while suspended. Resuming is the runbook below.
 
 ### Repo access: what we actually know
 
-- `adrian-erlikhman/monte` is a **public** repo, so Render can clone it over the plain
-  public Git URL - service creation succeeding proves nothing about GitHub App access.
-- Our account `michae6345-crypto` has **write, not admin** (`admin: false` on the GitHub
-  permissions object).
-- Registering the push webhook that makes `autoDeploy` fire needs admin on the repo, and
-  we cannot even list the repo's hooks. So **assume auto-deploy will not fire on pushes
-  to `main`** until someone with admin confirms the Render GitHub App is installed and has
-  access to this repo. Manual deploys (`POST .../deploys`, or Deploy in the dashboard)
-  work regardless, because the repo is public.
-- To fix it properly, Adrian (repo owner) grants the Render GitHub App access:
-  `https://github.com/settings/installations` -> Render -> Repository access -> add
-  `monte`. Our side reconnects at `https://dashboard.render.com/settings#github`.
+The repo has since been **transferred to `michae6345-crypto/monte`** and we have **admin**
+on it (`permissions.admin: true`); `adrian-erlikhman/monte` now only redirects. So nothing
+is needed from Adrian here any more.
+
+- The repo is **public**, and it was public when the service was created. Render can clone
+  a public repo over the plain Git URL, so the service creation succeeding (HTTP 201 while
+  we still had only collaborator write) is **not** evidence that the Render GitHub App had
+  access. Don't tell the team it was.
+- What needs the GitHub App (or a repo webhook) is **auto-deploy on push**. That needs
+  admin on the repo, which we only have now, post-transfer. Until someone confirms the App
+  is installed and scoped to this repo, **assume pushes to `main` do not auto-deploy** and
+  use a manual deploy (`POST .../deploys`, or Deploy in the dashboard), which works on a
+  public repo regardless.
+- To wire auto-deploy up properly now that we own the repo:
+  1. `https://github.com/settings/installations` -> Render -> Repository access -> add
+     `monte`.
+  2. Reconnect our side at `https://dashboard.render.com/settings#github`.
+  3. Point the service at the new URL, because it still stores the pre-transfer one:
+     `PATCH /v1/services/<id>` with
+     `{"repo":"https://github.com/michae6345-crypto/monte"}`.
+  4. If auto-deploy still doesn't fire, disconnect/reconnect the repo in the Render
+     dashboard to re-register the push hook.
   Render's docs: `https://render.com/docs/github`.
-- **If the repo is transferred to `michae6345-crypto`**, the stored repo URL goes stale
-  (GitHub redirects clones, but don't rely on it): `PATCH /v1/services/<id>` with
-  `{"repo":"https://github.com/michae6345-crypto/monte"}`, then re-grant the Render App on
-  the new owner and, if auto-deploy still doesn't fire, disconnect/reconnect the repo in
-  the dashboard to re-register the hook.
 
 ## Render settings
 
@@ -128,7 +133,7 @@ curl -s -X POST -H "$AUTH" -H "$JSON" $API/services -d '{
   "type": "web_service",
   "name": "monte",
   "ownerId": "tea-d9mu9bbm8hqs73d5vcrg",
-  "repo": "https://github.com/adrian-erlikhman/monte",
+  "repo": "https://github.com/michae6345-crypto/monte",
   "branch": "main",
   "autoDeployTrigger": "commit",
   "serviceDetails": {
