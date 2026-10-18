@@ -360,7 +360,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
         />
         {hover && (
           <div
-            className="mono pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded border border-ace-line bg-ace-bg/95 px-2 py-1 text-[10px] text-ace-ink"
+            className="mono pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded border border-ace-line bg-ace-bg/95 px-2 py-1 text-[11px] text-ace-ink"
             style={{ left: Math.max(70, Math.min(hover.x, hover.w - 70)) }}
           >
             {hover.n} years net {money(hover.lo)} to {money(hover.hi)}

@@ -178,7 +178,7 @@ export function PaperReceipt({
 
         <div className="mt-6 text-ace-ink">
           <Barcode seed={seed} />
-          <div className="m-mono mt-3 text-center text-[10px] uppercase tracking-[0.22em] text-ace-dim">hover any line for its rule and source</div>
+          <div className="m-mono mt-3 text-center text-[11px] uppercase tracking-[0.22em] text-ace-dim">hover any line for its rule and source</div>
         </div>
       </div>
     </div>

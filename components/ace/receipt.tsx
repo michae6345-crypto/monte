@@ -50,7 +50,7 @@ export function ReceiptSection() {
                     <div className="mt-2 flex items-center justify-between gap-2 text-xs">
                       <button
                         onClick={() => toggleBalance(h.cardId)}
-                        className={`mono rounded-md border px-2 py-0.5 text-[10px] uppercase tracking-wider transition ${
+                        className={`mono rounded-md border px-2 py-0.5 text-[11px] uppercase tracking-wider transition ${
                           h.balance ? "border-ace-loss/50 bg-ace-loss/10 text-ace-loss" : "border-ace-line text-ace-dim hover:text-ace-ink"
                         }`}
                       >
@@ -96,7 +96,7 @@ export function ReceiptSection() {
                       title={c.name}
                     >
                       <CardArt id={c.id} size="sm" />
-                      <div className="mt-1 truncate text-[10px] text-ace-dim">{shortName(c.id)}</div>
+                      <div className="mt-1 truncate text-[11px] text-ace-dim">{shortName(c.id)}</div>
                     </button>
                   ))}
                 </div>

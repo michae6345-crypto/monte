@@ -95,7 +95,7 @@ export function MonteCardDemo() {
                 <span className="m-label" style={{ color: "#c3cbff" }}>
                   monte card
                 </span>
-                <span className="m-mono text-[10px] text-[#c3cbff]">virtual</span>
+                <span className="m-mono text-[11px] text-[#c3cbff]">virtual</span>
               </div>
               <span className="dark">
                 <MonteMark size={34} />

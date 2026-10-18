@@ -149,7 +149,7 @@ export function HistorySection() {
           </div>
         </div>
 
-        <div className="mono hidden grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] gap-3 border-b border-ace-line pb-2 text-[10px] uppercase tracking-[0.15em] text-ace-dim md:grid">
+        <div className="mono hidden grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] gap-3 border-b border-ace-line pb-2 text-[11px] uppercase tracking-[0.15em] text-ace-dim md:grid">
           <span>Date</span>
           <span>Merchant</span>
           <span>Category</span>

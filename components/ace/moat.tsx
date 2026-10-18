@@ -68,7 +68,7 @@ export function MoatSection() {
                   <td key={k} className={`px-5 py-3 ${k === 0 ? "text-ace-ink" : k === 1 ? "mono font-medium text-ace-ink" : "mono text-ace-dim"}`}>
                     {/* Monte's answers are circled by hand as each row lands, Monte's "no" to referral fees included */}
                     {k === 1 ? <PenMark delay={0.3 + r * 0.07}>{c}</PenMark> : c}
-                    {k === 0 && noteOf(row[0]) >= 0 ? <sup className="mono ml-1 text-[10px] text-ace-dim">{noteOf(row[0]) + 1}</sup> : null}
+                    {k === 0 && noteOf(row[0]) >= 0 ? <sup className="mono ml-1 text-[11px] text-ace-dim">{noteOf(row[0]) + 1}</sup> : null}
                   </td>
                 ))}
               </motion.tr>
@@ -84,7 +84,7 @@ export function MoatSection() {
           </li>
         ))}
       </ol>
-      <p className="mono mt-5 text-[10px] uppercase tracking-wider text-ace-dim">
+      <p className="mono mt-5 text-[11px] uppercase tracking-wider text-ace-dim">
         Uno Wallet (YC Spring 2026) from what its site advertises; it is waitlist-only. Comparison sites means referral-funded sites such as NerdWallet.
       </p>
     </Section>

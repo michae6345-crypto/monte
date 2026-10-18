@@ -109,7 +109,7 @@ export function TapSection() {
               <MerchantLogo name={s.merchant} size={26} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{s.merchant}</span>
-                <span className="mono block text-[10px] uppercase tracking-wider text-ace-dim">{s.where}</span>
+                <span className="mono block text-[11px] uppercase tracking-wider text-ace-dim">{s.where}</span>
               </span>
               <span className="mono text-sm text-ace-dim">{money(s.amount, { cents: true })}</span>
             </button>
@@ -120,7 +120,7 @@ export function TapSection() {
         <div className="relative mx-auto h-[600px] w-[300px] rounded-[48px] border border-ace-line bg-[#e9ebef] p-3 shadow-[0_1px_2px_rgba(12,14,20,.06),0_30px_60px_-30px_rgba(12,14,20,.28)]">
           <div className="absolute left-1/2 top-5 z-10 h-6 w-24 -translate-x-1/2 rounded-full bg-[#0c0e14]" />
           <div className="relative h-full overflow-hidden rounded-[38px] bg-ace-panel px-4 pt-12 ring-1 ring-ace-line">
-            <div className="mono text-center text-[10px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
+            <div className="mono text-center text-[11px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
             <AnimatePresence mode="wait">
               <motion.div key={spot.merchant} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <div className="mt-3 flex justify-center">
@@ -152,7 +152,7 @@ export function TapSection() {
                   >
                     <CardArt id={h.cardId} dim={!isPick} />
                     {h.balance && isPick ? (
-                      <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[10px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)]">
+                      <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[11px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)]">
                         carries a balance
                       </div>
                     ) : null}
@@ -234,7 +234,7 @@ export function TapSection() {
                 </div>
               ))}
             </div>
-            <p className="mono mt-4 text-[10px] uppercase tracking-wider text-ace-dim">
+            <p className="mono mt-4 text-[11px] uppercase tracking-wider text-ace-dim">
               Source: {new URL(card(pick.cardId).source_urls[0] ?? "https://example.com").hostname}
             </p>
           </div>

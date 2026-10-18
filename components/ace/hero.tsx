@@ -112,7 +112,7 @@ function HandPicker() {
           role="radio"
           aria-checked={persona.id === p.id}
           onClick={() => setPersona(p.id)}
-          className={`rounded px-2 py-1 transition ${persona.id === p.id ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
+          className={`rounded px-2 py-2.5 transition md:py-1 ${persona.id === p.id ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
         >
           {p.name.replace("The ", "")}
         </button>
