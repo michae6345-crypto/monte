@@ -173,7 +173,7 @@ export function LeaksSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "0px 0px -10% 0px" }}
             transition={{ delay: i * 0.06, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="grid items-center gap-4 p-5 md:grid-cols-[minmax(0,1fr)_auto_auto] md:gap-8"
+            className="grid items-center gap-4 p-5 md:grid-cols-[minmax(0,1fr)_8rem_11rem] md:gap-8"
           >
             <div className="flex min-w-0 items-center gap-4">
               {l.art?.card ? (

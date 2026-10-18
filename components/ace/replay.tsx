@@ -132,7 +132,7 @@ export function ReplaySection() {
                 onClick={() => setMode(m)}
                 className={`rounded-full px-5 py-2 text-sm transition ${view === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
               >
-                {m === "actual" ? `What ${nameOf(persona).who} did` : `What ${b.name} would do`}
+                {m === "actual" ? `As ${nameOf(persona).who} paid` : "On the right card"}
               </button>
             ))}
           </div>
@@ -211,7 +211,7 @@ export function ReplaySection() {
                 stays within each card&apos;s bonus limits and this quarter&apos;s bonus categories{wallet.some((h) => h.balance) ? ", and never puts new purchases on a card with a balance: those charge interest from the day of purchase" : ""}.
               </>
             ) : (
-              <>Flip to “What {b.name} would do” to re-route the year.</>
+              <>Flip to “On the right card” to move each purchase.</>
             )}
           </p>
           <div className="space-y-2">
