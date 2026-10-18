@@ -128,18 +128,18 @@
     @apply font-sans;
   }
 }
-/* ---------- Kicker (defaults = Night lime + Space Grotesk) ---------- */
+/* ---------- Monte defaults: Daylight (white, ink, electric blue) ---------- */
 :root {
-  --ace-bg: #090c18;
-  --ace-panel: #10152a;
-  --ace-line: rgba(200, 255, 46, 0.12);
-  --ace-ink: #eef2ff;
-  --ace-dim: rgba(238, 242, 255, 0.58);
-  --ace-gain: #2ee6a8;
-  --ace-loss: #ff5c7a;
-  --ace-gold: #c8ff2e;
-  --ace-paper: #f1f4ff;
-  --ace-on-accent: #0a0d02;
+  --ace-bg: #f7f8fa;
+  --ace-panel: #ffffff;
+  --ace-line: rgba(12, 14, 20, 0.1);
+  --ace-ink: #0c0e14;
+  --ace-dim: rgba(12, 14, 20, 0.58);
+  --ace-gain: #0f8a55;
+  --ace-loss: #d8342b;
+  --ace-gold: #2f45ff;
+  --ace-paper: #ffffff;
+  --ace-on-accent: #ffffff;
   --brand-body: var(--font-grotesk);
   --brand-head: var(--font-grotesk);
   --brand-accent: var(--font-grotesk);
@@ -177,7 +177,7 @@ body.ace {
 
 .ace ::selection {
   background: var(--ace-gold);
-  color: #000;
+  color: #fff;
 }
 
 .serif {

@@ -20,7 +20,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${serif.variable} ${unbounded.variable} ${barlow.variable} ${grotesk.variable} ${bricolage.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${serif.variable} ${unbounded.variable} ${barlow.variable} ${grotesk.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="ace min-h-full">{children}</body>
     </html>

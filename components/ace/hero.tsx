@@ -2,8 +2,8 @@
 
 import { useBrand } from "./brands";
 import { Solver, jordanStrategies } from "./solver";
+import { DropHero } from "./drop";
 import { JORDAN, yearOf } from "@/lib/data/personas";
-import { receipt } from "@/lib/engine";
 import { useMemo } from "react";
 
 const STATS = [
@@ -18,7 +18,7 @@ const STATS = [
 export function Nav() {
   const { brand: b } = useBrand();
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-ace-line/50 bg-ace-bg/60 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-ace-line bg-ace-bg/90">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
         <a href="#top" className="flex items-center gap-2">
           <b.Mark size={28} />
@@ -41,52 +41,48 @@ export function Nav() {
 }
 
 export function Hero() {
+  return (
+    <>
+      <DropHero />
+      <SolverBand />
+    </>
+  );
+}
+
+/** Right under the cards: the same wallet, next year, simulated 1,000 times. */
+function SolverBand() {
   const { brand: b } = useBrand();
   const txns = useMemo(() => yearOf(JORDAN), []);
-  const jr = useMemo(() => receipt(JORDAN.wallet, txns), [txns]);
   const strategies = useMemo(() => jordanStrategies(JORDAN.wallet, JORDAN.name), []);
-  const lost = Math.round(-jr.net);
 
   return (
-    <section id="top" className="relative pt-28 md:pt-36">
-      <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 lg:grid-cols-[1fr_1.05fr] lg:items-end">
+    <section className="relative border-t border-ace-line bg-ace-panel py-20 md:py-28">
+      <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
         <div>
-          <p className="mono mb-8 text-[11px] uppercase tracking-[0.22em] text-ace-dim">
-            <span className="text-ace-gold">{b.name}</span> · a solver for your wallet
+          <p className="mono mb-6 text-[11px] uppercase tracking-[0.22em] text-ace-dim">
+            <span className="text-ace-gold">{b.name}</span> · next year, played 1,000 times
           </p>
-          <h1 className="text-[12vw] font-semibold leading-[0.92] tracking-[-0.045em] sm:text-6xl md:text-[4.6rem]">
-            {JORDAN.name}&apos;s cards cost him{" "}
-            <span className="tnum text-ace-loss">${lost.toLocaleString()}</span> last year.
-          </h1>
-          <p className="mt-7 max-w-md text-lg leading-relaxed text-ace-dim">
-            {b.name} reads a year of your purchases, plays each one on the right card, tells you which cards to keep, and
-            simulates next year a thousand times before you change anything.
+          <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.035em] md:text-5xl">
+            Same cards. Same spending.
+            <span className="block text-ace-dim">A different year.</span>
+          </h2>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-ace-dim">
+            Each dot is one simulated year of {JORDAN.name}&apos;s spending, redrawn from his real months. Switch the strategy and watch the
+            same thousand years move.
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <a href="#receipt" className="rounded-md bg-ace-gold px-5 py-3 font-medium text-ace-on-accent transition hover:brightness-110">
-              Read {JORDAN.name}&apos;s receipt
-            </a>
-            <a href="#tap" className="rounded-md border border-ace-line px-5 py-3 text-ace-ink transition hover:border-ace-ink/40">
-              Try a tap
-            </a>
-          </div>
-          <dl className="mono mt-12 grid max-w-md grid-cols-3 gap-4 border-t border-ace-line pt-5 text-[11px] text-ace-dim">
-            <div>
-              <dt>rewards + perks</dt>
-              <dd className="mt-1 text-base tnum text-ace-gain">+${Math.round(jr.rewards + jr.credits)}</dd>
-            </div>
-            <div>
-              <dt>fees</dt>
-              <dd className="mt-1 text-base tnum text-ace-loss">−${Math.round(jr.fees)}</dd>
-            </div>
-            <div>
-              <dt>interest</dt>
-              <dd className="mt-1 text-base tnum text-ace-loss">−${Math.round(jr.interest)}</dd>
-            </div>
-          </dl>
+          <ol className="mono mt-8 space-y-2 text-[12px] text-ace-dim">
+            <li>
+              <span className="text-ace-ink">01</span> as {JORDAN.name} plays today
+            </li>
+            <li>
+              <span className="text-ace-ink">02</span> every purchase on the card {b.name} picks
+            </li>
+            <li>
+              <span className="text-ace-ink">03</span> and the balance paid off first
+            </li>
+          </ol>
         </div>
-
-        <Solver strategies={strategies} txns={txns} title={`monte solve --wallet ${JORDAN.name.toLowerCase()} --years 1000`} />
+        <Solver strategies={strategies} txns={txns} title={`monte solve --wallet ${JORDAN.name.toLowerCase()} --next-year --runs 1000`} />
       </div>
 
       <div className="mx-auto mt-20 max-w-6xl px-5">

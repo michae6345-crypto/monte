@@ -133,7 +133,7 @@ export const THEMES: Theme[] = [
     note: "White, ink and electric blue. Clean and bank-like, closest to Ramp or Mercury.",
     vars: {
       ...base,
-      "--ace-bg": "#f5f6f1",
+      "--ace-bg": "#f7f8fa",
       "--ace-panel": "#ffffff",
       "--ace-line": "rgba(12,14,20,0.1)",
       "--ace-ink": "#0c0e14",
@@ -199,7 +199,7 @@ export const TYPES: TypeSet[] = [
 ];
 
 type Choice = { logo: string; theme: string; type: string };
-const DEFAULT: Choice = { logo: "kick", theme: "night", type: "grotesk" };
+const DEFAULT: Choice = { logo: "kick", theme: "daylight", type: "grotesk" };
 
 type Brand = { name: string; tagline: string; eyebrow: string; Mark: Logo["Mark"]; wordmark: string };
 
@@ -216,7 +216,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     const q = new URLSearchParams(location.search);
     let saved: Partial<Choice> = {};
     try {
-      saved = JSON.parse(localStorage.getItem("monte-brand") ?? "{}");
+      saved = JSON.parse(localStorage.getItem("monte-brand-v2") ?? "{}");
     } catch {}
     const pick = (k: keyof Choice, list: { id: string }[]) => {
       const v = q.get(k) ?? saved[k];
@@ -240,7 +240,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     const next = { ...choice, [k]: v };
     setChoice(next);
     try {
-      localStorage.setItem("monte-brand", JSON.stringify(next));
+      localStorage.setItem("monte-brand-v2", JSON.stringify(next));
     } catch {}
     const u = new URL(location.href);
     for (const [kk, vv] of Object.entries(next)) u.searchParams.set(kk, vv);

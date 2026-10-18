@@ -2,6 +2,10 @@
 
 import { card } from "@/lib/engine/catalog";
 import { cn } from "@/lib/utils";
+import { REAL_CARDS } from "./card-images";
+
+const REAL = new Set(REAL_CARDS);
+export const hasRealArt = (id: string) => REAL.has(id);
 
 // Our own abstract art per card: issuer-ish colours, no logos.
 const ART: Record<string, { bg: string; ink: string; foil?: string }> = {
@@ -63,6 +67,20 @@ export function CardArt({
   const c = card(id);
   const a = cardArt(id);
   const pad = size === "sm" ? "p-2" : size === "lg" ? "p-5" : "p-3.5";
+  if (REAL.has(id))
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={`/cards/${id}.webp`}
+        alt={c.name}
+        draggable={false}
+        className={cn(
+          "block aspect-[1.586/1] w-full select-none rounded-[4.5%/7%] object-cover shadow-[0_18px_36px_-14px_rgba(12,14,20,.45),0_2px_6px_rgba(12,14,20,.12)]",
+          dim && "opacity-40 saturate-50",
+          className,
+        )}
+      />
+    );
   return (
     <div
       className={cn(
