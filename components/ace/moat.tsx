@@ -84,7 +84,7 @@ const PICKS = ["Sweetgreen", "Mobil", "Uber", "Trader Joe's"];
 
 export function HowSection() {
   const { brand: b } = useBrand();
-  const { txns, wallet, r, persona } = useAce();
+  const { txns, held: wallet, r, persona } = useAce();
   const options = useMemo(() => {
     const out: Txn[] = [];
     for (const m of PICKS) {

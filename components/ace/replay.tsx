@@ -14,7 +14,7 @@ const W = 1000;
 const LANE = 64;
 
 export function ReplaySection() {
-  const { wallet, r, txns, persona } = useAce();
+  const { held: wallet, r, txns, persona } = useAce();
   const [mode, setModeRaw] = useState<"actual" | "best">("actual");
   // until someone clicks the toggle, scrolling sweeps the year from left to right
   const [manual, setManual] = useState(false);
@@ -68,6 +68,10 @@ export function ReplaySection() {
       .slice(0, 4);
     // purchases moved off a card carrying a balance earn less, but stop charging interest
     if (off < -0.5) rows.push(["off the card with a balance", off]);
+    // whatever the small categories add, so the rows sum to the headline
+    const all = dots.reduce((t, d) => t + (d.moved ? d.gain : 0), 0);
+    const rest = all - rows.reduce((t, [, v]) => t + v, 0);
+    if (Math.abs(rest) >= 0.5) rows.splice(rows.length - (off < -0.5 ? 1 : 0), 0, ["everything else", rest]);
     return rows;
   }, [dots]);
 

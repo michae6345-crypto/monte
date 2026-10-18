@@ -15,7 +15,7 @@ import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function HistorySection() {
-  const { txns, r, wallet, overrides, setOverride, resetOverrides, persona } = useAce();
+  const { txns, r, held: wallet, overrides, setOverride, resetOverrides, persona } = useAce();
   const { brand: b } = useBrand();
   const [q, setQ] = useState("");
   const [onlyMiss, setOnlyMiss] = useState(false);
@@ -54,6 +54,7 @@ export function HistorySection() {
     return x.used !== x.best && (Math.abs(x.miss) > 0.005 || balanceCards.has(x.used));
   }
   const missTotal = filtered.reduce((s, x) => s + x.miss, 0);
+  const one = wallet.length === 1;
   const balanceCards = new Set(wallet.filter((h) => h.balance).map((h) => h.cardId));
   const spendTotal = filtered.reduce((s, x) => s + x.t.amount, 0);
 
@@ -154,8 +155,8 @@ export function HistorySection() {
           <span>Category</span>
           <span className="text-right">Amount</span>
           <span>Paid with</span>
-          <span>Should have used</span>
-          <span className="text-right">Missed</span>
+          <span>{one ? "Rule" : "Should have used"}</span>
+          <span className="text-right">{one ? "Earned" : "Missed"}</span>
         </div>
         <div>
           <AnimatePresence initial={false}>
@@ -169,7 +170,7 @@ export function HistorySection() {
                 className="grid grid-cols-2 gap-x-3 gap-y-1 border-b border-ace-line/60 py-2.5 text-sm md:grid-cols-[88px_1.4fr_1fr_90px_1.3fr_1.3fr_80px] md:items-center"
               >
                 <span className="text-[13px] font-medium text-ace-dim" style={{ fontFamily: "var(--m-font-display)" }}>{new Date(x.t.date + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                <button onClick={() => setMerchant(x.t.merchant)} className="flex min-w-0 items-center gap-2 text-left font-medium hover:underline">
+                <button onClick={() => setMerchant(x.t.merchant)} className="order-first col-span-2 flex min-w-0 items-center gap-2 text-left font-medium hover:underline md:order-none md:col-span-1">
                   <MerchantLogo name={x.t.merchant} size={20} />
                   <span className="truncate">{x.t.merchant}</span>
                 </button>
@@ -179,8 +180,16 @@ export function HistorySection() {
                 </span>
                 <span className="tnum text-right font-semibold" style={{ fontFamily: "var(--m-font-display)" }}>{money(x.t.amount, { cents: true })}</span>
                 <CardTag id={x.used} />
-                {x.best === x.used ? <span className="text-[13px] font-medium text-ace-gain">✓ right card</span> : <CardTag id={x.best} hint={x.rule} />}
-                {x.miss > 0.005 ? (
+                {one ? (
+                  <span className="mono text-[11px] leading-tight">{x.ha.rule}</span>
+                ) : x.best === x.used ? (
+                  <span className="text-[13px] font-medium">✓ right card</span>
+                ) : (
+                  <CardTag id={x.best} hint={x.rule} />
+                )}
+                {one ? (
+                  <span className="mono text-right">{money(x.got, { cents: true })}</span>
+                ) : x.miss > 0.005 ? (
                   <span className="text-right text-ace-loss"><Trace lines={[provenanceFor(x.hb, x.t), provenanceFor(x.ha, x.t)]}><Bracketed state="rest">{money(-x.miss, { sign: true, cents: true })}</Bracketed></Trace></span>
                 ) : x.miss < -0.005 && balanceCards.has(x.used) ? (
                   <span className="text-right text-[11px] leading-tight text-ace-dim" title="This card carries a balance, so new purchases on it accrue interest from day one.">
@@ -209,7 +218,7 @@ function CardTag({ id, hint }: { id: string; hint?: string }) {
   return (
     <span className="flex min-w-0 items-center gap-2" title={hint}>
       <CardMini id={id} />
-      <span className="truncate text-[13px] font-medium">{shortName(id)}</span>
+      <span className="text-[13px] font-medium leading-tight md:truncate">{shortName(id)}</span>
     </span>
   );
 }

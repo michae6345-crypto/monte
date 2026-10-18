@@ -172,7 +172,7 @@ function Bar({ label, v, span, tone }: { label: string; v: number; span: number;
 // ---------------- For you: preferences, next card, nudges ----------------
 
 export function ForYouSection() {
-  const { wallet, txns, valuation, setValuationMode, addCard, removeCard, persona } = useAce();
+  const { wallet, txns, valuation, setValuationMode, tryCard, removeCard, persona } = useAce();
   const [noFee, setNoFee] = useState(false);
   const [tried, setTried] = useState<string[]>([]);
   const triedNow = tried.filter((id) => wallet.some((h) => h.cardId === id));
@@ -370,20 +370,20 @@ export function ForYouSection() {
                 <motion.div
                   layout
                   key={x.id}
-                  className="flex items-center gap-4 rounded-md border border-ace-line p-3 pr-4"
+                  className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-md border border-ace-line p-3 pr-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
                   <span className="mono w-4 text-ace-dim">{k + 1}</span>
                   <CardArt id={x.id} size="sm" className="w-16 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{shortName(x.id)}</div>
-                    <div className="mono text-[10px] text-ace-dim">
+                  <div className="min-w-0 flex-1 basis-[calc(100%-7.5rem)] sm:basis-0">
+                    <div className="text-sm font-medium leading-snug">{shortName(x.id)}</div>
+                    <div className="mono text-[11px] text-ace-dim">
                       {money(x.rewardsAdded, { sign: true })} rewards · {x.fee ? `${money(-x.fee, { sign: true })} fee` : "no annual fee"}
                       {x.perkValue ? ` · ${money(x.perkValue, { sign: true })} perks` : ""}
                     </div>
                     {x.bonus && (
-                      <div className={`mono mt-0.5 text-[10px] ${x.hits ? "text-ace-ink" : "text-ace-dim"}`}>
+                      <div className="mono mt-0.5 text-[11px] text-ace-ink">
                         bonus {x.bonus.label}{x.bonus.label.startsWith("$") ? "" : ` ≈ ${money(x.bonus.value)}`} ·{" "}
                         {x.hits
                           ? x.bonus.spend
@@ -393,15 +393,16 @@ export function ForYouSection() {
                       </div>
                     )}
                   </div>
-                  <span className="text-right">
+                  <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
+                  <span className="sm:text-right">
                     <span className={`mono block text-sm ${x.score >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.score, { sign: true })}</span>
-                    <span className="mono block text-[10px] text-ace-dim">
+                    <span className="mono block text-[11px] text-ace-dim">
                       {odds.has(x.id) ? `ahead ${Math.round(odds.get(x.id)! * mc.years).toLocaleString()}/${mc.years.toLocaleString()} yrs` : horizon === "first" ? "first year" : "per year"}
                     </span>
                   </span>
                   <button
                     onClick={() => {
-                      addCard(x.id);
+                      tryCard(x.id);
                       setTried((t) => [...t, x.id]);
                     }}
                     className="btn btn-ghost btn-sm"
@@ -409,6 +410,7 @@ export function ForYouSection() {
                   >
                     what if?
                   </button>
+                  </div>
                 </motion.div>
               ))}
             </div>

@@ -16,7 +16,7 @@ import { money, nameOf, useAce } from "./store";
 type Slide = { key: string; kicker: string; body: ReactNode; foot?: ReactNode };
 
 export function WrappedSection() {
-  const { txns, r, wallet, persona } = useAce();
+  const { txns, r, held: wallet, persona } = useAce();
   const nm = nameOf(persona);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);

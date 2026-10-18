@@ -1,11 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote, MonteMark, Sampler } from "@/components/brand";
 import { CardArt, shortName } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money, nameOf, useAce } from "@/components/ace/store";
+import { spotsFor } from "@/components/ace/spots";
 import { tap, type TapOption } from "@/lib/engine";
 
 // The Monte Card, simulated. One card in Apple Pay; at the tap, the authorization request
@@ -15,7 +16,7 @@ import { tap, type TapOption } from "@/lib/engine";
 
 type Spot = { merchant: string; category: string; amount: number; where: string; mcc: string; mccName: string };
 
-const SPOTS: Spot[] = [
+const BASE: Spot[] = [
   { merchant: "Trader Joe's", category: "groceries", amount: 64.2, where: "Los Feliz, CA", mcc: "5411", mccName: "Grocery Stores, Supermarkets" },
   { merchant: "Sweetgreen", category: "dining", amount: 16.5, where: "Silver Lake, CA", mcc: "5812", mccName: "Eating Places, Restaurants" },
   { merchant: "Mobil", category: "gas", amount: 52, where: "Sunset Blvd, CA", mcc: "5541", mccName: "Service Stations" },
@@ -35,6 +36,7 @@ function timed<T>(f: () => T): [T, number] {
 
 export function MonteCardDemo() {
   const { wallet, txns, persona } = useAce();
+  const SPOTS = useMemo(() => spotsFor(BASE, txns, "Los Angeles, CA"), [txns]);
   const [i, setI] = useState(0);
   const [phase, setPhase] = useState<Phase>("idle");
   const [res, setRes] = useState<{ ranked: TapOption[]; pick: TapOption; ms: number } | null>(null);

@@ -18,7 +18,7 @@ export function bestSecondCard(wallet: ReturnType<typeof useAce>["wallet"], txns
 }
 
 export function OneCardView() {
-  const { wallet, txns, persona } = useAce();
+  const { held: wallet, txns, persona } = useAce();
   const nm = nameOf(persona);
   const only = wallet[0];
   const best = useMemo(() => bestSecondCard(wallet, txns), [wallet, txns]);

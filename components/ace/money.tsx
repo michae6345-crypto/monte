@@ -35,7 +35,7 @@ export const CAT_TEXT = (c: string) => (GROUP[c] === "food" || GROUP[c] === "mov
 export const label = (c: string) => c.replace(/_/g, " ");
 
 export function MoneySection() {
-  const { txns, persona, useStatement, wallet } = useAce();
+  const { txns, persona, useStatement, held: wallet } = useAce();
   const cats = useMemo(() => byCategory(txns), [txns]);
   const total = cats.reduce((a, c) => a + c.total, 0);
   const subs = useMemo(() => subscriptions(txns), [txns]);

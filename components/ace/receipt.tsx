@@ -12,7 +12,7 @@ import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function ReceiptSection() {
-  const { persona, setPersona, wallet, addCard, removeCard, toggleBalance, valuation, setValuationMode, r, txns } = useAce();
+  const { persona, setPersona, held: wallet, addCard, removeCard, toggleBalance, valuation, setValuationMode, r, txns } = useAce();
   const [picker, setPicker] = useState(false);
   const { brand: b } = useBrand();
 

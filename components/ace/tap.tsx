@@ -10,8 +10,9 @@ import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { Stage } from "./stage";
 import { money, useAce } from "./store";
+import { spotsFor } from "./spots";
 
-const SPOTS = [
+const BASE = [
   { merchant: "Sweetgreen", category: "dining", amount: 16.5, where: "Silver Lake", mcc: "5812" },
   { merchant: "Trader Joe's", category: "groceries", amount: 64.2, where: "Los Feliz", mcc: "5411" },
   { merchant: "Mobil", category: "gas", amount: 52, where: "Sunset Blvd", mcc: "5541" },
@@ -28,6 +29,7 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 
 export function TapSection() {
   const { wallet, txns } = useAce();
+  const SPOTS = useMemo(() => spotsFor(BASE, txns, "Los Angeles"), [txns]);
   const [i, setI] = useState(0);
   // brackets blink while the engine ranks the cards, then resolve on the winner
   const [solving, setSolving] = useState(false);
@@ -47,7 +49,7 @@ export function TapSection() {
     };
     window.addEventListener("monte:tap", on);
     return () => window.removeEventListener("monte:tap", on);
-  }, []);
+  }, [SPOTS]);
   const spot = SPOTS[i];
   const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
   const res = useMemo(

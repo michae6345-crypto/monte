@@ -10,6 +10,10 @@ type Store = {
   wallet: Holding[];
   setWallet: (w: Holding[]) => void;
   addCard: (id: string) => void;
+  /** A what-if: the card joins the wallet for projections only, never last year's numbers. */
+  tryCard: (id: string) => void;
+  /** The cards actually held: the wallet without what-if cards. Last year's sections use this. */
+  held: Holding[];
   removeCard: (id: string) => void;
   toggleBalance: (id: string) => void;
   valuation: Valuation;
@@ -40,6 +44,8 @@ export function AceProvider({ children }: { children: ReactNode }) {
       ? { id: "you", name: "You", blurb: customLabel, wallet: [], habit: () => "", lines: [], seed: 0 }
       : PERSONAS.find((p) => p.id === personaId)!;
   const [wallet, setWallet] = useState<Holding[]>(PERSONAS[0].wallet);
+  const [trials, setTrials] = useState<string[]>([]);
+  const held = useMemo(() => (trials.length ? wallet.filter((h) => !trials.includes(h.cardId)) : wallet), [wallet, trials]);
   const [valuation, setVal] = useState<Valuation>("cash");
   const base = personaId === "you" && custom ? custom : YEARS.get(personaId) ?? YEARS.get(PERSONAS[0].id)!;
   const [overrides, setOverrides] = useState<Record<string, string>>({});
@@ -58,7 +64,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
   setValuation(valuation);
   // valuation is read inside the engine, so it must re-run when it changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const r = useMemo(() => receipt(wallet, txns), [wallet, txns, valuation]);
+  const r = useMemo(() => receipt(held, txns), [held, txns, valuation]);
 
   const store: Store = {
     persona,
@@ -66,11 +72,21 @@ export function AceProvider({ children }: { children: ReactNode }) {
       const p = PERSONAS.find((x) => x.id === id)!;
       setPersonaId(id);
       setWallet(p.wallet);
+      setTrials([]);
     },
     wallet,
     setWallet,
     addCard: (id) => setWallet((w) => (w.some((h) => h.cardId === id) || w.length >= 5 ? w : [...w, { cardId: id }])),
-    removeCard: (id) => setWallet((w) => (w.length <= 1 ? w : w.filter((h) => h.cardId !== id))),
+    tryCard: (id) => {
+      if (wallet.some((h) => h.cardId === id) || wallet.length >= 5) return;
+      setTrials((t) => [...t, id]);
+      setWallet((w) => [...w, { cardId: id }]);
+    },
+    held,
+    removeCard: (id) => {
+      setTrials((t) => t.filter((x) => x !== id));
+      setWallet((w) => (w.length <= 1 ? w : w.filter((h) => h.cardId !== id)));
+    },
     toggleBalance: (id) =>
       setWallet((w) =>
         w.map((h) => (h.cardId === id ? (h.balance ? { ...h, balance: 0 } : { ...h, balance: 2000, apr: h.apr ?? 24.99 }) : h)),

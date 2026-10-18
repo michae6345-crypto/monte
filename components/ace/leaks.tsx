@@ -32,7 +32,7 @@ const go = (chapter: string, tab?: string) => {
 };
 
 export function LeaksSection() {
-  const { wallet, txns, r, persona, valuation } = useAce();
+  const { held: wallet, txns, r, persona, valuation } = useAce();
   const nm = nameOf(persona);
   const who = nm.who;
 
