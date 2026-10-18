@@ -15,12 +15,12 @@ export function RealSection() {
       tone: "text-ace-ink",
       items: [
         ["Card terms", `${CARDS.length} cards: earn rates, caps, rotations, credits, fees, APRs, each with the issuer page and the date checked (17 Oct 2026).`],
+        ["Plaid code", "Built, but not connected here: this deployment has no Plaid keys, so the page stays on the five people."],
         ["The engine", "Picking the right card, card limits, the receipt, leaks, odd charges, the payoff plan, keep or cancel and the next card are arithmetic on those terms. Same input, same output."],
         ["Monte Carlo", "1,000 simulated years per wallet, from the person's own months, repeatable. The odds are counts, not a model's opinion."],
         ["Solver check", "A solver checks the right-card picks against every possible assignment, card limits included. 36 engine tests pass."],
         ["Your statement", "A Chase, Amex or Capital One CSV is parsed in your browser. Nothing is uploaded."],
         ["Merchant corrections", "Re-categorise a store once in Every purchase and every purchase there is replayed."],
-        ["Plaid code", "Built, but not connected here: this deployment has no Plaid keys, so the page stays on the five people."],
       ],
     },
     {
