@@ -10,6 +10,25 @@ export function Stage({ vh = 240, children, className }: { vh?: number; children
   const [p, setP] = useState(0);
   // pinning only where there's room for it; phones and small screens get the finished view
   const [pin, setPin] = useState(true);
+  // the pinned block is as tall as its content and centred by its sticky offset, so there is
+  // no empty band between a heading and the stage (audit 2, #15)
+  const inner = useRef<HTMLDivElement>(null);
+  const [top, setTop] = useState(56);
+  useEffect(() => {
+    const el = inner.current;
+    if (!el) return;
+    const fit = () => setTop(Math.max(56, 56 + (window.innerHeight - 56 - el.offsetHeight) / 2));
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    // and once now: observers wait for a paint, which a background tab may never do
+    const t = window.setTimeout(fit, 0);
+    window.addEventListener("resize", fit);
+    return () => {
+      clearTimeout(t);
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+    };
+  }, [pin]);
   // plain scroll events (not animation frames), so it tracks in every browser state
   useEffect(() => {
     const el = ref.current;
@@ -44,8 +63,8 @@ export function Stage({ vh = 240, children, className }: { vh?: number; children
     );
   return (
     <div ref={ref} className={className} style={{ height: `${vh}vh` }}>
-      <div className="sticky top-14 flex min-h-[calc(100svh-3.5rem)] items-center">
-        <div className="w-full">{children(p)}</div>
+      <div ref={inner} className="sticky" style={{ top }}>
+        {children(p)}
       </div>
     </div>
   );

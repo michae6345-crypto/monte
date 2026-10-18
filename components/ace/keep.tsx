@@ -264,9 +264,11 @@ export function ForYouSection() {
       const unused = c.credits.filter((cr) => cr.period === "month" && (h.creditsUsed?.[cr.name] ?? 0) < creditPerYear(cr));
       if (unused.length)
         out.push({
-          tag: "Expires Oct 31",
+          tag: "Monthly perks",
           tone: "gold",
-          text: `${shortName(h.cardId)}: $${unused.reduce((a, cr) => a + cr.amount, 0)} of October perks unused (${unused.map((cr) => `${cr.name} $${cr.amount}`).join(", ")}).`,
+          text: `${shortName(h.cardId)}: ${unused
+            .map((cr) => `${cr.name} used $${Math.round(h.creditsUsed?.[cr.name] ?? 0)} of $${creditPerYear(cr)} this year`)
+            .join("; ")}. Each month's credit expires at month end.`,
         });
       const m = marginalValue(wallet, txns, h.cardId);
       if (c.annual_fee > 0 && m.net < 25)
@@ -292,9 +294,9 @@ export function ForYouSection() {
       lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot here. Every number assumes the card is paid in full each month.`}
     >
       <div className="grid gap-8 lg:grid-cols-[320px_1fr] [&>*]:min-w-0">
-        <div className="space-y-6 m-panel p-6">
+        <div className="space-y-6 self-start m-panel p-6 lg:sticky lg:top-20">
           <div>
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">What {b.name} learned</div>
+            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Where the money goes</div>
             <ul className="mt-3 space-y-2 text-sm">
               {spend.top.map(([cat, v]) => (
                 <li key={cat} className="flex justify-between">
