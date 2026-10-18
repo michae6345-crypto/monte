@@ -267,11 +267,11 @@ export function PayoffSection() {
               </p>
               <div className="mt-5 space-y-2 text-xl">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm">typical next year, balance still owed</span>
+                  <span className="text-sm">typical next year on the right card, balance still owed</span>
                   <span className={`m-num ${proj.now.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.now.current.p50, { sign: true })}</span>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm">typical next year, balance paid off</span>
+                  <span className="text-sm">typical next year on the right card, balance paid off</span>
                   <span className={`m-num ${proj.after.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(proj.after.current.p50, { sign: true })}</span>
                 </div>
               </div>

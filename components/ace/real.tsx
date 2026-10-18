@@ -17,10 +17,10 @@ export function RealSection() {
         ["Card terms", `${CARDS.length} cards: earn rates, caps, rotations, credits, fees, APRs, each with the issuer page and the date checked (17 Oct 2026).`],
         ["The engine", "Picking the right card, card limits, the receipt, leaks, odd charges, the payoff plan, keep or cancel and the next card are arithmetic on those terms. Same input, same output."],
         ["Monte Carlo", "1,000 simulated years per wallet, from the person's own months, repeatable. The odds are counts, not a model's opinion."],
-        ["Solver check", "A solver checks the right-card picks against every possible assignment, card limits included. 35 engine tests pass."],
+        ["Solver check", "A solver checks the right-card picks against every possible assignment, card limits included. 36 engine tests pass."],
         ["Your statement", "A Chase, Amex or Capital One CSV is parsed in your browser. Nothing is uploaded."],
         ["Merchant corrections", "Re-categorise a store once in Every purchase and every purchase there is replayed."],
-        ["Plaid code", "Bank-linking code for Plaid's test banks. It is switched off in this demo, so the page stays on the five people."],
+        ["Plaid code", "Built, but not connected here: this deployment has no Plaid keys, so the page stays on the five people."],
       ],
     },
     {
@@ -37,7 +37,7 @@ export function RealSection() {
       tag: "Next",
       tone: "text-ace-dim",
       items: [
-        ["Bank linking", "Built and switched off in this demo. Turned on, it reads transactions and balances, never card numbers. Production needs Plaid's review."],
+        ["Bank linking", "With Plaid keys it reads transactions and balances, never card numbers. Production needs Plaid's review."],
         ["The merchant map", "Issuers don't publish which codes count as dining. Today a correction applies to every purchase at that store, in your browser; next, it improves the map for everyone."],
         ["At the register", `${b.name} in the phone's wallet, so the pick appears before you tap.`],
       ],

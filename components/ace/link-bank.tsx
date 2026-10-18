@@ -42,7 +42,7 @@ export function LinkBank() {
     }
   };
 
-  // no keys on this deploy: Real vs simulated says so, so the first view doesn't open on "switched off"
+  // no keys on this deploy: Real vs simulated says so, so the first view doesn't open on a missing-keys note
   if (configured !== true) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
