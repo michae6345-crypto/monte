@@ -4,22 +4,26 @@
 // It reads the cap counters that sync already wrote, ranks the wallet against them, and
 // returns a winner. The cost does not grow with how long you have been a customer.
 //
-// Body: { merchant, amount, category, date? }
+// Auth: Authorization: Bearer <Supabase access token>. Body: { merchant, amount, category, date? }
 // Returns: { pick, ranked, capNotes, blocked, ms }
 
 import { NextResponse } from "next/server";
 import { evaluate, pointValue, type Holding, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
-import { capMapFrom, type CapRow } from "@/lib/db/cap-state";
-import { serviceDb, notConfigured } from "@/lib/db/client";
+import { capMapFrom, choiceFor, type CapRow } from "@/lib/db/cap-state";
+import { serviceDb, notConfigured, requestUser, unauthorized } from "@/lib/db/client";
 
 
-type Body = { merchant?: string; amount?: number; category?: string; date?: string; userId?: string };
+type Body = { merchant?: string; amount?: number; category?: string; date?: string };
 
 export async function POST(req: Request) {
   const t0 = performance.now();
   const db = serviceDb();
   if (!db) return NextResponse.json(notConfigured, { status: 503 });
+
+  // Scope to the token's user, never a body userId (the service client bypasses RLS).
+  const userId = await requestUser(req, db);
+  if (!userId) return NextResponse.json(unauthorized, { status: 401 });
 
   let body: Body;
   try {
@@ -27,10 +31,11 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "bad_json" }, { status: 400 });
   }
-  const { merchant, amount, category, date, userId } = body;
-  if (!merchant || typeof amount !== "number" || !category || !userId) {
-    return NextResponse.json({ error: "merchant, amount, category and userId are required" }, { status: 400 });
+  const { merchant, amount, category, date } = body;
+  if (!merchant || typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0 || !category) {
+    return NextResponse.json({ error: "merchant, category and a positive amount are required" }, { status: 400 });
   }
+  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
 
   // Two reads, both indexed: the wallet, and only the cap rows for the periods this
   // purchase could touch. Never the transaction history.
@@ -54,7 +59,8 @@ export async function POST(req: Request) {
   const ranked = wallet
     .map((h) => {
       const c = card(h.cardId);
-      const ev = evaluate(c, txn, used, null);
+      // choiceFor: a pick-one card earns its bonus on the chosen category only, never all six.
+      const ev = evaluate(c, txn, used, choiceFor(h.cardId, []));
       // The one rule the engine never breaks: a card carrying a balance is not a
       // candidate. New spending on it accrues interest from the day it posts, so any
       // reward it pays is a discount on a loan you are losing.

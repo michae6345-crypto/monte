@@ -4,21 +4,27 @@
 // purchases, works out what every cap pool has already consumed, and stores those
 // counters. After this runs, a tap never touches the history again.
 //
-// Body: { userId, source?: "plaid" | "upload", txns?, wallet? }
+// Auth: Authorization: Bearer <Supabase access token>. Body: { txns, wallet, itemId? }
 // Returns: { purchases, capRows, ms }
 
 import { NextResponse } from "next/server";
 import type { Holding, Txn } from "@/lib/engine";
 import { capStateFrom } from "@/lib/db/cap-state";
-import { serviceDb, notConfigured } from "@/lib/db/client";
+import { serviceDb, notConfigured, requestUser, unauthorized } from "@/lib/db/client";
+import { card } from "@/lib/engine/catalog";
 
 
-type Body = { userId?: string; txns?: Txn[]; wallet?: Holding[]; itemId?: string };
+type Body = { txns?: Txn[]; wallet?: Holding[]; itemId?: string };
 
 export async function POST(req: Request) {
   const t0 = performance.now();
   const db = serviceDb();
   if (!db) return NextResponse.json(notConfigured, { status: 503 });
+
+  // The user is whoever the access token says, never a userId in the body: the service
+  // client bypasses RLS, so trusting the body would let anyone overwrite anyone's wallet.
+  const userId = await requestUser(req, db);
+  if (!userId) return NextResponse.json(unauthorized, { status: 401 });
 
   let body: Body;
   try {
@@ -26,10 +32,14 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "bad_json" }, { status: 400 });
   }
-  const { userId, txns, wallet, itemId } = body;
-  if (!userId || !Array.isArray(txns) || !Array.isArray(wallet)) {
-    return NextResponse.json({ error: "userId, txns and wallet are required" }, { status: 400 });
+  const { txns, wallet, itemId } = body;
+  if (!Array.isArray(txns) || !Array.isArray(wallet) || wallet.length === 0) {
+    return NextResponse.json({ error: "txns and a non-empty wallet are required" }, { status: 400 });
   }
+  const unknown = wallet.filter((h) => { try { card(h.cardId); return false; } catch { return true; } });
+  if (unknown.length) return NextResponse.json({ error: "unknown_card", cards: unknown.map((h) => h.cardId) }, { status: 400 });
+  const bad = txns.find((t) => !t?.id || !/^\d{4}-\d{2}-\d{2}$/.test(t.date ?? "") || typeof t.amount !== "number" || !Number.isFinite(t.amount));
+  if (bad) return NextResponse.json({ error: "bad_txn", txn: bad?.id ?? null }, { status: 400 });
 
   // 1. the cards they hold. Balance and APR come from the account, not a guess.
   const holdingRows = wallet.map((h) => ({
