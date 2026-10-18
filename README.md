@@ -185,7 +185,8 @@ is fully verified.
 | Path | What's there |
 |---|---|
 | `app/` | Pages (`/`, `/dashboard`, `/brand`) and the Plaid + health API routes |
-| `components/ace/` | The product's sections: receipt, replay, tap, keep, odds, presenter mode |
+| `components/ace/` | The product's sections: receipt, replay, tap, keep, odds, presenter mode, tap demo |
+| `components/monte-card/` | The simulated Monte card and why it isn't real |
 | `components/brand/`, `components/ui/` | The Monte mark, hand-drawn notes, and base UI parts |
 | `lib/engine/` | Rules engine, Monte Carlo, LP optimizer, provenance, statement CSV parser |
 | `lib/data/` | The five demo people and the Plaid mapping |
