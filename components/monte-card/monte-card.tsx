@@ -119,7 +119,7 @@ export function MonteCardDemo() {
 
           <p className="m-mono mt-4 text-center text-[11px] text-m-slate">one card in Apple Pay · charges your best card</p>
           <div>
-            <div className="m-label mb-2">where you are</div>
+            <div className="m-label mb-2">the store</div>
             <div className="flex flex-wrap gap-2">
               {SPOTS.map((s, k) => (
                 <button
@@ -184,9 +184,9 @@ export function MonteCardDemo() {
               </div>
 
               <div>
-                <div className="m-label mb-1.5">2 · ranking your cards</div>
+                <div className="m-label mb-1.5">2 · ranking {nameOf(persona).whose} cards</div>
                 {phase === "request" && <span>waiting for the request…</span>}
-                {phase === "ranking" && <Sampler label="Ranking your cards" className="text-xl" />}
+                {phase === "ranking" && <Sampler label={`Ranking ${nameOf(persona).whose} cards`} className="text-xl" />}
                 {phase === "done" &&
                   res.ranked.map((r, n) => (
                     <motion.div
@@ -199,7 +199,7 @@ export function MonteCardDemo() {
                       <span className={r.cardId === pick?.cardId ? "text-m-ink" : "text-m-slate"}>
                         {r.cardId === pick?.cardId ? "→ " : "  "}
                         {shortName(r.cardId)}
-                        {r.blocked && <span className="text-m-loss"> · skipped: carries a balance</span>}
+                        {r.blocked && <span className="font-semibold"> · skipped: carries a balance</span>}
                       </span>
                       <span className="text-m-slate">{r.rule}</span>
                       <span className={r.reward > 0 && !r.blocked ? "m-gain" : ""}>{money(r.reward, { cents: true, sign: true })}</span>
@@ -296,7 +296,7 @@ export function WhyNotRealCard() {
             <span className="text-m-slate">monte    </span>charges Amex Gold · merchant <span className="text-m-ink">MONTE</span> · not 5411
           </div>
           <div>
-            <span className="text-m-slate">amex     </span>sees no grocery store → <span className="m-loss">1× instead of 4×</span>
+            <span className="text-m-slate">amex     </span>sees no grocery store → <span className="font-semibold underline">1× instead of 4×</span>
           </div>
         </div>
       </div>
@@ -319,7 +319,7 @@ export function WhyNotRealCard() {
           ))}
         </ul>
         <p className="mt-auto pt-8 text-sm leading-relaxed text-[#c3cbff]">
-          The engine part works today: it ranked these cards in under a millisecond. Those four problems are why the Monte Card stays a
+          The engine part works today: the ranking above is its real output, timed on this page. Those four problems are why the Monte Card stays a
           simulation.
         </p>
       </div>

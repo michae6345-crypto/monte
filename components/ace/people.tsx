@@ -10,9 +10,9 @@ import { useAce } from "./store";
 const SITUATION: Record<string, string> = {
   jordan: "three cards, a balance",
   maya: "travels for points",
-  parks: "family of four",
+  parks: "two cards, one with a balance",
   sam: "one student card",
-  rosa: "income that swings",
+  rosa: "income that swings, a balance",
 };
 
 /** Five people, five kinds of wallet. A tap switches every section to that person's year. */

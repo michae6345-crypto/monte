@@ -53,7 +53,7 @@ export function OneCardView() {
                 {shortName(best.id)}
               </div>
               <p className="mt-1 text-sm">
-                On the same purchases it would have added <Bracketed>{money(best.w.net, { sign: true })}</Bracketed> a year{card(best.id).annual_fee ? " after its fee" : ""}, used only
+                On last year&apos;s purchases it would have added <Bracketed>{money(best.w.net, { sign: true })}</Bracketed>{card(best.id).annual_fee ? " after its fee" : ""}, used only
                 where it beats the {shortName(only.cardId)}.
               </p>
               <p className="mt-2 text-xs">Only if both are paid in full each month. A carried balance costs more than this earns.</p>

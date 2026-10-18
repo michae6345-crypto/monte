@@ -90,7 +90,7 @@ type Answer = { merchant?: string; picker: ReactNode; pickerCard?: string; monte
  *  and by Monte. Every figure is the engine's: tap() for the register, marginalValue() for fees. */
 function TwoAnswers() {
   const { held: wallet, txns, persona } = useAce();
-  const nm = nameOf(persona);
+  const nm = useMemo(() => nameOf(persona), [persona]);
   const a = useMemo<Answer | null>(() => {
     const visits = new Map<string, { t: Txn; n: number }>();
     for (const t of txns) {
@@ -105,7 +105,9 @@ function TwoAnswers() {
         pickerCard: wallet[0].cardId,
         monte: best && best.w.net > 1 && !wallet[0].balance
           ? <>A {shortName(best.id)} beside it would have added {money(best.w.net)} on last year&apos;s purchases, if both are paid in full.</>
-          : <>One card is the right call on this spending. Monte still checks it for interest, price rises and double charges.</>,
+          : wallet[0].balance
+            ? <>Pay down the {money(wallet[0].balance)} on it first: at {wallet[0].apr}% it costs {money(interestFor(wallet[0]))} a year. A second card waits until then.</>
+            : <>One card is the right call on this spending. Monte still checks it for interest, price rises and double charges.</>,
         monteCard: best && best.w.net > 1 && !wallet[0].balance ? best.id : wallet[0].cardId,
       };
     }
@@ -257,11 +259,11 @@ export function HowSection() {
             </Line>
             {trace.res.ranked.map((o) => (
               <Line key={o.cardId} k={o.cardId === trace.res.pick.cardId ? "pick" : "card"}>
-                <span className={o.cardId === trace.res.pick.cardId ? "text-white" : "text-white"}>
+                <span className={o.cardId === trace.res.pick.cardId ? "font-semibold text-white" : "text-white"}>
                   {o.cardId}: {o.rule} → {money(t.amount, { cents: true })} × {o.mult.toFixed(o.mult % 1 ? 1 : 0)} × {cents(o.cardId)}¢ ={" "}
                   {money(o.reward, { cents: true })}
                 </span>
-                {o.blocked ? <span style={{ color: "var(--ace-loss)" }}> · off limits: carries a balance</span> : null}
+                {o.blocked ? <span style={{ color: "#c3cbff" }}> · off limits: carries a balance</span> : null}
                 <span className="text-white"> · src {hostOf(card(o.cardId).source_urls[0])}, checked {card(o.cardId).checked ?? "2026-10-17"}</span>
               </Line>
             ))}

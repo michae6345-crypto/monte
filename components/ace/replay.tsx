@@ -175,7 +175,6 @@ export function ReplaySection() {
             {dots.map((d, i) => {
               const moveIt = passed(d.x);
               const y = moveIt ? d.yb : d.ya;
-              const card = moveIt ? d.cb : d.ca;
               return (
                 <motion.circle
                   key={d.id}
@@ -187,8 +186,8 @@ export function ReplaySection() {
                     cy: { type: "spring", stiffness: 90, damping: 14, delay: manual && d.moved ? (i % 60) * 0.012 : 0 },
                     opacity: { delay: (d.x / W) * 1.2, duration: 0.3 },
                   }}
-                  fill={moveIt ? (d.moved ? "var(--m-ink)" : "var(--m-mute)") : card === "apple_card" ? "#8f949c" : extractColor(card)}
-                  fillOpacity={moveIt && !d.moved ? 0.35 : 0.85}
+                  fill={moveIt && d.moved ? "var(--m-accent)" : "var(--m-ink)"}
+                  fillOpacity={moveIt && !d.moved ? 0.3 : 0.85}
                 />
               );
             })}
@@ -200,7 +199,7 @@ export function ReplaySection() {
             {view === "best" ? (
               <>
                 <span className="text-ace-ink">{moved} of {dots.length}</span> purchases should have gone on a different card. {b.name}{" "}
-                respects every cap and quarter{wallet.some((h) => h.balance) ? ", and never routes new spending to a card carrying a balance: those purchases start charging interest the day you make them" : ""}.
+                respects every cap and quarter{wallet.some((h) => h.balance) ? ", and never routes new spending to a card carrying a balance: those purchases start charging interest the day they post" : ""}.
               </>
             ) : (
               <>Flip to “What {b.name} would do” to re-route the year.</>
@@ -231,7 +230,3 @@ export function ReplaySection() {
   );
 }
 
-function extractColor(id: string) {
-  const m = cardArt(id).bg.match(/#[0-9a-f]{6}/gi);
-  return m ? m[1] ?? m[0] : "#888";
-}

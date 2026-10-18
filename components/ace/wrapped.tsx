@@ -130,7 +130,7 @@ export function WrappedSection() {
             </span>
             {shortName(best.cardId)}: <span className={best.net >= 0 ? "text-ace-gain" : "text-ace-loss"}>{money(best.net, { sign: true })}</span>.
             <span className="m-second block">
-              {shortName(worst.cardId)}: <span className="text-ace-loss">{money(worst.net, { sign: true })}</span>.
+              {shortName(worst.cardId)}: <span className={worst.net >= 0 ? "text-ace-gain" : "text-ace-loss"}>{money(worst.net, { sign: true })}</span>.
             </span>
           </>
         ),

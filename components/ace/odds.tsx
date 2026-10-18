@@ -6,7 +6,7 @@
 import { motion } from "framer-motion";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { monteCarlo, type MonteCarloResult, type Outcome } from "./mc";
-import { money, useAce } from "./store";
+import { money, nameOf, useAce } from "./store";
 import type { Holding, Txn } from "@/lib/engine";
 
 // One run per wallet state, shared by every section that shows odds.
@@ -79,6 +79,7 @@ const P = { l: 52, r: 16, t: 14, b: 26 };
 const MONTHS = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"];
 
 export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pick?: string; kind?: "add" | "drop" }) {
+  const nm = nameOf(useAce().persona);
   const adds = mc.options.filter((o) => o.id.startsWith(`${kind}:`));
   const [sel, setSel] = useState<string | null>(null);
   const o = adds.find((x) => x.id === (sel ?? pick)) ?? adds[0];
@@ -158,7 +159,7 @@ export function FanChart({ mc, pick, kind = "add" }: { mc: MonteCarloResult; pic
           {money(o.bands[11].p50)}
         </text>
         <text x={x(12) - 4} y={y(mc.current.bands[11].p50) + 16} textAnchor="end" fontSize={11} className="mono" style={{ fill: "var(--ace-dim)" }}>
-          {money(mc.current.bands[11].p50)} {mc.hypothetical ? "your cards, paid off" : "your cards"}
+          {money(mc.current.bands[11].p50)} {nm.whose} cards{mc.hypothetical ? ", paid off" : ""}
         </text>
       </svg>
       <div className="mono mt-2 flex flex-wrap justify-between gap-2 text-[11px] text-ace-dim">

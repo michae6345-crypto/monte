@@ -205,7 +205,7 @@ export function PayoffSection() {
           </div>
           <dl className="m-num mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-[var(--m-line)] text-[12px] sm:grid-cols-4">
             {[
-              ["your plan", span(mine.months), "ink"],
+              [`${money(monthly)} a month`, span(mine.months), "ink"],
               ["interest", money(-mine.interest, { sign: true }), "loss"],
               ["minimums", mins.months >= 600 ? "50+ yr" : span(mins.months), "dim"],
               ["interest at minimums", money(-mins.interest, { sign: true }), "loss"],
@@ -223,7 +223,7 @@ export function PayoffSection() {
           )}
           <p className="mt-3 text-[12px] leading-relaxed text-ace-dim">
             Interest charged monthly at the card&apos;s APR; the minimum is the month&apos;s interest plus 1% of the balance, at least $35 (a common
-            issuer formula). Monte keeps new spending off the card while you pay it down.
+            issuer formula).{wallet.length > 1 ? " Monte routes new spending to the other cards until it is paid off." : ""}
           </p>
           {swing && (
             <p className="mt-3 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-[13px] leading-relaxed">

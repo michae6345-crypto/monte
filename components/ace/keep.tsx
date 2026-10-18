@@ -69,10 +69,10 @@ export function KeepSection() {
               : wallet.length === 1 && m.fee <= 0
                 ? { label: "Keep", tone: "gain", why: `${who.Whose} only card, no annual fee: nothing to cancel.` }
                 : m.net >= 25
-                ? { label: "Keep", tone: "gain", why: `Adds ${money(m.rewardsAdded)}${wallet.length > 1 ? ` over ${who.whose} other cards` : ""}${m.credits ? ` plus ${money(m.credits)} of perks you use` : ""}.` }
+                ? { label: "Keep", tone: "gain", why: `Adds ${money(m.rewardsAdded)}${wallet.length > 1 ? ` over ${who.whose} other cards` : ""}${m.credits ? ` plus ${money(m.credits)} of perks ${who.who} ${v(who, "uses", "use")}` : ""}.` }
                 : m.fee > 0
                   ? { label: "Downgrade", tone: "loss", why: `The ${money(m.fee)} fee buys ${money(value)} of value for ${who.who}. Ask for a retention offer, or move to a no-fee ${issuer} card and keep the credit history.` }
-                  : { label: "Keep", tone: "dim", why: "No annual fee, so keeping it costs nothing. The other cards earn more everywhere, so it sits unused." };
+                  : { label: "Keep", tone: "dim", why: `No annual fee, so keeping it costs nothing. It adds ${money(m.rewardsAdded)} over ${who.whose} other cards.` };
           return (
             <motion.div
               key={h.cardId}
@@ -263,7 +263,7 @@ export function ForYouSection() {
         });
       }
       if (c.rotating?.activation_required)
-        out.push({ tag: "Activate", tone: "gold", text: `${shortName(h.cardId)}: 5% on ${(c.rotating.q4_2026_labels ?? c.rotating.q4_2026).slice(0, 2).join(" and ").toLowerCase()} this quarter, up to $${c.rotating.cap?.toLocaleString()}. Only if you activate it.` });
+        out.push({ tag: "Activate", tone: "gold", text: `${shortName(h.cardId)}: 5% on ${(c.rotating.q4_2026_labels ?? c.rotating.q4_2026).slice(0, 2).join(" and ").toLowerCase()} this quarter, up to $${c.rotating.cap?.toLocaleString()}. Only after activation.` });
       const unused = c.credits.filter((cr) => cr.period === "month" && (h.creditsUsed?.[cr.name] ?? 0) < creditPerYear(cr));
       if (unused.length)
         out.push({
@@ -288,7 +288,7 @@ export function ForYouSection() {
       id="foryou"
       index="07"
       kicker="What to apply for"
-      title={<>Ranked on your spending, not on referral fees.</>}
+      title={<>Ranked on {nameOf(persona).whose} spending, not on referral fees.</>}
       readout={
         <>
           <R>{CARDS.length}</R> cards scored on <R>{txns.length}</R> of {nameOf(persona).whose} purchases
@@ -352,7 +352,7 @@ export function ForYouSection() {
             {triedNow.length > 0 && (
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-ace-ink px-4 py-3 text-sm text-ace-bg">
                 <span>
-                  What-if: {triedNow.map(shortName).join(", ")} added. Every section on the page now includes {triedNow.length > 1 ? "them" : "it"}.
+                  What-if: {triedNow.map(shortName).join(", ")} added to next year&apos;s projections. Last year&apos;s receipt, replay and leaks still show the cards held.
                 </span>
                 <button
                   onClick={() => {
@@ -396,9 +396,9 @@ export function ForYouSection() {
                         bonus {x.bonus.label}{x.bonus.label.startsWith("$") ? "" : ` ≈ ${money(x.bonus.value)}`} ·{" "}
                         {x.hits
                           ? x.bonus.spend
-                            ? `you'd hit $${x.bonus.spend.toLocaleString()} in ${x.bonus.need.toFixed(1)} of ${x.bonus.months} months ✓`
+                            ? `${nameOf(persona).Who} would hit $${x.bonus.spend.toLocaleString()} in ${x.bonus.need.toFixed(1)} of ${x.bonus.months} months ✓`
                             : "first-year cash back matched, no minimum ✓"
-                          : `needs $${x.bonus.spend.toLocaleString()} in ${x.bonus.months} months, you'd take ${x.bonus.need.toFixed(1)}`}
+                          : `needs $${x.bonus.spend.toLocaleString()} in ${x.bonus.months} months; at ${nameOf(persona).whose} pace it takes ${x.bonus.need.toFixed(1)}`}
                       </div>
                     )}
                   </div>
@@ -406,7 +406,7 @@ export function ForYouSection() {
                   <span className="sm:text-right">
                     <span className={`mono block text-sm ${x.score >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(x.score, { sign: true })}</span>
                     <span className="mono block text-[11px] text-ace-dim">
-                      {horizon === "first" ? "first year, median" : "a year, median"}
+                      {horizon === "first" ? "first year, median" : "next year, median"}
                       {x.win !== undefined ? ` · ahead ${Math.round(x.win * priced.mc.years).toLocaleString()}/${priced.mc.years.toLocaleString()}` : ""}
                     </span>
                   </span>
@@ -425,7 +425,7 @@ export function ForYouSection() {
             </div>
           </div>
           <div>
-            <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">This week</div>
+            <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">Do next</div>
             <div className="space-y-3">
               {nudges.map((n, k) => (
                 <motion.div
@@ -455,8 +455,8 @@ export function ForYouSection() {
           <DriftToggle />
         </div>
         <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ace-dim">
-          Each simulated year redraws twelve of {nameOf(persona).whose} months; turn drift on to let each category move up or down too. Your
-          wallet is dashed, the new card is in blue. A card with no fee can only help; a card with a fee has to earn it.
+          Each simulated year redraws twelve of {nameOf(persona).whose} months; turn drift on to let each category move up or down too.{" "}
+          {nameOf(persona).Whose} wallet is dashed; the card added is blue. A card with no fee can only help; a card with a fee has to earn it.
         </p>
         {paidOff && paidOff.hypothetical ? (
           <>

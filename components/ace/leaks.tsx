@@ -78,7 +78,7 @@ export function LeaksSection() {
           amount: unused,
           counts: false,
           title: `Unused ${shortName(h.cardId)} credits`,
-          why: `${c.credits.map((cr) => cr.name).join(", ")}: ${money(unused)} a year of credits the fee pays for, not used. Only a loss if you'd have spent there anyway.`,
+          why: `${c.credits.map((cr) => cr.name).join(", ")}: ${money(unused)} a year of credits the fee pays for, not used. Only a loss if ${who} would have spent there anyway.`,
           fix: { label: "Keep or cancel", chapter: "plan", tab: "keep" },
           art: { card: h.cardId },
         });
@@ -102,7 +102,7 @@ export function LeaksSection() {
           amount: best.w.net,
           counts: false,
           title: `A second card: ${shortName(best.id)}`,
-          why: `A ${shortName(best.id)} beside it would have added ${money(best.w.net)} a year on the same purchases${card(best.id).annual_fee ? ", after its fee" : ""}. Only if both are paid in full.`,
+          why: `A ${shortName(best.id)} beside it would have added ${money(best.w.net)} on last year's purchases${card(best.id).annual_fee ? ", after its fee" : ""}. Only if both are paid in full.`,
           fix: { label: "What to apply for", chapter: "plan", tab: "apply" },
           art: { card: best.id },
         });

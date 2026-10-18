@@ -50,7 +50,7 @@ export function TapSection() {
     window.addEventListener("monte:tap", on);
     return () => window.removeEventListener("monte:tap", on);
   }, [SPOTS]);
-  const spot = SPOTS[i];
+  const spot = SPOTS[Math.min(i, SPOTS.length - 1)];
   const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
   const res = useMemo(
     () => tap(wallet, { date: "2026-10-18", merchant: spot.merchant, category: spot.category, amount: spot.amount }, history),
@@ -139,7 +139,7 @@ export function TapSection() {
                   >
                     <CardArt id={h.cardId} dim={!isPick} />
                     {h.balance ? (
-                      <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[10px] text-ace-loss shadow-[0_0_0_1px_var(--m-line-strong)]">
+                      <div className="m-mono absolute right-2 top-2 rounded-full bg-ace-panel px-2 py-0.5 text-[10px] text-ace-ink shadow-[0_0_0_1px_var(--m-line-strong)]">
                         carries a balance
                       </div>
                     ) : null}
@@ -156,7 +156,7 @@ export function TapSection() {
                 exit={{ opacity: 0 }}
                 className="absolute inset-x-4 bottom-5 z-30 rounded-2xl bg-ace-panel p-3.5 shadow-[0_0_0_1px_var(--m-line-strong)]"
               >
-                <div className="text-sm font-semibold leading-tight">{solving ? "ranking your cards" : shortName(pick.cardId)}</div>
+                <div className="text-sm font-semibold leading-tight">{solving ? "ranking the cards" : shortName(pick.cardId)}</div>
                 <div className="mt-1 flex items-baseline justify-between gap-2">
                   <span className={`text-3xl ${solving ? "text-ace-dim" : "text-ace-gain"}`} style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
                     <Bracketed state={solving ? "computing" : "resolved"}>{solving ? "···" : `+${money(pick.reward, { cents: true })}`}</Bracketed>

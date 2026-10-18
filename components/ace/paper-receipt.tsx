@@ -94,7 +94,7 @@ export function PaperReceipt({
           </div>
         </div>
 
-        <div className="m-mono my-4 overflow-hidden whitespace-nowrap text-[11px] leading-none text-ace-dim/60">{"- ".repeat(60)}</div>
+        <div className="m-mono my-4 overflow-hidden whitespace-nowrap text-[11px] leading-none text-ace-ink">{"- ".repeat(60)}</div>
 
         {/* one block per card */}
         <div className="m-mono space-y-5">
@@ -143,7 +143,7 @@ export function PaperReceipt({
           </AnimatePresence>
         </div>
 
-        <div className="m-mono my-4 overflow-hidden whitespace-nowrap text-[11px] leading-none text-ace-dim/60">{"= ".repeat(60)}</div>
+        <div className="m-mono my-4 overflow-hidden whitespace-nowrap text-[11px] leading-none text-ace-ink">{"= ".repeat(60)}</div>
 
         {/* totals */}
         <div className="m-mono space-y-1">
