@@ -10,7 +10,7 @@
 
 Rewards apps show you points. Jordan is 24, first job in LA, three cards. He earned **$552.69** in rewards last year
 and paid **$734.72** in interest on a $2,800 balance. His cards cost him **$427.03** more
-than they paid him. No rewards app would have told him that.
+than they paid him. No rewards app shows that number.
 
 ## What it does
 
