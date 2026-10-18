@@ -129,6 +129,7 @@ is fully verified.
 
 | Path | What's there |
 |---|---|
+| `app/` | Pages (`/`, `/dashboard`, `/brand`) and the Plaid + health API routes |
 
 ## Layout
 
