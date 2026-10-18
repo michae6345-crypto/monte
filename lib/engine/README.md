@@ -11,3 +11,4 @@ number comes from a rule in `data/cards.json` and the purchases it applied to.
 | `montecarlo.ts` | Resamples your months into 1,000 years and reruns the engine on each; seeded |
 | `lp.ts` | Solves the year as one LP to check greedy routing against an upper bound |
 | `provenance.ts` | Traces any dollar to its rule, arithmetic, source URL and checked date |
+| `statement.ts` | Parses a bank or card statement CSV in the browser; nothing is uploaded |
