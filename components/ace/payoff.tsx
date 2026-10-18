@@ -18,7 +18,7 @@ type Debt = { cardId: string; balance: number; apr: number };
 type Path = { months: number; interest: number; series: number[]; paid: number[] };
 
 /** Avalanche: pay the highest APR first, the rest at minimum, interest monthly at APR/12. */
-function payoff(debts: Debt[], monthly: number, cap = 600): Path {
+function payoff(debts: Debt[], monthly: number | ((m: number) => number), cap = 600): Path {
   const b = debts.map((d) => d.balance);
   const order = debts.map((d, i) => i).sort((x, y) => debts[y].apr - debts[x].apr);
   const series = [b.reduce((a, x) => a + x, 0)];
@@ -27,7 +27,7 @@ function payoff(debts: Debt[], monthly: number, cap = 600): Path {
   let m = 0;
   while (b.some((x) => x > 0.005) && m < cap) {
     m++;
-    let pay = monthly;
+    let pay = typeof monthly === "number" ? monthly : monthly(m);
     for (let i = 0; i < b.length; i++) {
       if (b[i] <= 0) continue;
       const int = (b[i] * debts[i].apr) / 100 / 12;
@@ -95,13 +95,26 @@ export function PayoffSection() {
     const hi = full.reduce((a, k) => (by.get(k)! > by.get(a)! ? k : a));
     const lo = full.reduce((a, k) => (by.get(k)! < by.get(a)! ? k : a));
     const ratio = by.get(hi)! / by.get(lo)!;
-    return ratio >= 2.5 ? { hi, lo, hiV: by.get(hi)!, loV: by.get(lo)! } : null;
+    // each calendar month's spending against the average month: the shape a payment can follow
+    const mean = full.reduce((a, k) => a + by.get(k)!, 0) / full.length;
+    const share = new Map(full.map((k) => [Number(k.slice(5, 7)), by.get(k)! / mean]));
+    return ratio >= 2.5 ? { hi, lo, hiV: by.get(hi)!, loV: by.get(lo)!, share } : null;
   }, [txns]);
   const mon = (k: string) => new Date(k + "-15T12:00").toLocaleDateString("en-US", { month: "short" });
   const [monthly, setMonthly] = useState(250);
 
   const mine = useMemo(() => payoff(debts, Math.max(monthly, debts.reduce((a, d) => a + (d.balance * d.apr) / 1200, 0) + 5)), [debts, monthly]);
   const mins = useMemo(() => minimums(debts), [debts]);
+  // income that swings: the same average payment, but more in busy months and the minimum in slow ones
+  const firstMonth = Number((txns.map((t) => t.date).sort().pop() ?? "2026-10").slice(5, 7));
+  const stepped = useMemo(() => {
+    if (!swing) return null;
+    const floor = debts.reduce((a, d) => a + Math.max(35, (d.balance * d.apr) / 1200 + d.balance * 0.01), 0);
+    const payFor = (m: number) => Math.max(floor, monthly * (swing.share.get(((firstMonth + m - 1) % 12) + 1) ?? 1));
+    const path = payoff(debts, payFor);
+    const pays = Array.from({ length: Math.max(1, path.months) }, (_, k) => payFor(k + 1));
+    return { ...path, lo: Math.min(...pays), hi: Math.max(...pays) };
+  }, [swing, debts, monthly, firstMonth]);
 
   // the engine's projection of the paid-off wallet (explicitly hypothetical)
   const proj = useMemo(() => {
@@ -227,9 +240,19 @@ export function PayoffSection() {
           </p>
           {swing && (
             <p className="mt-3 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-[13px] leading-relaxed">
-              {nm.Whose} spending runs from {money(swing.loV)} ({mon(swing.lo)}) to {money(swing.hiV)} ({mon(swing.hi)}). In a slow month, pay at
-              least the {money(firstMinimum)} minimum so there&apos;s no late fee, and make it up in the next busy one: each month the balance stays
-              costs about {money(firstInterest)} in interest.
+              {nm.Whose} spending runs from {money(swing.loV)} ({mon(swing.lo)}) to {money(swing.hiV)} ({mon(swing.hi)}).
+              {stepped && (
+                <>
+                  {" "}
+                  Paying in step with those months ({money(stepped.lo)} in the slowest, {money(stepped.hi)} in the busiest, {money(monthly)} on
+                  average) clears it in <span className="m-num">{span(stepped.months)}</span> with{" "}
+                  <span className="m-num">{money(stepped.interest)}</span> of interest
+                  {Math.abs(stepped.interest - mine.interest) >= 1
+                    ? `, ${money(Math.abs(stepped.interest - mine.interest))} ${stepped.interest > mine.interest ? "more" : "less"} than a flat ${money(monthly)} that a slow month may not cover.`
+                    : `, the same as a flat ${money(monthly)}.`}
+                </>
+              )}{" "}
+              Never less than the {money(firstMinimum)} minimum: a missed one adds a late fee.
             </p>
           )}
         </div>
