@@ -43,3 +43,6 @@ next-env.d.ts
 .vercel
 
 .claude/
+
+# keep the template, which has no real values
+!.env.example
