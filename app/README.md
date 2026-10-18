@@ -8,3 +8,4 @@ Next.js App Router.
 | `dashboard/` | Every demo wallet side by side |
 | `brand/` | The brand sheet: mark, colours, type |
 | `opengraph-image.tsx` | The link-preview card |
+| `api/health/` | Health check; no Plaid call, so it can't fail on a missing key |
