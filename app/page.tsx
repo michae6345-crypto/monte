@@ -9,6 +9,8 @@ import { ReplaySection } from "@/components/ace/replay";
 import { TapSection } from "@/components/ace/tap";
 import { ForYouSection, KeepSection } from "@/components/ace/keep";
 import { Footer, HowSection, MoatSection } from "@/components/ace/moat";
+import { RealSection } from "@/components/ace/real";
+import { Presenter } from "@/components/ace/presenter";
 
 export default function Home() {
   return (
@@ -27,9 +29,11 @@ export default function Home() {
             <ForYouSection />
             <MoatSection />
             <HowSection />
+            <RealSection />
           </main>
           <Footer />
           <KitGate />
+          <Presenter />
         </div>
       </AceProvider>
     </BrandProvider>

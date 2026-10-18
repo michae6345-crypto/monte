@@ -56,7 +56,7 @@ function SolverBand() {
   const strategies = useMemo(() => jordanStrategies(JORDAN.wallet, JORDAN.name), []);
 
   return (
-    <section className="relative border-t border-ace-line bg-ace-panel py-20 md:py-28">
+    <section id="solver" className="relative scroll-mt-16 border-t border-ace-line bg-ace-panel py-20 md:py-28">
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
         <div>
           <p className="mono mb-6 text-[11px] uppercase tracking-[0.22em] text-ace-dim">

@@ -2,7 +2,7 @@
 
 import { useBrand } from "./brands";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { tap } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
@@ -29,6 +29,15 @@ export function TapSection() {
   const { wallet, txns } = useAce();
   const { brand: b } = useBrand();
   const [i, setI] = useState(0);
+  // presenter mode jumps straight to a merchant
+  useEffect(() => {
+    const on = (e: Event) => {
+      const k = SPOTS.findIndex((s) => s.merchant === (e as CustomEvent<string>).detail);
+      if (k >= 0) setI(k);
+    };
+    window.addEventListener("monte:tap", on);
+    return () => window.removeEventListener("monte:tap", on);
+  }, []);
   const spot = SPOTS[i];
   const history = useMemo(() => txns.filter((t) => t.date >= "2026-10-01"), [txns]);
   const res = useMemo(
