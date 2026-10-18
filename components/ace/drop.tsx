@@ -1,8 +1,8 @@
 "use client";
 
-// The hero: real cards dealt onto the table with rigid-body physics (Matter.js). A few fall on
-// load; the rest are dealt as you scroll, Jordan's three last, each carrying what it cost him.
-// On a mouse you can pick a card up and throw it.
+// The hero: real cards on a table, with rigid-body physics (Matter.js). Jordan's three cards
+// drop on load, each carrying what it cost him; scrolling deals the rest of the market around
+// them. With a mouse you can pick a card up and throw it. Touch only scrolls.
 
 import Matter from "matter-js";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -12,7 +12,10 @@ import { useBrand } from "./brands";
 import { CardArt, shortName } from "./card-art";
 import { money } from "./store";
 
+const MINE = JORDAN.wallet.map((h) => h.cardId);
+// Jordan's first, then the market in the order it's dealt. Phones skip the last three.
 const DECK = [
+  ...MINE,
   "amex_platinum",
   "chase_sapphire_preferred",
   "capital_one_venture_x",
@@ -20,20 +23,24 @@ const DECK = [
   "discover_it_cash_back",
   "bilt_obsidian",
   "wells_fargo_autograph",
-  ...JORDAN.wallet.map((h) => h.cardId),
 ];
-const ON_LOAD = 4;
+const PHONE_SKIP = new Set(["discover_it_cash_back", "bilt_obsidian", "wells_fargo_autograph"]);
+const STEP = 1000 / 60;
 
+/** Next frame, with a timer fallback for tabs that never paint (background, some projectors). */
 function frame(cb: () => void) {
   let done = false;
+  let b = 0;
   const run = () => {
     if (done) return;
     done = true;
+    clearTimeout(b);
     cb();
   };
   const a = requestAnimationFrame(run);
-  const b = window.setTimeout(run, 40);
+  b = window.setTimeout(run, 100);
   return () => {
+    done = true;
     cancelAnimationFrame(a);
     clearTimeout(b);
   };
@@ -68,74 +75,111 @@ export function DropHero() {
   const stage = useRef<HTMLDivElement>(null);
   const els = useRef<(HTMLDivElement | null)[]>([]);
   const tagEls = useRef<(HTMLDivElement | null)[]>([]);
-  const [dealt, setDealt] = useState(0);
+  const [allDealt, setAllDealt] = useState(false);
 
   useEffect(() => {
     const st = stage.current;
     const tr = track.current;
     if (!st || !tr) return;
-    const { Engine, Bodies, Composite, Body, Mouse, MouseConstraint, Events } = Matter;
+    const { Engine, Bodies, Composite, Body, Constraint, Query, Sleeping } = Matter;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const fine = window.matchMedia("(pointer: fine)").matches;
     const r = rng(7);
 
-    const engine = Engine.create({ gravity: { x: 0, y: 1.1 } });
+    const engine = Engine.create({ gravity: { x: 0, y: 1.1 }, enableSleeping: true });
     let W = st.clientWidth;
     let H = st.clientHeight;
-    const cw = () => (W < 640 ? Math.max(104, W * 0.29) : Math.max(150, Math.min(220, W * 0.155)));
+    const phone = () => W < 640;
+    const cw = () => (phone() ? Math.max(104, W * 0.3) : Math.max(150, Math.min(220, W * 0.155)));
     let CW = cw();
     let CH = CW / 1.586;
 
     const walls: Matter.Body[] = [];
     const buildWalls = () => {
       Composite.remove(engine.world, walls.splice(0));
-      const t = 200;
+      const t = 400;
       walls.push(
         Bodies.rectangle(W / 2, H + t / 2 - 6, W * 3, t, { isStatic: true, friction: 0.9 }),
-        Bodies.rectangle(-t / 2, H / 2 - 1000, t, H * 4 + 2000, { isStatic: true }),
-        Bodies.rectangle(W + t / 2, H / 2 - 1000, t, H * 4 + 2000, { isStatic: true }),
+        Bodies.rectangle(-t / 2, H / 2 - 1200, t, H * 4 + 2400, { isStatic: true }),
+        Bodies.rectangle(W + t / 2, H / 2 - 1200, t, H * 4 + 2400, { isStatic: true }),
       );
       Composite.add(engine.world, walls);
     };
-    buildWalls();
 
     const bodies: (Matter.Body | null)[] = DECK.map(() => null);
     const shown: boolean[] = DECK.map(() => false);
-    const skip = (i: number) => W < 640 && i < 3;
+    const order = () => DECK.map((_, i) => i).filter((i) => !(phone() && PHONE_SKIP.has(DECK[i])));
+    const live = () => bodies.filter((x): x is Matter.Body => !!x);
+
     const spawn = (i: number) => {
-      if (bodies[i] || skip(i)) return;
-      const jordan = i >= DECK.length - JORDAN.wallet.length;
-      const k = i - (DECK.length - JORDAN.wallet.length);
-      const x = jordan ? W * (0.3 + k * 0.2) + (r() - 0.5) * 40 : CW / 2 + r() * (W - CW);
-      const body = Bodies.rectangle(x, -CH - r() * 160, CW, CH, {
+      if (bodies[i]) return;
+      const mine = i < MINE.length;
+      const x = mine ? W * (0.24 + i * 0.26) + (r() - 0.5) * 30 : CW / 2 + r() * (W - CW);
+      const body = Bodies.rectangle(x, -CH - r() * 140, CW, CH, {
         chamfer: { radius: CW * 0.045 },
-        restitution: 0.32,
+        restitution: 0.3,
         friction: 0.55,
         frictionAir: 0.014,
         density: 0.0022,
-        angle: (r() - 0.5) * 0.9,
+        angle: (r() - 0.5) * (mine ? 0.5 : 0.9),
+        sleepThreshold: 50,
       });
-      Body.setAngularVelocity(body, (r() - 0.5) * 0.12);
-      Body.setVelocity(body, { x: (r() - 0.5) * 3, y: 2 + r() * 3 });
+      Body.setAngularVelocity(body, (r() - 0.5) * 0.1);
+      Body.setVelocity(body, { x: (r() - 0.5) * 2.5, y: 2 + r() * 3 });
       bodies[i] = body;
       Composite.add(engine.world, body);
     };
 
-    let mc: Matter.MouseConstraint | null = null;
-    if (fine && !reduce) {
-      const mouse = Mouse.create(st);
-      // Matter's mouse swallows the wheel; give scrolling back to the page.
-      const mm = mouse as unknown as { mousewheel: EventListener };
-      st.removeEventListener("wheel", mm.mousewheel);
-      st.removeEventListener("mousewheel", mm.mousewheel);
-      st.removeEventListener("DOMMouseScroll", mm.mousewheel);
-      mc = MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.18, damping: 0.1 } });
-      Composite.add(engine.world, mc);
-      Events.on(mc, "startdrag", () => (st.style.cursor = "grabbing"));
-      Events.on(mc, "enddrag", () => (st.style.cursor = ""));
+    // ---- drag and throw, mouse only (touch keeps scrolling the page) ----
+    let grab: Matter.Constraint | null = null;
+    const local = (e: PointerEvent) => {
+      const rc = st.getBoundingClientRect();
+      return { x: e.clientX - rc.left, y: e.clientY - rc.top };
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      const p = local(e);
+      const hit = Query.point(live(), p).pop();
+      if (!hit) return;
+      e.preventDefault();
+      Sleeping.set(hit, false);
+      grab = Constraint.create({
+        pointA: p,
+        bodyB: hit,
+        pointB: { x: p.x - hit.position.x, y: p.y - hit.position.y },
+        stiffness: 0.2,
+        damping: 0.1,
+        length: 0,
+      });
+      Composite.add(engine.world, grab);
+      st.style.cursor = "grabbing";
+      wake();
+    };
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      const p = local(e);
+      if (grab) {
+        grab.pointA = p;
+        wake();
+        return;
+      }
+      st.style.cursor = Query.point(live(), p).length ? "grab" : "";
+    };
+    const onUp = () => {
+      if (!grab) return;
+      Composite.remove(engine.world, grab);
+      grab = null;
+      st.style.cursor = "";
+    };
+    if (!reduce) {
+      st.addEventListener("pointerdown", onDown);
+      st.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("blur", onUp);
     }
 
+    // ---- painting ----
     const paint = () => {
+      const placed: { x: number; y: number; w: number }[] = [];
       bodies.forEach((bd, i) => {
         const el = els.current[i];
         if (!el) return;
@@ -146,85 +190,143 @@ export function DropHero() {
         el.style.opacity = "1";
         el.style.transform = `translate3d(${bd.position.x - CW / 2}px, ${bd.position.y - CH / 2}px, 0) rotate(${bd.angle}rad)`;
         const tg = tagEls.current[i];
-        if (tg) {
-          // show once the card comes to rest; hide only while it's being thrown around
-          if (!shown[i] && bd.speed < 0.5 && bd.position.y > 0) shown[i] = true;
-          else if (shown[i] && bd.speed > 6) shown[i] = false;
-          const top = Math.max(CH * 0.2, bd.position.y - Math.abs(Math.sin(bd.angle)) * (CW / 2) - Math.abs(Math.cos(bd.angle)) * (CH / 2) - 10);
-          tg.style.transform = `translate3d(${bd.position.x}px, ${top}px, 0) translate(-50%, -100%)`;
-          tg.style.opacity = shown[i] ? "1" : "0";
-        }
+        if (!tg) return;
+        if (!shown[i] && bd.speed < 0.6 && bd.position.y > 0) shown[i] = true;
+        else if (shown[i] && bd.speed > 6) shown[i] = false;
+        // above the card's top edge, kept on screen and clear of the other tags
+        const w = tg.offsetWidth || 220;
+        const top = bd.position.y - Math.abs(Math.sin(bd.angle)) * (CW / 2) - Math.abs(Math.cos(bd.angle)) * (CH / 2) - 10;
+        const x = Math.max(8 + w / 2, Math.min(W - 8 - w / 2, bd.position.x));
+        let y = Math.max(CH * 0.25, top);
+        for (const p of placed) if (Math.abs(p.x - x) < (p.w + w) / 2 + 6 && Math.abs(p.y - y) < 30) y = p.y - 32;
+        placed.push({ x, y, w });
+        tg.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%)`;
+        tg.style.opacity = shown[i] ? "1" : "0";
       });
+    };
+
+    const settle = () => {
+      for (const i of order()) spawn(i);
+      for (let s = 0; s < 900; s++) Engine.update(engine, STEP);
     };
 
     const size = () => {
       W = st.clientWidth;
       H = st.clientHeight;
+      if (W < 60 || H < 60) return;
       const next = cw();
       if (Math.abs(next - CW) > 8) {
         const s = next / CW;
-        bodies.forEach((bd) => bd && Body.scale(bd, s, s));
+        live().forEach((bd) => Body.scale(bd, s, s));
         CW = next;
         CH = CW / 1.586;
-        els.current.forEach((el) => el && (el.style.width = `${CW}px`));
       }
+      els.current.forEach((el) => el && (el.style.width = `${CW}px`));
       buildWalls();
+      // keep every card inside the new walls
+      live().forEach((bd) => {
+        const x = Math.max(CW / 2, Math.min(W - CW / 2, bd.position.x));
+        const y = Math.min(H - CH / 2, bd.position.y);
+        if (x !== bd.position.x || y !== bd.position.y) {
+          Body.setPosition(bd, { x, y });
+          Sleeping.set(bd, false);
+        }
+      });
+      if (reduce) settle();
+      else wake();
+      paint();
     };
-    els.current.forEach((el) => el && (el.style.width = `${CW}px`));
 
-    // how many cards the scroll position has dealt
-    const target = () => {
+    // which cards the scroll position has dealt (Jordan's are dealt on load)
+    const want = () => {
       const rect = tr.getBoundingClientRect();
       const span = rect.height - window.innerHeight;
       const p = span > 0 ? Math.min(1, Math.max(0, -rect.top / span)) : 1;
-      return Math.min(DECK.length, ON_LOAD + Math.floor((p / 0.7) * (DECK.length - ON_LOAD) + 1e-6));
+      const ids = order();
+      const extra = ids.length - MINE.length;
+      return ids.slice(0, MINE.length + Math.floor(Math.min(1, p / 0.75) * extra + 1e-6));
     };
 
-    let n = 0;
     let cancel = () => {};
-    let alive = true;
+    let running = false;
+    let visible = true;
     let last = performance.now();
-    let stagger = 0;
+    let acc = 0;
+    let lastSpawn = 0;
+    let finished = false;
 
-    if (reduce) {
-      for (let i = 0; i < DECK.length; i++) spawn(i);
-      for (let s = 0; s < 900; s++) Engine.update(engine, 1000 / 60);
-      n = DECK.length;
-      cancel = frame(() => setDealt(DECK.length));
-      paint();
-    } else {
-      const loop = () => {
-        if (!alive) return;
-        const now = performance.now();
-        // a tab opened in the background can have no size yet: wait for one
-        if (W < 60 || H < 60) {
-          if (st.clientWidth >= 60 && st.clientHeight >= 60) size();
-          last = now;
-          cancel = frame(loop);
-          return;
-        }
-        const want = target();
-        if (n < want && now - stagger > 140) {
-          spawn(n++);
-          stagger = now;
-          setDealt(n);
-        }
-        const dt = Math.min(1000 / 30, now - last);
+    const loop = () => {
+      running = false;
+      if (!visible) return;
+      const now = performance.now();
+      if (W < 60 || H < 60) {
+        size();
         last = now;
-        Engine.update(engine, dt);
-        paint();
+        running = true;
         cancel = frame(loop);
-      };
+        return;
+      }
+      for (const i of want()) {
+        if (!bodies[i] && now - lastSpawn > 150) {
+          spawn(i);
+          lastSpawn = now;
+        }
+      }
+      const done = order().every((i) => bodies[i]);
+      if (done !== finished) {
+        finished = done;
+        setAllDealt(done);
+      }
+      acc += Math.min(100, now - last);
+      last = now;
+      let n = 0;
+      while (acc >= STEP && n < 3) {
+        Engine.update(engine, STEP);
+        acc -= STEP;
+        n++;
+      }
+      if (n === 3) acc = 0;
+      paint();
+      const asleep = live().every((bd) => bd.isSleeping);
+      if (asleep && done && !grab) return; // rest until scrolling, a drag or a resize wakes us
+      running = true;
+      cancel = frame(loop);
+    };
+    function wake() {
+      if (running || reduce) return;
+      running = true;
+      last = performance.now();
       cancel = frame(loop);
     }
 
+    buildWalls();
+    els.current.forEach((el) => el && (el.style.width = `${CW}px`));
+    if (reduce) {
+      size();
+      settle();
+      paint();
+      cancel = frame(() => setAllDealt(true));
+    } else wake();
+
+    const onScroll = () => wake();
+    window.addEventListener("scroll", onScroll, { passive: true });
     const ro = new ResizeObserver(size);
     ro.observe(st);
+    const io = new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible) wake();
+    });
+    io.observe(tr);
+
     return () => {
-      alive = false;
       cancel();
       ro.disconnect();
-      if (mc) Composite.remove(engine.world, mc);
+      io.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      st.removeEventListener("pointerdown", onDown);
+      st.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("blur", onUp);
       Engine.clear(engine);
     };
   }, []);
@@ -232,9 +334,9 @@ export function DropHero() {
   const lost = Math.round(-jr.net);
 
   return (
-    <div ref={track} id="top" className="relative h-[210svh]">
+    <div ref={track} id="top" className="relative h-[175svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
-        <div ref={stage} className="absolute inset-x-0 bottom-0 top-0 touch-pan-y">
+        <div ref={stage} className="absolute inset-0 touch-pan-y select-none">
           {DECK.map((id, i) => (
             <div
               key={id}
@@ -254,7 +356,7 @@ export function DropHero() {
                 ref={(el) => {
                   tagEls.current[i] = el;
                 }}
-                className={`mono pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-md border bg-ace-panel px-2.5 py-1 text-[12px] shadow-sm transition-opacity duration-300 ${
+                className={`mono pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-md border bg-ace-panel px-2.5 py-1 text-[12px] shadow-[0_6px_16px_-10px_rgba(12,14,20,.3)] transition-opacity duration-300 ${
                   tags[id].tone === "gain" ? "border-ace-gain/40 text-ace-gain" : "border-ace-loss/40 text-ace-loss"
                 }`}
                 style={{ opacity: 0 }}
@@ -283,8 +385,8 @@ export function DropHero() {
               Try a tap
             </a>
           </div>
-          <p className="mono mt-6 text-[11px] uppercase tracking-[0.2em] text-ace-dim transition-opacity" style={{ opacity: dealt >= DECK.length ? 0 : 1 }}>
-            scroll to deal {JORDAN.name}&apos;s hand ↓
+          <p className="mono mt-6 text-[11px] text-ace-dim transition-opacity" style={{ opacity: allDealt ? 0 : 1 }}>
+            scroll to deal the rest of the market ↓
           </p>
         </div>
       </div>
