@@ -82,7 +82,7 @@ Owner: **A** = Adrian (UI, branding) · **M** = Michael (production, backend).
 
 ## Status note (01:35 Sun, Michael)
 
-Backend/engine is COMPLETE and merged: Monte Carlo, LP, provenance, 35 passing tests,
+Backend/engine is COMPLETE and merged: Monte Carlo, LP, provenance, 36 passing tests,
 Plaid routes, `/api/health`, `render.yaml`, `docs/deploy.md`, `docs/JUDGE-QA.md`, README.
 Verify with `npm run check` and `npm test`.
 

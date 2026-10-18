@@ -6,7 +6,7 @@ two sentences, then stops. If we don't know, say so and say what we'd do to find
 Every number below is reproducible on stage:
 
 ```bash
-npm test                                                    # 35 tests
+npm test                                                    # 36 tests
 node --import ./scripts/_alias.mjs scripts/jordan-check.ts  # the −$427.03 receipt
 node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy
 node --import ./scripts/_alias.mjs scripts/mc.ts            # Monte Carlo odds
@@ -26,7 +26,7 @@ In how the product was built, not in what it computes. That was deliberate: a ha
 dollar figure in a finance tool is worse than no tool.
 
 **How do you know the engine is right?**
-35 tests, including five purchases computed by hand from the issuer's published terms with
+36 tests, including five purchases computed by hand from the issuer's published terms with
 the arithmetic written in the comments, plus a cap case where a spending cap is crossed
 mid-purchase and we check the blended rate. Run `npm test`.
 
@@ -133,9 +133,9 @@ terms current — both are data operations problems, not engineering ones.
 ## Anyone — real vs simulated
 
 **Real:** the rules engine, the 29-card catalog with sources and dates, the Monte Carlo, the
-LP, provenance, 35 tests, statement CSV upload, and the Plaid integration code.
+LP, provenance, 36 tests, statement CSV upload, and the Plaid integration code.
 
-**Simulated:** Jordan, Maya and the Parks are synthetic demo people. Tap is a web demo, not
+**Simulated:** Jordan, Maya, the Parks, Sam and Rosa are synthetic demo people. Tap is a web demo, not
 NFC. Plaid runs against the sandbox, and this deployment has no Plaid keys, so those routes
 return `503 plaid_not_configured` and the app stays on its demo people.
 

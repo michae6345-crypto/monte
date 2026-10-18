@@ -57,7 +57,7 @@ npm run check        # typecheck, lint, build
 Verify the numbers yourself. Each script prints its own workings:
 
 ```bash
-node --import ./scripts/_alias.mjs scripts/test.ts          # 35 tests, hand-computed cases
+node --import ./scripts/_alias.mjs scripts/test.ts          # 36 tests, hand-computed cases
 node --import ./scripts/_alias.mjs scripts/jordan-check.ts  # the −$427.03 receipt, line by line
 node --import ./scripts/_alias.mjs scripts/mc.ts            # Monte Carlo odds per person
 node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy, with a worked cap trap
@@ -85,7 +85,7 @@ Keys belong in `.env.local` and the host's environment. This repo is public.
 engine, the Monte Carlo, the LP, the receipt and every number it produces, statement CSV
 upload, and the Plaid integration code.
 
-**Simulated:** the three demo people and their transactions are synthetic. Tap is a web
+**Simulated:** the five demo people (Jordan, Maya, the Parks, Sam, Rosa) and their transactions are synthetic. Tap is a web
 demo, not NFC. Plaid runs against the sandbox, not a real bank.
 
 **Flagged:** 11 of the 29 cards are marked `UNVERIFIED` in the catalog and badged in the
@@ -100,6 +100,6 @@ lib/engine/     the rules engine, Monte Carlo, LP, provenance
 lib/data/       demo people, Plaid mapping
 data/           card catalog and category map, with sources
 scripts/        verification scripts (see above)
-tests/          35 tests, including hand-computed cases
+tests/          36 tests, including hand-computed cases
 docs/           SPEC.md, HACKATHON.md, deploy.md, BRAND.md
 ```
