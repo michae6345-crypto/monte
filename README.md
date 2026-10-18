@@ -138,3 +138,8 @@ is fully verified.
 | `scripts/` | Verification scripts and the smoke test |
 | `tests/` | 36 tests, including hand-computed cases |
 | `docs/` | Spec, deploy runbook, brand, judge Q&A |
+
+## Team
+
+Built at **ACM@USC TrojanHacks 2026** (Finance) by Michael Tarekegn (backend: Plaid, Monte Carlo,
+LP, tests) and Adrian Erlikhman (product, UI, brand).
