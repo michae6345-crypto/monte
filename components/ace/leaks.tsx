@@ -62,7 +62,10 @@ export function LeaksSection() {
           amount: -m.net,
           counts: true,
           title: `The ${shortName(h.cardId)}'s fee`,
-          why: `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of value for ${who === "you" ? "you" : who}, over the next-best card already held.`,
+          why:
+            wallet.length > 1
+              ? `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of value for ${who === "you" ? "you" : who}, over the next-best card already held.`
+              : `${money(c.annual_fee)} a year buys ${money(m.rewardsAdded + m.credits)} of rewards and perks used.`,
           fix: { label: "Keep or cancel", chapter: "plan", tab: "keep" },
           art: { card: h.cardId },
         });
@@ -107,10 +110,10 @@ export function LeaksSection() {
     for (const s of subscriptions(txns).filter((x) => x.priceHike))
       out.push({
         key: `rise-${s.merchant}`,
-        amount: s.perYear * 0.12,
+        amount: ((s.amount - s.first) * 365) / s.cadenceDays,
         counts: true,
         title: `${s.merchant} went up`,
-        why: `A recurring charge that rose; it bills ${money(s.perYear)} a year now.`,
+        why: `${money(s.first, { cents: true })} a charge, now ${money(s.amount, { cents: true })}: ${money(s.perYear)} a year at the new price.`,
         fix: { label: "Odd charges", chapter: "leaks", tab: "odd" },
         art: { merchant: s.merchant },
       });

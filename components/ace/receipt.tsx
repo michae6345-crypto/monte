@@ -68,7 +68,7 @@ export function ReceiptSection() {
 
           <div>
             <div className="mono mb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-ace-dim">
-              <span>Wallet · {wallet.length} cards · {txns.length} purchases · ${Math.round(r.spend).toLocaleString()} spent</span>
+              <span>Wallet · {wallet.length} card{wallet.length === 1 ? "" : "s"} · {txns.length} purchases · ${Math.round(r.spend).toLocaleString()} spent</span>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <AnimatePresence mode="popLayout">

@@ -56,7 +56,7 @@ export function StrategyChart() {
       .slice(0, 10)
       .map(([cat, s]) => {
         const merchant = Object.entries(s.merchants).sort((a, b) => b[1] - a[1])[0][0];
-        const res = tap(wallet, { date: "2026-10-18", merchant, category: cat, amount: 100 }, quarter);
+        const res = tap(wallet, { date: "2026-10-18", merchant: "", category: cat, amount: 100 }, quarter);
         const cells: Cell[] = wallet.map((h) => {
           const o = res.ranked.find((x) => x.cardId === h.cardId)!;
           return { cardId: h.cardId, cpd: o.reward, rule: o.rule, blocked: o.blocked, best: o.cardId === res.pick.cardId };

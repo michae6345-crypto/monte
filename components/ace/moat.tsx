@@ -176,7 +176,7 @@ function cents(id: string) {
 
 function Line({ k, children }: { k: string; children: ReactNode }) {
   return (
-    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4 whitespace-nowrap">
+    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4 md:whitespace-nowrap">
       <dt className="w-16 shrink-0 text-white/80">{k}</dt>
       <dd className="text-white/80">{children}</dd>
     </motion.div>

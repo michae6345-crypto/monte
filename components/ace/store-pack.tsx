@@ -212,7 +212,7 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
           </p>
         )}
       </div>
-      <div className="grid min-w-[640px] grid-cols-12 gap-2">
+      <div className="grid min-w-[640px] grid-cols-12 gap-2 lg:min-w-0">
         {months.map((m) => (
           <div key={m.k} className="flex flex-col items-center gap-2">
             <div className="flex h-32 w-full items-end">

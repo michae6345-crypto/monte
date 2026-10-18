@@ -314,7 +314,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
             <span className="opacity-60">{String(i + 1).padStart(2, "0")}</span> {s.short}
           </button>
         ))}
-        <span className="m-label ml-auto normal-case tracking-normal">engine · no drift</span>
+        <span className="m-label ml-auto normal-case tracking-normal">spending held at last year&apos;s pattern</span>
       </div>
 
       <div
@@ -357,9 +357,9 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
           </dd>
         </div>
         <div className="px-4 py-3">
-          <dt className="text-ace-dim">{k === 0 ? "baseline" : `vs ${runs[0].short}`}</dt>
+          <dt className="text-ace-dim">{k === 0 ? "the starting point" : `vs ${runs[0].short}`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
-            {beats === null ? "—" : `${money(gain, { sign: true })} · ${Math.round(beats * YEARS)}/${YEARS} yrs`}
+            {beats === null ? "every other strategy is measured against this" : `${money(gain, { sign: true })} · ahead in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}
           </dd>
         </div>
       </dl>

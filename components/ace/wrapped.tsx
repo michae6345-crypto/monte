@@ -39,11 +39,13 @@ export function WrappedSection() {
     const out: Slide[] = [
       {
         key: "open",
-        kicker: `${who}'s year in cards`,
+        kicker: `${who}'s year`,
         body: (
           <>
             <Bracketed>{txns.length}</Bracketed> purchases.
-            <span className="m-second block">{money(r.spend)} on {wallet.length} cards.</span>
+            <span className="m-second block">
+              {money(r.spend)} on {wallet.length} card{wallet.length === 1 ? "" : "s"}.
+            </span>
           </>
         ),
       },
@@ -101,6 +103,7 @@ export function WrappedSection() {
           </>
         ),
       });
+    if (r.leftOnTable >= 1)
     out.push({
       key: "table",
       kicker: "left on the table",

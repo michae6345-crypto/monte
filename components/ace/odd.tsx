@@ -130,7 +130,13 @@ export function OddChargesSection() {
       kicker="Odd charges"
       title={
         <>
-          <Bracketed>{run.flags.length}</Bracketed> charge{run.flags.length === 1 ? "" : "s"} worth a second look.
+          {run.flags.length ? (
+            <>
+              <Bracketed>{run.flags.length}</Bracketed> charge{run.flags.length === 1 ? "" : "s"} worth a second look.
+            </>
+          ) : (
+            <>No odd charges in {persona.id === "you" ? "your" : `${persona.name}'s`} year.</>
+          )}
           <span className="m-second block">Four plain rules, every flag traced to the purchases.</span>
         </>
       }
@@ -146,7 +152,7 @@ export function OddChargesSection() {
           {planted ? "Remove the 3 test charges" : "Plant 3 test charges"}
         </button>
         <span className="text-sm text-ace-dim">
-          {planted ? "Planted by us, marked below. Nothing else in the year changes." : `Checking ${who} ${txns.length} real purchases.`}
+          {planted ? "Planted by us, marked below. Nothing else in the year changes." : `Checking ${who} ${txns.length} purchases.`}
         </span>
       </div>
 

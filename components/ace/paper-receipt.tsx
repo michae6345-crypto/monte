@@ -14,7 +14,7 @@ import { money } from "./store";
 import { Trace } from "./trace";
 import { creditProvenanceFor, feeProvenanceFor, interestProvenanceFor, type ProvenanceLine } from "@/lib/engine/provenance";
 
-const c2 = (v: number) => money(v, { sign: true, cents: true });
+const c2 = (v: number) => (Math.abs(v) < 0.005 ? "$0.00" : money(v, { sign: true, cents: true }));
 
 function Row({ k, v, sub, i, strong, trace }: { k: string; v: number; sub?: string; i: number; strong?: boolean; trace?: ProvenanceLine[] }) {
   return (
@@ -158,6 +158,7 @@ export function PaperReceipt({
           </span>
         </div>
 
+        {r.leftOnTable >= 0.5 && (
         <div className="m-mono mt-5 rounded-[10px] bg-[var(--m-wash)] px-3.5 py-3 text-[11.5px] leading-relaxed">
           <div className="flex items-baseline justify-between gap-3">
             <span className="uppercase tracking-[0.12em] text-ace-dim">left on the table</span>
@@ -170,6 +171,7 @@ export function PaperReceipt({
             </a>
           </p>
         </div>
+        )}
 
         <div className="mt-6 text-ace-ink">
           <Barcode seed={seed} />
