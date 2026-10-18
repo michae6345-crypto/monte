@@ -197,18 +197,36 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
     // drop a partial first or last month (fewer than 10 days of data) so it doesn't read as a dip
     const days = (k: string) => new Set(txns.filter((t) => t.date.startsWith(k)).map((t) => t.date)).size;
     const kept = all.filter(([k], i) => !((i === 0 || i === all.length - 1) && days(k) < 10));
-    return kept.slice(-12).map(([k, e]) => ({ k, total: e.total, top: [...e.stores.entries()].sort((a, b) => b[1] - a[1])[0][0] }));
+    // a month the data only partly covers is shown, marked, and left out of biggest/slowest
+    const dates = txns.map((t) => t.date).sort();
+    const firstDay = Number(dates[0]?.slice(8, 10) ?? 1);
+    const lastDay = Number(dates[dates.length - 1]?.slice(8, 10) ?? 31);
+    return kept.slice(-12).map(([k, e], i, arr) => ({
+      k,
+      total: e.total,
+      top: [...e.stores.entries()].sort((a, b) => b[1] - a[1])[0][0],
+      partial: (k === all[0][0] && firstDay > 3) || (i === arr.length - 1 && k === all[all.length - 1][0] && lastDay < 26),
+    }));
   }, [txns]);
+  const full = months.filter((m) => !m.partial);
   const max = Math.max(...months.map((m) => m.total), 1);
-  const peak = months.find((m) => m.total === max);
+  const peak = full.reduce<(typeof months)[number] | undefined>((a, m) => (!a || m.total > a.total ? m : a), undefined);
+  const low = full.reduce<(typeof months)[number] | undefined>((a, m) => (!a || m.total < a.total ? m : a), undefined);
+  // spending that swings (seasonal or irregular income) is worth saying out loud
+  const swing = peak && low && low.total > 0 ? peak.total / low.total : 1;
 
   return (
     <div className="m-panel overflow-x-auto p-5 md:p-6">
       <div className="mb-5 flex items-baseline justify-between gap-4">
         <p className="m-label">month by month · top store each month</p>
         {peak && (
-          <p className="text-sm text-ace-dim" style={hand}>
+          <p className="text-right text-sm text-ace-dim" style={hand}>
             biggest month: {MONTH(peak.k)}, {money(peak.total)}
+            {swing >= 2.5 && low && (
+              <span className="block" style={{ color: "var(--m-accent)" }}>
+                slowest: {MONTH(low.k)}, {money(low.total)}. {swing.toFixed(1)}× apart
+              </span>
+            )}
           </p>
         )}
       </div>
@@ -218,7 +236,10 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
             <div className="flex h-32 w-full items-end">
               <motion.div
                 className="w-full rounded-t-[8px]"
-                style={{ background: m === peak ? "var(--m-ink)" : "color-mix(in oklab, var(--m-ink) 14%, var(--m-panel))" }}
+                style={{
+                  background:
+                    m === peak ? "var(--m-ink)" : swing >= 2.5 && m === low ? "var(--m-accent)" : "color-mix(in oklab, var(--m-ink) 14%, var(--m-panel))",
+                }}
                 initial={{ height: 0 }}
                 whileInView={{ height: `${(m.total / max) * 100}%` }}
                 viewport={{ once: true }}
@@ -229,10 +250,14 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
             <div className="text-[15px]" style={display}>
               {money(m.total)}
             </div>
-            <div className="m-label">{MONTH(m.k)}</div>
+            <div className="m-label">
+              {MONTH(m.k)}
+              {m.partial ? <span title="the data covers only part of this month">*</span> : null}
+            </div>
           </div>
         ))}
       </div>
+      {months.some((m) => m.partial) && <p className="mt-3 text-xs">* only part of this month is in the year shown</p>}
     </div>
   );
 }
