@@ -235,6 +235,7 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
           <div key={m.k} className="flex flex-col items-center gap-2">
             <div className="flex h-32 w-full items-end">
               <motion.div
+                key={Math.round(m.total)}
                 className="w-full rounded-t-[8px]"
                 style={{
                   background:

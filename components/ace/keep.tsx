@@ -152,6 +152,7 @@ function Bar({ label, v, span, tone }: { label: string; v: number; span: number;
       <span className="w-24 shrink-0 text-ace-dim">{label}</span>
       <div className="h-2.5 min-w-0 flex-1 bg-ace-line/60">
         <motion.div
+          key={Math.round(v)}
           className={`h-full ${tone === "gain" ? "bg-ace-ink" : "bg-ace-loss"}`}
           initial={{ width: 0 }}
           whileInView={{ width: `${Math.min(100, (v / span) * 100)}%` }}
