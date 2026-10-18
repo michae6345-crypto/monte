@@ -41,6 +41,9 @@ For Jordan, `scripts/jordan-check.ts` rebuilds the receipt line by line:
 | Same purchases, best card in the same wallet | $656.83 |
 | **Left on the table** | **$104.14** |
 
+`npm test` runs 36 tests, including five hand-computed earn cases and a check that the
+receipt's sourced lines add up to the engine's total, to the cent, for every demo person.
+
 ## How it works
 
 The engine is deterministic. **The AI never does the math.** Every dollar on screen traces
