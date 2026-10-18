@@ -89,6 +89,8 @@ mode, or open [`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) to watc
 npm install
 npm run dev          # http://localhost:3000
 npm run check        # typecheck, lint, build
+npm test             # 36 tests
+npm run smoke        # checks a deployment's demo path
 ```
 
 Verify the numbers yourself. Each script prints its own workings:
