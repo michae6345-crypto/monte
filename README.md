@@ -70,7 +70,7 @@ source URL and the date we checked it, and to the purchases behind it.
 - **LP optimizer** (`lib/engine/lp.ts`): caps can make greedy routing sub-optimal, so we
   solve the year as a whole and compare. On the demo wallets greedy turns out to already
   be optimal, and the LP is how we know: it returns a matching upper bound.
-- **Provenance** (`lib/engine/provenance.ts`) — any dollar returns its rule, the
+- **Provenance** (`lib/engine/provenance.ts`): any dollar returns its rule, the
   arithmetic (`$84.20 × 3x × 2.05¢/point = $5.18`), the issuer source and the date.
 
 Two rules the engine will not break: never recommend a card that carries a balance, and
