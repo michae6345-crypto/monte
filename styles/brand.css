@@ -18,7 +18,7 @@
   font-weight: 300 800;
   font-display: swap;
 }
-/* Geist and Geist Mono come from next/font in app/layout.tsx (--font-geist-sans, --font-geist-mono). */
+/* Three fonts: Google Sans Flex for every word, Geist Mono (next/font, --font-geist-mono) for labels and figures, Shantell Sans for hand notes. */
 
 /* ---------- Colour ---------- */
 /* White and blue (Adrian, 18 Oct). Ink on white does the work; slate is the annotation colour;
@@ -39,8 +39,8 @@
   --m-loss: #c2412d;        /* −$ only */
   --m-on-ink: #f7f8fa;      /* text on an ink panel */
 
-  --m-font-display: "Google Sans Flex", var(--font-geist-sans), system-ui, sans-serif;
-  --m-font-body: var(--font-geist-sans), system-ui, sans-serif;
+  --m-font-display: "Google Sans Flex", system-ui, sans-serif;
+  --m-font-body: "Google Sans Flex", system-ui, sans-serif;
   --m-font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --m-font-note: "Shantell Sans", "Comic Sans MS", cursive;
 
