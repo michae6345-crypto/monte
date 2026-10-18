@@ -67,7 +67,7 @@ source URL and the date we checked it, and to the purchases behind it.
   simulated years and replays the full engine over each one, so caps and quarters
   re-accumulate from zero every year. Seeded, so the same inputs always give the same
   numbers. Runs in 19–313 ms.
-- **LP optimizer** (`lib/engine/lp.ts`) — caps can make greedy routing sub-optimal, so we
+- **LP optimizer** (`lib/engine/lp.ts`): caps can make greedy routing sub-optimal, so we
   solve the year as a whole and compare. On the demo wallets greedy turns out to already
   be optimal, and the LP is how we know: it returns a matching upper bound.
 - **Provenance** (`lib/engine/provenance.ts`) — any dollar returns its rule, the
