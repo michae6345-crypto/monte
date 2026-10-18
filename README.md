@@ -78,7 +78,12 @@ Two rules the engine keeps:
 1. It never recommends a card that carries a balance.
 2. It never shows a number it cannot source.
 
-## Run it
+## Try it
+
+**Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` for presenter
+mode, or open [`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) to watch a tap at the register.
+
+**Run it locally:**
 
 ```bash
 npm install
