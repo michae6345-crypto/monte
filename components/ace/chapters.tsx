@@ -101,7 +101,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         title={
           <>
             How it works.
-            <span className="m-second block">Math on the card companies&apos; own terms.</span>
+            <span className="m-second block">Math on the card companies&apos; published terms.</span>
           </>
         }
         tabs={[
