@@ -7,7 +7,7 @@ import { CARDS, card } from "@/lib/engine/catalog";
 import { PERSONAS } from "@/lib/data/personas";
 import { CardArt, shortName } from "./card-art";
 import { Num } from "./num";
-import { Section } from "./section";
+import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function ReceiptSection() {
@@ -32,9 +32,10 @@ export function ReceiptSection() {
       id="receipt"
       index="02"
       kicker="The Receipt"
-      title={
+      title={<>What your cards really did last year.</>}
+      readout={
         <>
-          What your cards <span className="serif text-ace-gold">really</span> did last year.
+          {persona.name} · <R>{wallet.length}</R> cards · net <R tone={r.net < 0 ? "loss" : "gain"}>{money(r.net, { sign: true })}</R>
         </>
       }
       lede={`Every rewards app shows the points. ${b.name} shows the net: rewards and perks you actually used, minus annual fees, minus interest. Pick a person, or build your own wallet.`}
@@ -47,7 +48,7 @@ export function ReceiptSection() {
               <button
                 key={p.id}
                 onClick={() => setPersona(p.id)}
-                className={`rounded-full border px-4 py-2 text-left transition ${
+                className={`rounded-md border px-4 py-2 text-left transition ${
                   persona.id === p.id ? "border-ace-gold bg-ace-gold/10" : "border-ace-line hover:border-ace-ink/30"
                 }`}
               >
@@ -76,7 +77,7 @@ export function ReceiptSection() {
                     <div className="mt-2 flex items-center justify-between gap-2 text-xs">
                       <button
                         onClick={() => toggleBalance(h.cardId)}
-                        className={`mono rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider transition ${
+                        className={`mono rounded-md border px-2 py-0.5 text-[10px] uppercase tracking-wider transition ${
                           h.balance ? "border-ace-loss/50 bg-ace-loss/10 text-ace-loss" : "border-ace-line text-ace-dim hover:text-ace-ink"
                         }`}
                       >
@@ -110,7 +111,7 @@ export function ReceiptSection() {
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="grid max-h-[340px] grid-cols-3 gap-3 overflow-y-auto rounded-2xl border border-ace-line bg-ace-panel p-4 sm:grid-cols-4 md:grid-cols-5">
+                <div className="grid max-h-[340px] grid-cols-3 gap-3 overflow-y-auto rounded-md border border-ace-line bg-ace-panel p-4 sm:grid-cols-4 md:grid-cols-5">
                   {CARDS.filter((c) => !wallet.some((h) => h.cardId === c.id)).map((c) => (
                     <button
                       key={c.id}
@@ -136,7 +137,7 @@ export function ReceiptSection() {
               <button
                 key={v}
                 onClick={() => setValuationMode(v)}
-                className={`rounded-full border px-3 py-1 transition ${valuation === v ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line text-ace-dim"}`}
+                className={`rounded-md border px-3 py-1 transition ${valuation === v ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line text-ace-dim"}`}
               >
                 {v === "cash" ? "cash (1¢ a point)" : "travel (TPG, Oct 2026)"}
               </button>

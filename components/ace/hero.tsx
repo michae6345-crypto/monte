@@ -32,7 +32,7 @@ export function Nav() {
           <a href="#foryou" className="hover:text-ace-ink">Apply</a>
           <a href="#moat" className="hover:text-ace-ink">Why {b.name}</a>
         </nav>
-        <a href="#money" className="rounded-full bg-ace-ink px-4 py-1.5 text-sm font-medium text-ace-bg transition hover:bg-ace-gold">
+        <a href="#money" className="rounded-md bg-ace-ink px-4 py-1.5 text-sm font-medium text-ace-bg transition hover:bg-ace-gold">
           Audit a wallet
         </a>
       </div>

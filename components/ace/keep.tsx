@@ -7,7 +7,7 @@ import { marginalValue, whatIf, interestFor, pointValue } from "@/lib/engine";
 import { CARDS, card, creditPerYear, openToNewApplicants } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { Num } from "./num";
-import { Section } from "./section";
+import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function KeepSection() {
@@ -23,9 +23,10 @@ export function KeepSection() {
       id="keep"
       index="06"
       kicker="Keep or cancel"
-      title={
+      title={<>Is each card earning its spot?</>}
+      readout={
         <>
-          Is each card <span className="serif text-ace-gold">earning its spot?</span>
+          <R tone="loss">{money(rows.reduce((a, x) => a + x.m.fee, 0))}</R> in fees a year · <R>{rows.length}</R> cards
         </>
       }
       lede="A card is worth what it adds over the next-best card you already carry, plus the perks you actually use, minus its fee. Not the number on the brochure."
@@ -48,7 +49,7 @@ export function KeepSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-3xl border border-ace-line bg-ace-panel/70 p-6"
+              className="rounded-lg border border-ace-line bg-ace-panel/70 p-6"
             >
               <div className="flex items-center gap-4">
                 <CardArt id={h.cardId} size="sm" className="w-20" />
@@ -185,15 +186,16 @@ export function ForYouSection() {
       id="foryou"
       index="07"
       kicker="What to apply for"
-      title={
+      title={<>Ranked on your spending, not on referral fees.</>}
+      readout={
         <>
-          Recommendations from <span className="serif text-ace-gold">your</span> spending, not a sponsor.
+          <R>{CARDS.length}</R> cards scored on <R>{txns.length}</R> of {persona.name}&apos;s purchases
         </>
       }
-      lede={`${b.name} learns how you spend, how you redeem, which perks you really use and what you won't put up with, then ranks cards on what they'd do for you, not on referral payouts.`}
+      lede={`Set four preferences. ${b.name} replays your year through every card it knows and ranks them by what they would have added, after fees. No issuer pays for a spot on this list.`}
     >
-      <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
-        <div className="space-y-6 rounded-3xl border border-ace-line bg-ace-panel/70 p-6">
+      <div className="grid gap-8 lg:grid-cols-[320px_1fr] [&>*]:min-w-0">
+        <div className="space-y-6 rounded-lg border border-ace-line bg-ace-panel/70 p-6">
           <div>
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">What {b.name} learned</div>
             <ul className="mt-3 space-y-2 text-sm">
@@ -243,11 +245,11 @@ export function ForYouSection() {
           </Pref>
         </div>
 
-        <div className="grid gap-8 2xl:grid-cols-2">
+        <div className="grid gap-8 2xl:grid-cols-2 [&>*]:min-w-0">
           <div>
             <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">Best next card for {persona.name}</div>
             {wallet.some((h) => h.balance) && (
-              <div className="mb-3 rounded-2xl border border-ace-loss/40 bg-ace-loss/10 p-4 text-sm leading-relaxed">
+              <div className="mb-3 rounded-md border border-ace-loss/40 bg-ace-loss/10 p-4 text-sm leading-relaxed">
                 <span className="font-semibold text-ace-loss">{b.name}&apos;s advice: no new card yet.</span> {persona.name} carries a balance, and
                 the interest outweighs any card below. Pay it down first; this list is what to apply for after.
               </div>
@@ -257,7 +259,7 @@ export function ForYouSection() {
                 <motion.div
                   layout
                   key={x.id}
-                  className="flex items-center gap-4 rounded-2xl border border-ace-line p-3 pr-4"
+                  className="flex items-center gap-4 rounded-md border border-ace-line p-3 pr-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
@@ -286,7 +288,7 @@ export function ForYouSection() {
                   </span>
                   <button
                     onClick={() => addCard(x.id)}
-                    className="rounded-full border border-ace-line px-2.5 py-1 text-xs text-ace-dim transition hover:border-ace-gold hover:text-ace-gold"
+                    className="rounded-md border border-ace-line px-2.5 py-1 text-xs text-ace-dim transition hover:border-ace-gold hover:text-ace-gold"
                   >
                     try it
                   </button>
@@ -304,7 +306,7 @@ export function ForYouSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: k * 0.08 }}
-                  className="rounded-2xl border border-ace-line bg-ace-panel/60 p-4"
+                  className="rounded-md border border-ace-line bg-ace-panel/60 p-4"
                 >
                   <div
                     className={`mono text-[10px] uppercase tracking-[0.2em] ${n.tone === "gain" ? "text-ace-gain" : n.tone === "loss" ? "text-ace-loss" : "text-ace-gold"}`}
@@ -335,7 +337,7 @@ function Pill({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-3 py-1 text-sm capitalize transition ${on ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line text-ace-dim hover:text-ace-ink"}`}
+      className={`rounded-md border px-3 py-1 text-sm capitalize transition ${on ? "border-ace-ink bg-ace-ink text-ace-bg" : "border-ace-line text-ace-dim hover:text-ace-ink"}`}
     >
       {children}
     </button>

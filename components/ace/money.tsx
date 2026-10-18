@@ -11,31 +11,25 @@ import { PERSONAS } from "@/lib/data/personas";
 import { useBrand } from "./brands";
 import { shortName } from "./card-art";
 import { Num } from "./num";
-import { Section } from "./section";
+import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
-export const CAT_COLOR: Record<string, string> = {
-  dining: "#ff7a59",
-  groceries: "#7bd389",
-  online_groceries: "#5fbf9b",
-  gas: "#f2c14e",
-  ev_charging: "#9be564",
-  transit: "#6ec6ff",
-  rideshare: "#4ea8de",
-  airfare: "#8e7dff",
-  hotels: "#b388eb",
-  streaming: "#ff5d8f",
-  drugstores: "#4dd0c1",
-  home_improvement: "#d4a373",
-  entertainment: "#f78fb3",
-  rent: "#a0aec0",
-  utilities: "#94a3b8",
-  phone: "#7dd3fc",
-  online_retail: "#fca311",
-  wholesale_clubs: "#e76f51",
-  everything_else: "#6b7280",
-  other: "#6b7280",
+// Four tones, grouped by what the money is for, not a rainbow: food in the accent, then
+// getting around, bills, and shopping in steps of ink.
+const TONE = {
+  food: "var(--ace-gold)",
+  move: "color-mix(in oklab, var(--ace-ink) 78%, var(--ace-panel))",
+  bills: "color-mix(in oklab, var(--ace-ink) 48%, var(--ace-panel))",
+  shop: "color-mix(in oklab, var(--ace-ink) 26%, var(--ace-panel))",
 };
+const GROUP: Record<string, keyof typeof TONE> = {
+  dining: "food", groceries: "food", online_groceries: "food", wholesale_clubs: "food",
+  gas: "move", ev_charging: "move", transit: "move", rideshare: "move", airfare: "move", hotels: "move", travel_portal: "move",
+  streaming: "bills", rent: "bills", utilities: "bills", phone: "bills", drugstores: "bills",
+  online_retail: "shop", home_improvement: "shop", entertainment: "shop", everything_else: "shop", other: "shop",
+};
+export const CAT_COLOR: Record<string, string> = Object.fromEntries(Object.entries(GROUP).map(([c, g]) => [c, TONE[g]]));
+export const CAT_TEXT = (c: string) => (GROUP[c] === "shop" || GROUP[c] === "bills" ? "var(--ace-ink)" : "var(--ace-bg)");
 
 export const label = (c: string) => c.replace(/_/g, " ");
 
@@ -67,9 +61,10 @@ export function MoneySection() {
       id="money"
       index="01"
       kicker="Where your money goes"
-      title={
+      title={<>Where {money(total)} went.</>}
+      readout={
         <>
-          See your whole year <span className="serif text-ace-gold">at once.</span>
+          <R>{txns.length}</R> purchases · <R>{cats.length}</R> categories · <R>{subs.length}</R> recurring
         </>
       }
       lede={`${b.name} reads a year of purchases and shows you what you actually spend on, where, and what keeps charging you every month. Try a demo person, or drop in your own statement.`}
@@ -79,7 +74,7 @@ export function MoneySection() {
           <button
             key={p.id}
             onClick={() => setPersona(p.id)}
-            className={`rounded-full border px-4 py-2 text-sm transition ${persona.id === p.id ? "border-ace-gold bg-ace-gold/10" : "border-ace-line text-ace-dim hover:text-ace-ink"}`}
+            className={`rounded-md border px-4 py-2 text-sm transition ${persona.id === p.id ? "border-ace-gold bg-ace-gold/10" : "border-ace-line text-ace-dim hover:text-ace-ink"}`}
           >
             {p.name}
           </button>
@@ -87,9 +82,9 @@ export function MoneySection() {
         <StatementUpload onLoad={useStatement} defaultCard={wallet[0]?.cardId ?? "chase_freedom_unlimited"} active={persona.id === "you"} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* treemap */}
-        <div className="rounded-3xl border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
           <div className="mb-4 flex items-baseline justify-between">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">By category · {txns.length} purchases</div>
             <div className="text-right">
@@ -97,7 +92,18 @@ export function MoneySection() {
               <span className="mono ml-2 text-xs text-ace-dim">in a year</span>
             </div>
           </div>
-          <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full">
+          <div className="space-y-2 sm:hidden">
+            {cats.slice(0, 8).map((c) => (
+              <div key={c.category} className="flex items-center gap-3 text-sm">
+                <span className="w-24 shrink-0 truncate capitalize">{label(c.category)}</span>
+                <div className="h-2 min-w-0 flex-1 rounded-sm bg-ace-line">
+                  <div className="h-full rounded-sm" style={{ width: `${(c.total / cats[0].total) * 100}%`, background: CAT_COLOR[c.category] }} />
+                </div>
+                <span className="mono w-16 shrink-0 text-right text-xs text-ace-dim">{money(c.total)}</span>
+              </div>
+            ))}
+          </div>
+          <svg viewBox={`0 0 ${W} ${H}`} className="hidden h-auto w-full sm:block">
             <AnimatePresence>
               {tiles.map((t, i) => {
                 const w = t.x1 - t.x0;
@@ -115,14 +121,14 @@ export function MoneySection() {
                     onMouseEnter={() => setHover(c)}
                     onMouseLeave={() => setHover(null)}
                   >
-                    <rect x={t.x0} y={t.y0} width={w} height={h} rx={10} fill={CAT_COLOR[c] ?? "#6b7280"} opacity={dim ? 0.35 : 1} style={{ transition: "opacity .25s" }} />
+                    <rect x={t.x0} y={t.y0} width={w} height={h} rx={3} opacity={dim ? 0.35 : 1} style={{ fill: CAT_COLOR[c] ?? TONE.shop, transition: "opacity .25s" }} />
                     {w > 70 && h > 36 && (
-                      <text x={t.x0 + 10} y={t.y0 + 22} fill="#0b0b0f" fontSize={w > 160 ? 15 : 12} fontWeight={700} style={{ textTransform: "capitalize" }}>
+                      <text x={t.x0 + 10} y={t.y0 + 22} fontSize={w > 160 ? 15 : 12} fontWeight={700} style={{ textTransform: "capitalize", fill: CAT_TEXT(c) }}>
                         {label(c)}
                       </text>
                     )}
                     {w > 70 && h > 54 && (
-                      <text x={t.x0 + 10} y={t.y0 + 40} fill="#0b0b0f" fontSize={12} opacity={0.75} className="mono">
+                      <text x={t.x0 + 10} y={t.y0 + 40} fontSize={12} opacity={0.75} className="mono" style={{ fill: CAT_TEXT(c) }}>
                         {money(t.data.value)} · {Math.round(t.data.share * 100)}%
                       </text>
                     )}
@@ -134,7 +140,7 @@ export function MoneySection() {
         </div>
 
         {/* merchants */}
-        <div className="rounded-3xl border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
           <div className="mono mb-4 text-[11px] uppercase tracking-[0.2em] text-ace-dim">Top merchants</div>
           <div className="space-y-3">
             {merchants.map((m, i) => (
@@ -161,9 +167,9 @@ export function MoneySection() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
         {/* months */}
-        <div className="rounded-3xl border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Month by month</div>
             <div className="flex flex-wrap gap-3">
@@ -197,7 +203,7 @@ export function MoneySection() {
         </div>
 
         {/* subscriptions */}
-        <div className="rounded-3xl border border-ace-line bg-ace-panel/70 p-5">
+        <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5">
           <div className="mb-4 flex items-baseline justify-between">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Keeps charging you</div>
             <span className="mono text-sm">
@@ -239,14 +245,14 @@ function StatementUpload({ onLoad, defaultCard, active }: { onLoad: (t: import("
     <div className="flex flex-wrap items-center gap-2">
       <button
         onClick={() => ref.current?.click()}
-        className={`rounded-full border px-4 py-2 text-sm transition ${active ? "border-ace-gold bg-ace-gold/10" : "border-dashed border-ace-gold/60 text-ace-gold hover:bg-ace-gold/10"}`}
+        className={`rounded-md border px-4 py-2 text-sm transition ${active ? "border-ace-gold bg-ace-gold/10" : "border-dashed border-ace-gold/60 text-ace-gold hover:bg-ace-gold/10"}`}
       >
         ↑ Use my statement (CSV)
       </button>
       <select
         value={card}
         onChange={(e) => setCard(e.target.value)}
-        className="rounded-full border border-ace-line bg-ace-panel px-3 py-2 text-xs text-ace-dim"
+        className="rounded-md border border-ace-line bg-ace-panel px-3 py-2 text-xs text-ace-dim"
         aria-label="Which card is this statement from"
       >
         {CARDS.map((c) => (

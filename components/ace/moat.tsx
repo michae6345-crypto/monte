@@ -43,7 +43,7 @@ export function MoatSection() {
       }
       lede={`Inspired by Uno Wallet (YC Spring 2026), which picks the best card at tap time. ${b.name} adds what every rewards app leaves out: the cost side.`}
     >
-      <div className="grid gap-px overflow-hidden rounded-3xl border border-ace-line bg-ace-line md:grid-cols-2">
+      <div className="grid gap-px overflow-hidden rounded-lg border border-ace-line bg-ace-line md:grid-cols-2">
         {MOATS.map((m, i) => (
           <motion.div
             key={m.n}
@@ -136,7 +136,7 @@ export function HowSection() {
             transition={{ delay: 0.2 + i * 0.18 }}
             className="relative"
           >
-            <div className="relative z-10 grid size-[76px] place-items-center rounded-2xl border border-ace-line bg-ace-panel">
+            <div className="relative z-10 grid size-[76px] place-items-center rounded-md border border-ace-line bg-ace-panel">
               <span className="mono text-xl text-ace-gold">{String(i + 1).padStart(2, "0")}</span>
             </div>
             <div className="mt-5 font-medium">{t}</div>

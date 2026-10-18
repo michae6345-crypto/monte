@@ -6,18 +6,19 @@ import { useMemo, useState } from "react";
 import { tap } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
-import { Section } from "./section";
+import { R, Section } from "./section";
+import { StrategyChart } from "./strategy";
 import { money, useAce } from "./store";
 
 const SPOTS = [
-  { merchant: "Sweetgreen", category: "dining", amount: 16.5, where: "Silver Lake", emoji: "🥗" },
-  { merchant: "Trader Joe's", category: "groceries", amount: 64.2, where: "Los Feliz", emoji: "🛒" },
-  { merchant: "Mobil", category: "gas", amount: 52, where: "Sunset Blvd", emoji: "⛽" },
-  { merchant: "Uber", category: "rideshare", amount: 22.4, where: "to LAX", emoji: "🚗" },
-  { merchant: "Netflix", category: "streaming", amount: 15.49, where: "monthly", emoji: "📺" },
-  { merchant: "Delta", category: "airfare", amount: 318, where: "LAX → JFK", emoji: "✈️" },
-  { merchant: "CVS Pharmacy", category: "drugstores", amount: 23.8, where: "Vermont Ave", emoji: "💊" },
-  { merchant: "AMC Theatres", category: "entertainment", amount: 34, where: "The Grove", emoji: "🎬" },
+  { merchant: "Sweetgreen", category: "dining", amount: 16.5, where: "Silver Lake", mcc: "5812" },
+  { merchant: "Trader Joe's", category: "groceries", amount: 64.2, where: "Los Feliz", mcc: "5411" },
+  { merchant: "Mobil", category: "gas", amount: 52, where: "Sunset Blvd", mcc: "5541" },
+  { merchant: "Uber", category: "rideshare", amount: 22.4, where: "to LAX", mcc: "4121" },
+  { merchant: "Netflix", category: "streaming", amount: 15.49, where: "monthly", mcc: "4899" },
+  { merchant: "Delta", category: "airfare", amount: 318, where: "LAX → JFK", mcc: "3058" },
+  { merchant: "CVS Pharmacy", category: "drugstores", amount: 23.8, where: "Vermont Ave", mcc: "5912" },
+  { merchant: "AMC Theatres", category: "entertainment", amount: 34, where: "The Grove", mcc: "7832" },
 ];
 
 const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: string }> = {
@@ -45,9 +46,10 @@ export function TapSection() {
       id="tap"
       index="05"
       kicker="Tap"
-      title={
+      title={<>The right card, at the register.</>}
+      readout={
         <>
-          The right card, <span className="serif text-ace-gold">at the register.</span>
+          <R>{wallet.length}</R> cards · <R tone={wallet.some((h) => h.balance) ? "loss" : "ink"}>{wallet.filter((h) => h.balance).length}</R> off limits
         </>
       }
       lede={`Walk into a store and ${b.name} already knows which card wins there, counting caps you've used, quarterly categories, perks about to expire, and which card you shouldn't touch.`}
@@ -58,11 +60,11 @@ export function TapSection() {
             <button
               key={s.merchant}
               onClick={() => setI(k)}
-              className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+              className={`flex items-center gap-3 rounded-md border px-4 py-3 text-left transition ${
                 k === i ? "border-ace-gold bg-ace-gold/10" : "border-ace-line hover:border-ace-ink/30"
               }`}
             >
-              <span className="text-xl">{s.emoji}</span>
+              <span className={`mono w-10 shrink-0 text-[11px] tnum ${k === i ? "text-ace-gold" : "text-ace-dim"}`} title="Merchant category code: what the issuer sees">{s.mcc}</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{s.merchant}</span>
                 <span className="mono block text-[10px] uppercase tracking-wider text-ace-dim">{s.where}</span>
@@ -81,7 +83,7 @@ export function TapSection() {
               <motion.div key={spot.merchant} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <div className="mt-1 text-center text-2xl font-semibold">{spot.merchant}</div>
                 <div className="mono text-center text-xs text-ace-dim">
-                  {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
+                  MCC {spot.mcc} · {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -146,7 +148,7 @@ export function TapSection() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="rounded-2xl border border-ace-loss/40 bg-ace-loss/10 p-5"
+                className="rounded-md border border-ace-loss/40 bg-ace-loss/10 p-5"
               >
                 <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-loss">Not this one</div>
                 <div className="mt-2 text-lg font-medium">{shortName(blocked.cardId)} would earn {money(blocked.reward, { cents: true })}</div>
@@ -154,18 +156,18 @@ export function TapSection() {
               </motion.div>
             )}
             {showHint && (
-              <motion.div key="hint" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="rounded-2xl border border-ace-gold/40 bg-ace-gold/10 p-5">
+              <motion.div key="hint" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="rounded-md border border-ace-gold/40 bg-ace-gold/10 p-5">
                 <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-gold">Perk first</div>
                 <p className="mt-2 text-sm leading-relaxed">{hint.note}</p>
               </motion.div>
             )}
             {res.capNotes.map((n) => (
-              <motion.div key={n} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-2xl border border-ace-line p-5 text-sm text-ace-dim">
+              <motion.div key={n} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-md border border-ace-line p-5 text-sm text-ace-dim">
                 {n}
               </motion.div>
             ))}
           </AnimatePresence>
-          <div className="rounded-2xl border border-ace-line p-5">
+          <div className="rounded-md border border-ace-line p-5">
             <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Every card, ranked</div>
             <div className="mt-3 space-y-2">
               {res.ranked.map((x) => (
@@ -183,6 +185,7 @@ export function TapSection() {
           </div>
         </div>
       </div>
+      <StrategyChart />
     </Section>
   );
 }

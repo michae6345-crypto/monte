@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useBrand } from "./brands";
 import { cardArt, shortName } from "./card-art";
 import { CAT_COLOR, label } from "./money";
-import { Section } from "./section";
+import { R, Section } from "./section";
 import { money, useAce } from "./store";
 
 export function HistorySection() {
@@ -43,14 +43,15 @@ export function HistorySection() {
       id="history"
       index="03"
       kicker="Every purchase, judged"
-      title={
+      title={<>Every purchase, with a verdict.</>}
+      readout={
         <>
-          Your purchase history, <span className="serif text-ace-gold">with a verdict.</span>
+          <R tone="loss">{rows.filter((x) => x.miss > 0.005).length}</R> of <R>{rows.length}</R> on the wrong card · <R tone="loss">{money(-r.leftOnTable)}</R>
         </>
       }
       lede={`Every purchase you made, the card you paid with, and the card ${b.name} would have picked, with what the difference cost you. Search it, or click a merchant to see every visit.`}
     >
-      <div className="rounded-3xl border border-ace-line bg-ace-panel/70 p-5 md:p-6">
+      <div className="rounded-lg border border-ace-line bg-ace-panel/70 p-5 md:p-6">
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <input
             value={q}
@@ -59,16 +60,16 @@ export function HistorySection() {
               setMerchant(null);
             }}
             placeholder="Search a merchant or category…"
-            className="min-w-[220px] flex-1 rounded-full border border-ace-line bg-ace-bg px-4 py-2 text-sm outline-none placeholder:text-ace-dim focus:border-ace-gold"
+            className="min-w-[220px] flex-1 rounded-md border border-ace-line bg-ace-bg px-4 py-2 text-sm outline-none placeholder:text-ace-dim focus:border-ace-gold"
           />
           <button
             onClick={() => setOnlyMiss((v) => !v)}
-            className={`rounded-full border px-4 py-2 text-sm transition ${onlyMiss ? "border-ace-loss bg-ace-loss/10 text-ace-loss" : "border-ace-line text-ace-dim"}`}
+            className={`rounded-md border px-4 py-2 text-sm transition ${onlyMiss ? "border-ace-loss bg-ace-loss/10 text-ace-loss" : "border-ace-line text-ace-dim"}`}
           >
             Only the misses
           </button>
           {merchant && (
-            <button onClick={() => setMerchant(null)} className="rounded-full border border-ace-gold bg-ace-gold/10 px-4 py-2 text-sm">
+            <button onClick={() => setMerchant(null)} className="rounded-md border border-ace-gold bg-ace-gold/10 px-4 py-2 text-sm">
               {merchant} ✕
             </button>
           )}
@@ -125,7 +126,7 @@ export function HistorySection() {
           </AnimatePresence>
         </div>
         {filtered.length > limit && (
-          <button onClick={() => setLimit((l) => l + 40)} className="mt-4 w-full rounded-full border border-ace-line py-2 text-sm text-ace-dim hover:text-ace-ink">
+          <button onClick={() => setLimit((l) => l + 40)} className="mt-4 w-full rounded-md border border-ace-line py-2 text-sm text-ace-dim hover:text-ace-ink">
             Show more ({filtered.length - limit} left)
           </button>
         )}

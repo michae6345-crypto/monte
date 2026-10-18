@@ -3,12 +3,15 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
+/** A section opens like a solver printout: a ruled header line with the section's number
+ *  and name on the left and a live readout of real numbers on the right. */
 export function Section({
   id,
   index,
   kicker,
   title,
   lede,
+  readout,
   children,
 }: {
   id: string;
@@ -16,26 +19,36 @@ export function Section({
   kicker: string;
   title: ReactNode;
   lede?: ReactNode;
+  readout?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="relative scroll-mt-16 border-t border-ace-line py-24 md:py-32">
+    <section id={id} className="relative scroll-mt-16 py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-5">
+        <div className="mono mb-10 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-ace-ink/25 pt-3 text-[11px] uppercase tracking-[0.18em]">
+          <span className="text-ace-dim">
+            <span className="text-ace-gold">§{index}</span> {kicker}
+          </span>
+          {readout && <span className="tnum normal-case tracking-normal text-ace-dim">{readout}</span>}
+        </div>
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-15%" }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12 max-w-3xl"
         >
-          <p className="mono mb-5 text-[11px] uppercase tracking-[0.25em] text-ace-dim">
-            <span className="text-ace-gold">{index}</span> · {kicker}
-          </p>
-          <h2 className="text-4xl font-semibold leading-[1] tracking-[-0.035em] md:text-6xl">{title}</h2>
-          {lede && <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ace-dim">{lede}</p>}
+          <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.035em] md:text-[3.4rem]">{title}</h2>
+          {lede && <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ace-dim">{lede}</p>}
         </motion.div>
         {children}
       </div>
     </section>
   );
+}
+
+/** A readout value: mono, tabular, coloured by sign when asked. */
+export function R({ children, tone }: { children: ReactNode; tone?: "gain" | "loss" | "ink" | "gold" }) {
+  const c = tone === "gain" ? "text-ace-gain" : tone === "loss" ? "text-ace-loss" : tone === "gold" ? "text-ace-gold" : "text-ace-ink";
+  return <span className={c}>{children}</span>;
 }

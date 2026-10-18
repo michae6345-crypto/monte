@@ -5,8 +5,8 @@ import { motion, useInView } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
 import { cardArt, shortName } from "./card-art";
 import { Num } from "./num";
-import { Section } from "./section";
-import { useAce } from "./store";
+import { R, Section } from "./section";
+import { money, useAce } from "./store";
 
 const W = 1000;
 const LANE = 64;
@@ -62,34 +62,46 @@ export function ReplaySection() {
       id="replay"
       index="04"
       kicker="Replay"
-      title={
+      title={<>Same purchases. Better cards.</>}
+      readout={
         <>
-          Same purchases. <span className="serif text-ace-gold">Better</span> cards.
+          <R>{txns.length}</R> purchases re-routed · <R tone="gain">{money(r.leftOnTable, { sign: true })}</R> left on the table
         </>
       }
       lede={`Each dot is one of ${persona.name}'s purchases, placed on the card that paid for it. Flip to ${b.name} and watch them move to the card that should have.`}
     >
-      <div ref={ref} className="rounded-3xl border border-ace-line bg-ace-panel/70 p-5 md:p-8">
+      <div ref={ref} className="rounded-lg border border-ace-line bg-ace-panel/70 p-5 md:p-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="inline-flex rounded-full border border-ace-line p-1">
+          <div className="inline-flex rounded-md border border-ace-line p-1">
             {(["actual", "best"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`rounded-full px-5 py-2 text-sm transition ${mode === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
+                className={`rounded-md px-5 py-2 text-sm transition ${mode === m ? "bg-ace-ink text-ace-bg" : "text-ace-dim hover:text-ace-ink"}`}
               >
                 {m === "actual" ? `What ${persona.name} did` : `What ${b.name} would do`}
               </button>
             ))}
           </div>
           <div className="text-right">
-            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">Left on the table</div>
-            <div className={`serif text-5xl transition-colors ${mode === "best" ? "text-ace-gain" : "text-ace-ink"}`}>
-              {mode === "best" ? <Num value={r.leftOnTable} sign /> : <span>$0</span>}
+            <div className="mono text-[11px] uppercase tracking-[0.2em] text-ace-dim">{mode === "best" ? "Rewards, played right" : "Rewards, as played"}</div>
+            <div className="text-5xl font-semibold tracking-tight tnum">
+              <Num value={mode === "best" ? r.best.total : r.actual.total} />
+            </div>
+            <div className={`mono mt-1 text-xs transition-opacity ${mode === "best" ? "text-ace-gain opacity-100" : "opacity-0"}`}>
+              {money(r.leftOnTable, { sign: true })} from the same purchases
             </div>
           </div>
         </div>
 
+        <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 sm:hidden">
+          {ids.map((id) => (
+            <span key={id} className="mono flex items-center gap-1.5 text-[11px] text-ace-dim">
+              <span className="h-3 w-1 rounded-sm" style={{ background: cardArt(id).bg }} />
+              {shortName(id)}
+            </span>
+          ))}
+        </div>
         <div className="flex gap-3">
           <div className="hidden w-36 shrink-0 sm:block">
             {ids.map((id) => (
@@ -99,7 +111,7 @@ export function ReplaySection() {
               </div>
             ))}
           </div>
-          <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible" style={{ height: "auto" }}>
+          <svg viewBox={`0 0 ${W} ${H}`} className="min-w-0 flex-1 overflow-visible" style={{ height: "auto" }}>
             {ids.map((id, i) => (
               <line key={id} x1={0} x2={W} y1={12 + i * LANE + LANE / 2} y2={12 + i * LANE + LANE / 2} stroke="var(--ace-line)" strokeDasharray="2 6" />
             ))}
