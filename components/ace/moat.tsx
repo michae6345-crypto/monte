@@ -327,16 +327,16 @@ export function HowSection() {
             ))}
             {trace.ha && trace.hb && (
               <>
-                <Line k="actual">
-                  paid on {trace.ha.cardId} → {money(trace.ha.reward, { cents: true })}
+                <Line k="as paid">
+                  on the {shortName(trace.ha.cardId)} → {money(trace.ha.reward, { cents: true })}
                 </Line>
                 <Line k="verdict">
                   <span className="text-white">
                     {trace.hb.cardId === trace.ha.cardId
                       ? "right card, nothing left on the table"
                       : trace.hb.reward - trace.ha.reward > 0.004
-                        ? `${money(trace.hb.reward - trace.ha.reward, { cents: true })} left on the table: ${trace.hb.cardId} was the play`
-                        : `${trace.hb.cardId} was the play: the card used carries a balance, so this purchase started charging interest`}
+                        ? `${money(trace.hb.reward - trace.ha.reward, { cents: true })} left on the table: the ${shortName(trace.hb.cardId)} was the right card`
+                        : `the ${shortName(trace.hb.cardId)} was the right card: the card used carries a balance, so this purchase started charging interest`}
                   </span>
                 </Line>
               </>
@@ -356,7 +356,7 @@ function cents(id: string) {
 function Line({ k, children }: { k: string; children: ReactNode }) {
   return (
     <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4 md:whitespace-nowrap">
-      <dt className="w-16 shrink-0 text-white">{k}</dt>
+      <dt className="w-24 shrink-0 text-white">{k}</dt>
       <dd className="text-white">{children}</dd>
     </motion.div>
   );
