@@ -66,10 +66,23 @@ function periodKey(date: string, p: Period): string {
   }
 }
 
-/** Rules on one card with the same cap amount and period share one pool
- *  (Citi Custom Cash's single $500, BofA's combined $2,500). */
-function capPool(c: CatalogCard, r: EarnRule): string {
-  return `${c.id}|${r.cap!.amount}|${r.cap!.period}`;
+/** Cards whose capped rules share ONE pool under the issuer's terms (Citi Custom Cash's
+ *  single $500 a cycle, BofA Customized Cash's combined $2,500 a quarter). Every other
+ *  capped rule gets its own pool even when the amounts match: Blue Cash Everyday's three
+ *  3% categories each have their own $6,000 calendar-year cap (see its notes in
+ *  data/cards.json). */
+const SHARED_CAP_CARDS = new Set(["citi_custom_cash", "bofa_customized_cash_rewards"]);
+
+/** Stable id of the cap pool a rule draws from, without the period. Exported so the LP
+ *  and the Monte Carlo rule tables key caps exactly the way evaluate() does. */
+export function capPool(c: CatalogCard, r: EarnRule): string {
+  if (SHARED_CAP_CARDS.has(c.id)) return `${c.id}|${r.cap!.amount}|${r.cap!.period}`;
+  return `${c.id}|${r.category}|${(r.merchants ?? []).join(",")}|${r.cap!.amount}|${r.cap!.period}`;
+}
+
+/** The cap pool of a card's rotating-category bonus. */
+export function rotatingPool(c: CatalogCard): string {
+  return `${c.id}|rotating`;
 }
 
 // BofA Customized Cash: which categories make up each 3% choice option.
@@ -125,27 +138,23 @@ function inRotation(c: CatalogCard, t: Txn): boolean {
 
 type Eval = { mult: number; reward: number; rule: string; consume: { pool: string; amount: number }[] };
 
-/** Value of putting transaction t on card c, given cap usage so far. Pure. */
-export function evaluate(
-  c: CatalogCard,
-  t: Txn,
-  used: Map<string, number>,
-  choice: Set<string> | null,
-): Eval {
-  let best: Eval = { mult: c.base_multiplier, reward: 0, rule: `${c.base_multiplier}x base`, consume: [] };
+/** One way a card can earn on a purchase: a published rule (or the base rate), with its
+ *  cap pool keyed by period ("citi_custom_cash|500|billing_cycle|2026-03"). Shared by
+ *  evaluate() (greedy) and the LP optimizer so the two can never disagree on rules. */
+export type EarnOption = {
+  mult: number;
+  /** Multiplier on the part of the purchase over the cap. */
+  after: number;
+  rule: string;
+  cap: { amount: number; key: string } | null;
+};
 
-  const consider = (mult: number, cap: { amount: number; period: Period; pool: string } | null, after: number, label: string) => {
-    let eff = mult;
-    let consume: Eval["consume"] = [];
-    if (cap) {
-      const key = `${cap.pool}|${periodKey(t.date, cap.period)}`;
-      const left = Math.max(0, cap.amount - (used.get(key) ?? 0));
-      const inCap = Math.min(left, t.amount);
-      eff = t.amount > 0 ? (inCap * mult + (t.amount - inCap) * after) / t.amount : mult;
-      consume = [{ pool: key, amount: inCap }];
-    }
-    if (eff > best.mult) best = { mult: eff, reward: 0, rule: label, consume };
-  };
+/** Every rule on card c that applies to t (merchant include/exclude, everything_else,
+ *  pick-one choice groups, rotating windows), before any cap usage is known. */
+export function earnOptions(c: CatalogCard, t: Txn, choice: Set<string> | null): EarnOption[] {
+  const out: EarnOption[] = [];
+  const add = (mult: number, cap: { amount: number; period: Period; pool: string } | null, after: number, label: string) =>
+    out.push({ mult, after, rule: label, cap: cap ? { amount: cap.amount, key: `${cap.pool}|${periodKey(t.date, cap.period)}` } : null });
 
   for (const r of c.earn_rules) {
     if (r.choice_group && choice && !choice.has(r.category)) continue;
@@ -159,7 +168,7 @@ export function evaluate(
       : r.category === "everything_else"
         ? `${r.multiplier}x on everything`
         : `${r.multiplier}x ${t.category.replace(/_/g, " ")}`;
-    consider(
+    add(
       r.multiplier,
       r.cap ? { amount: r.cap.amount, period: r.cap.period, pool: capPool(c, r) } : null,
       r.after_cap_multiplier ?? c.base_multiplier,
@@ -169,16 +178,47 @@ export function evaluate(
 
   if (inRotation(c, t)) {
     const r = c.rotating!;
-    consider(
+    add(
       r.multiplier,
-      r.cap ? { amount: r.cap, period: r.cap_period ?? "quarter", pool: `${c.id}|rotating` } : null,
+      r.cap ? { amount: r.cap, period: r.cap_period ?? "quarter", pool: rotatingPool(c) } : null,
       r.after_cap_multiplier ?? c.base_multiplier,
       `${r.multiplier}x Q4 rotating ${t.category}`,
     );
   }
+  return out;
+}
+
+/** Value of putting transaction t on card c, given cap usage so far. Pure. */
+export function evaluate(
+  c: CatalogCard,
+  t: Txn,
+  used: Map<string, number>,
+  choice: Set<string> | null,
+): Eval {
+  let best: Eval = { mult: c.base_multiplier, reward: 0, rule: `${c.base_multiplier}x base`, consume: [] };
+
+  for (const o of earnOptions(c, t, choice)) {
+    let eff = o.mult;
+    let consume: Eval["consume"] = [];
+    if (o.cap) {
+      const left = Math.max(0, o.cap.amount - (used.get(o.cap.key) ?? 0));
+      const inCap = Math.min(left, t.amount);
+      eff = t.amount > 0 ? (inCap * o.mult + (t.amount - inCap) * o.after) / t.amount : o.mult;
+      consume = [{ pool: o.cap.key, amount: inCap }];
+    }
+    if (eff > best.mult) best = { mult: eff, reward: 0, rule: o.rule, consume };
+  }
 
   best.reward = (t.amount * best.mult * pointValue(c)) / 100;
   return best;
+}
+
+/** Cards the best-play replay may route new purchases to: never one carrying a balance,
+ *  unless every card in the wallet does. Same order as the wallet. */
+export function eligibleCards(wallet: Holding[]): string[] {
+  const ids = wallet.map((h) => h.cardId);
+  const noBalance = wallet.filter((h) => !(h.balance && h.balance > 0)).map((h) => h.cardId);
+  return noBalance.length > 0 ? noBalance : ids;
 }
 
 // ---------- simulation ----------
@@ -190,8 +230,7 @@ export function evaluate(
 export function simulate(wallet: Holding[], txns: Txn[], policy: Policy, defaultCard?: string): SimResult {
   const ids = wallet.map((h) => h.cardId);
   const cards = ids.map(card);
-  const noBalance = wallet.filter((h) => !(h.balance && h.balance > 0)).map((h) => h.cardId);
-  const eligible = noBalance.length > 0 ? noBalance : ids;
+  const eligible = eligibleCards(wallet);
   const choices = new Map(ids.map((id) => [id, chooseOptions(id, txns)]));
   const used = new Map<string, number>();
   const hits: Hit[] = [];
