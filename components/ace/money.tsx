@@ -10,6 +10,7 @@ import { CARDS } from "@/lib/engine/catalog";
 import { shortName } from "./card-art";
 import { Num } from "./num";
 import { Bracketed, HandNote } from "@/components/brand";
+import { MerchantLogo } from "./merchant-logo";
 import { R, Section } from "./section";
 import { LinkBank } from "./link-bank";
 import { money, useAce } from "./store";
@@ -147,7 +148,10 @@ export function MoneySection() {
             {merchants.map((m, i) => (
               <motion.div key={m.merchant} initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
                 <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="truncate font-medium">{m.merchant}</span>
+                  <span className="flex min-w-0 items-center gap-2 font-medium">
+                    <MerchantLogo name={m.merchant} size={20} />
+                    <span className="truncate">{m.merchant}</span>
+                  </span>
                   <span className="mono shrink-0 text-ace-dim">
                     {m.count}× · <span className="text-ace-ink">{money(m.total)}</span>
                   </span>
@@ -219,7 +223,8 @@ export function MoneySection() {
               const best = tap(wallet, { date: "2026-10-18", merchant: s.merchant, category: s.category, amount: s.amount }).pick;
               return (
                 <div key={s.merchant} className="flex items-center justify-between gap-3 text-sm">
-                  <div className="min-w-0">
+                  <MerchantLogo name={s.merchant} size={24} />
+                  <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">
                       {s.merchant}
                       {s.priceHike && <span className="mono ml-2 rounded bg-ace-loss/15 px-1.5 py-0.5 text-[10px] uppercase text-ace-loss">price up</span>}

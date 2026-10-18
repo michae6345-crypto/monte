@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bracketed, HandNote } from "@/components/brand";
+import { MerchantLogo } from "./merchant-logo";
 import { tap } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
@@ -82,6 +83,7 @@ export function TapSection() {
               }`}
             >
               <span className={`m-num w-10 shrink-0 text-[11px] ${k === i ? "text-ace-ink" : "text-ace-dim"}`} title="Merchant category code: what the issuer sees">{s.mcc}</span>
+              <MerchantLogo name={s.merchant} size={26} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{s.merchant}</span>
                 <span className="mono block text-[10px] uppercase tracking-wider text-ace-dim">{s.where}</span>
@@ -98,7 +100,10 @@ export function TapSection() {
             <div className="mono text-center text-[10px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
             <AnimatePresence mode="wait">
               <motion.div key={spot.merchant} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <div className="mt-1 text-center text-2xl font-semibold">{spot.merchant}</div>
+                <div className="mt-3 flex justify-center">
+                  <MerchantLogo name={spot.merchant} size={44} className="rounded-[12px]" />
+                </div>
+                <div className="mt-2 text-center text-2xl font-semibold">{spot.merchant}</div>
                 <div className="mono text-center text-xs text-ace-dim">
                   MCC {spot.mcc} · {spot.category.replace(/_/g, " ")} · {money(spot.amount, { cents: true })}
                 </div>
