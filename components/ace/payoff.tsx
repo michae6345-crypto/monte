@@ -81,6 +81,23 @@ export function PayoffSection() {
   );
   const total = debts.reduce((a, d) => a + d.balance, 0);
   const firstInterest = debts.reduce((a, d) => a + (d.balance * d.apr) / 1200, 0);
+  const firstMinimum = debts.reduce((a, d) => a + Math.max(35, (d.balance * d.apr) / 1200 + d.balance * 0.01), 0);
+  // spending that swings month to month (irregular income): full months only
+  const swing = useMemo(() => {
+    const by = new Map<string, number>();
+    for (const t of txns) by.set(t.date.slice(0, 7), (by.get(t.date.slice(0, 7)) ?? 0) + t.amount);
+    const keys = [...by.keys()].sort();
+    const dates = txns.map((t) => t.date).sort();
+    const full = keys.filter(
+      (k, i) => !((i === 0 && Number(dates[0]?.slice(8, 10)) > 3) || (i === keys.length - 1 && Number(dates[dates.length - 1]?.slice(8, 10)) < 26)),
+    );
+    if (full.length < 3) return null;
+    const hi = full.reduce((a, k) => (by.get(k)! > by.get(a)! ? k : a));
+    const lo = full.reduce((a, k) => (by.get(k)! < by.get(a)! ? k : a));
+    const ratio = by.get(hi)! / by.get(lo)!;
+    return ratio >= 2.5 ? { hi, lo, hiV: by.get(hi)!, loV: by.get(lo)! } : null;
+  }, [txns]);
+  const mon = (k: string) => new Date(k + "-15T12:00").toLocaleDateString("en-US", { month: "short" });
   const [monthly, setMonthly] = useState(250);
 
   const mine = useMemo(() => payoff(debts, Math.max(monthly, debts.reduce((a, d) => a + (d.balance * d.apr) / 1200, 0) + 5)), [debts, monthly]);
@@ -208,6 +225,13 @@ export function PayoffSection() {
             Interest charged monthly at the card&apos;s APR; the minimum is the month&apos;s interest plus 1% of the balance, at least $35 (a common
             issuer formula). Monte keeps new spending off the card while you pay it down.
           </p>
+          {swing && (
+            <p className="mt-3 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-[13px] leading-relaxed">
+              {nm.Whose} spending runs from {money(swing.loV)} ({mon(swing.lo)}) to {money(swing.hiV)} ({mon(swing.hi)}). In a slow month, pay at
+              least the {money(firstMinimum)} minimum so there&apos;s no late fee, and make it up in the next busy one: each month the balance stays
+              costs about {money(firstInterest)} in interest.
+            </p>
+          )}
         </div>
 
         <div className={`m-panel p-5 transition-opacity duration-500 md:p-6`}>

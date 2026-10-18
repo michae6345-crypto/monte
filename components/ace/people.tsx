@@ -20,10 +20,11 @@ export function People() {
   const { persona, setPersona } = useAce();
   return (
     <div
-      className="flex flex-wrap gap-2"
+      className="flex flex-wrap items-center gap-2"
       role="radiogroup"
       aria-label="Whose year"
     >
+      <span className="m-label mr-1">whose year</span>
       {PERSONAS.map((p) => {
         const on = persona.id === p.id;
         return (
