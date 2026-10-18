@@ -34,7 +34,7 @@ minus interest.
 | **The Receipt** | Rewards + perks − fees − interest, per card, for the year |
 | **Purchases** | Every purchase: the card you used, the card Monte would have picked |
 | **Replay** | The same year routed to the best card in the wallet you already have |
-| **Tap** | The best card at a merchant right now, never one carrying a balance |
+| **Tap** | At the register: every card ranked for this store, the winner pays, never one carrying a balance |
 | **Keep or cancel** | Each card's fee against the value it adds over your next-best card |
 | **Apply** | What to get next, with odds from 1,000 simulated years |
 
