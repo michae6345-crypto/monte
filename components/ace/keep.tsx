@@ -10,7 +10,7 @@ import { R, Section } from "./section";
 import { money, useAce } from "./store";
 import { DriftToggle, FanChart, useMonteCarlo } from "./odds";
 import { Estimator, Expect } from "@/components/brand";
-import { monteCarloSamples } from "@/lib/engine/montecarlo";
+import { monteCarlo, monteCarloSamples } from "@/lib/engine/montecarlo";
 
 export function KeepSection() {
   const { wallet, txns, valuation } = useAce();
@@ -96,7 +96,10 @@ export function KeepSection() {
                   <span className="text-lg font-semibold text-ace-ink">
                     {verdict.label}
                   </span>
-                  <span className={`mono text-sm tnum ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })} last yr</span>
+                  <span className="text-right">
+                    <span className={`m-num block text-sm ${value - cost >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(value - cost, { sign: true })}/yr</span>
+                    <span className="block text-[11px] text-ace-dim">this card on its own</span>
+                  </span>
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">{verdict.why}</p>
                 {drop && (
@@ -104,9 +107,12 @@ export function KeepSection() {
                     <Expect op="P" of="pays for itself">
                       {(1 - drop.winShare).toFixed(2)}
                     </Expect>
-                    <Expect of="net of keeping" tone={mc.current.p50 - drop.p50 >= 0 ? "gain" : "loss"}>
-                      {money(mc.current.p50 - drop.p50, { sign: true })}
-                    </Expect>
+                    <span>
+                      what dropping it gains you:{" "}
+                      <span className={`m-num ${drop.p50 - mc.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>
+                        {money(drop.p50 - mc.current.p50, { sign: true })}/yr
+                      </span>
+                    </span>
                   </p>
                 )}
               </div>
@@ -140,7 +146,7 @@ function Bar({ label, v, span, tone }: { label: string; v: number; span: number;
       <span className="w-24 shrink-0 text-ace-dim">{label}</span>
       <div className="h-2.5 min-w-0 flex-1 bg-ace-line/60">
         <motion.div
-          className={`h-full ${tone === "gain" ? "bg-ace-ink" : "bg-[var(--m-mute)]"}`}
+          className={`h-full ${tone === "gain" ? "bg-ace-ink" : "bg-ace-loss"}`}
           initial={{ width: 0 }}
           whileInView={{ width: `${Math.min(100, (v / span) * 100)}%` }}
           viewport={{ once: true }}
@@ -162,6 +168,12 @@ export function ForYouSection() {
   const [horizon, setHorizon] = useState<"year" | "first">("year");
   const mc = useMonteCarlo();
   const odds = new Map(mc.options.map((o) => [o.id.replace(/^add:/, ""), o.winShare]));
+  // a wallet carrying a balance gets the engine's paid-off projection, clearly labelled
+  const paidOff = useMemo(
+    () => (wallet.some((h) => h.balance) ? monteCarlo(wallet, txns, { years: 1000, seed: 42, assumePaidOff: true }) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [wallet, txns, valuation],
+  );
 
   const spend = useMemo(() => {
     const m: Record<string, number> = {};
@@ -389,13 +401,17 @@ export function ForYouSection() {
           Each simulated year redraws twelve of {persona.name}&apos;s real months; turn drift on to let each category move up or down too. Your
           wallet is dashed, the new card is in blue. A card with no fee can only help; a card with a fee has to earn it.
         </p>
-        {wallet.some((h) => h.balance) && (
-          <p className="mb-4 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-sm">
-            {persona.name} carries a balance, so {b.name} won&apos;t simulate a new card yet. Here is the one move that helps now: cancelling a card whose
-            fee outruns what it adds.
-          </p>
+        {paidOff && paidOff.hypothetical ? (
+          <>
+            <p className="mb-4 rounded-[10px] bg-[var(--m-wash)] px-3 py-2 text-sm">
+              Projection: once {persona.id === "you" ? "you clear" : `${persona.name} clears`} {money(paidOff.hypothetical.clearedBalance)} on the{" "}
+              {paidOff.hypothetical.cards.map(shortName).join(" and ")}. Until then, {b.name} recommends no new card.
+            </p>
+            <FanChart mc={paidOff} kind="add" />
+          </>
+        ) : (
+          <FanChart mc={mc} kind="add" />
         )}
-        <FanChart mc={mc} kind={wallet.some((h) => h.balance) ? "drop" : "add"} />
       </div>
     </Section>
   );

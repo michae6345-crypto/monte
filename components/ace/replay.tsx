@@ -2,7 +2,7 @@
 
 import { useBrand } from "./brands";
 import { motion, useInView } from "framer-motion";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cardArt, shortName } from "./card-art";
 import { Num } from "./num";
 import { Bracketed, HandNote } from "@/components/brand";
@@ -82,15 +82,9 @@ export function ReplaySection() {
       <Stage vh={190}>
         {(p) => {
           const want = p > 0.42 ? "best" : "actual";
-          if (want !== auto) {
-            // scroll drives the flip; a click still overrides until the next crossing
-            queueMicrotask(() => {
-              setAuto(want);
-              setModeRaw(want);
-            });
-          }
           return (
       <div ref={ref} className="m-panel p-5 md:p-8">
+        <ScrollFlip want={want} auto={auto} onFlip={(m) => { setAuto(m); setModeRaw(m); }} />
         <div className="mb-5">
           <StageSteps steps={["as he paid", "on Monte's pick"]} p={p} />
         </div>
@@ -113,7 +107,7 @@ export function ReplaySection() {
           )}
           <div className="text-right">
             <div className="m-label">{mode === "best" ? "Rewards, played right" : "Rewards, as played"}</div>
-            <div className="m-num text-5xl">
+            <div className="text-6xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.04em" }}>
               <Num value={mode === "best" ? r.best.total : r.actual.total} />
             </div>
             <div className={`mono mt-1 text-xs transition-opacity ${mode === "best" ? "text-ace-gain opacity-100" : "opacity-0"}`}>
@@ -162,7 +156,7 @@ export function ReplaySection() {
                     cy: { type: "spring", stiffness: 70, damping: 13, delay: d.moved ? (i % 60) * 0.012 : 0 },
                     opacity: { delay: (d.x / W) * 1.2, duration: 0.3 },
                   }}
-                  fill={mode === "best" ? (d.moved ? "var(--m-ink)" : "var(--m-mute)") : card === "apple_card" ? "#c9cbd1" : extractColor(card)}
+                  fill={mode === "best" ? (d.moved ? "var(--m-ink)" : "var(--m-mute)") : card === "apple_card" ? "#8f949c" : extractColor(card)}
                   fillOpacity={mode === "best" && !d.moved ? 0.35 : 0.85}
                 />
               );
@@ -209,4 +203,12 @@ export function ReplaySection() {
 function extractColor(id: string) {
   const m = cardArt(id).bg.match(/#[0-9a-f]{6}/gi);
   return m ? m[1] ?? m[0] : "#888";
+}
+
+/** Scroll drives the flip; a click still overrides until the scroll crosses the line again. */
+function ScrollFlip({ want, auto, onFlip }: { want: "actual" | "best"; auto: "actual" | "best"; onFlip: (m: "actual" | "best") => void }) {
+  useEffect(() => {
+    if (want !== auto) onFlip(want);
+  }, [want, auto, onFlip]);
+  return null;
 }

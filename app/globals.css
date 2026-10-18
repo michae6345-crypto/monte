@@ -265,6 +265,7 @@ body.ace {
    a lighter weight instead of slate; labels and hand notes are ink. */
 :root {
   --ace-dim: #2c2f36;
+  --m-slate: #2c2f36;
 }
 .ace .m-second {
   color: var(--m-ink);

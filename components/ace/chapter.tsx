@@ -4,7 +4,7 @@
 // seven beats instead of fifteen sections. A section rendered inside a chapter drops its own
 // big header (see Section's "bare" mode) and keeps its punchline as a sub-heading.
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 const Bare = createContext(false);
@@ -48,9 +48,6 @@ export function Chapter({
           <span>
             <span>§{index}</span> · {kicker.toLowerCase()}
           </span>
-          <span className="normal-case tracking-normal">
-            {tabs.length} view{tabs.length > 1 ? "s" : ""}
-          </span>
         </div>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -77,18 +74,15 @@ export function Chapter({
             ))}
           </div>
         )}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={cur.key}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            role="tabpanel"
-          >
-            <Bare.Provider value={true}>{cur.node}</Bare.Provider>
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={cur.key}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          role="tabpanel"
+        >
+          <Bare.Provider value={true}>{cur.node}</Bare.Provider>
+        </motion.div>
       </div>
     </section>
   );

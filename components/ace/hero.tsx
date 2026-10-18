@@ -19,11 +19,11 @@ export function Nav() {
           <Lockup size={20} />
         </a>
         <nav className="m-label hidden gap-6 md:flex">
-          <a href="#money" className="hover:underline">Your year</a>
-          <a href="#receipt" className="hover:underline">Receipt</a>
+          <a href="#receipt" className="hover:underline">Problem</a>
           <a href="#misses" className="hover:underline">Misses</a>
           <a href="#register" className="hover:underline">Register</a>
           <a href="#plan" className="hover:underline">Plan</a>
+          <a href="#next" className="hover:underline">Next year</a>
           <a href="#how" className="hover:underline">How</a>
         </nav>
         <HandPicker />
@@ -63,7 +63,7 @@ export function NextYear() {
               </div>
               <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div>
-                  <p className="m-label mb-6">§06 · next year, played 1,000 times</p>
+                  <p className="m-label mb-6">§05 · next year, played 1,000 times</p>
                   <h2 className="text-4xl md:text-[3.2rem]">
                     Same cards. Same spending.
                     <span className="m-second block">A thousand next years.</span>

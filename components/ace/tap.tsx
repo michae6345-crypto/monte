@@ -8,7 +8,6 @@ import { tap } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { CardArt, shortName } from "./card-art";
 import { R, Section } from "./section";
-import { StrategyChart } from "./strategy";
 import { money, useAce } from "./store";
 
 const SPOTS = [
@@ -148,7 +147,7 @@ export function TapSection() {
               >
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="truncate text-sm font-semibold">{solving ? "ranking your cards" : shortName(pick.cardId)}</span>
-                  <span className={`text-lg ${solving ? "text-ace-dim" : "text-ace-gain"}`}>
+                  <span className={`text-3xl ${solving ? "text-ace-dim" : "text-ace-gain"}`} style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
                     <Bracketed state={solving ? "computing" : "resolved"}>{solving ? "···" : `+${money(pick.reward, { cents: true })}`}</Bracketed>
                   </span>
                 </div>
@@ -214,7 +213,6 @@ export function TapSection() {
           </div>
         </div>
       </div>
-      <StrategyChart />
     </Section>
   );
 }

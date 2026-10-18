@@ -44,7 +44,7 @@ export function RealSection() {
       <div className="grid border-l border-t border-ace-line md:grid-cols-3">
         {cols.map((c) => (
           <div key={c.tag} className="border-b border-r border-ace-line bg-ace-panel p-6">
-            <div className={`mono text-[11px] uppercase tracking-[0.2em] ${c.tone}`}>{c.tag}</div>
+            <div className={`text-3xl ${c.tone}`} style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.03em" }}>{c.tag}</div>
             <dl className="mt-4 space-y-4">
               {c.items.map(([k, v]) => (
                 <div key={k}>

@@ -8,11 +8,20 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 export function Stage({ vh = 240, children, className }: { vh?: number; children: (p: number) => ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [p, setP] = useState(0);
+  // pinning only where there's room for it; phones and small screens get the finished view
+  const [pin, setPin] = useState(true);
   // plain scroll events (not animation frames), so it tracks in every browser state
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 640px)");
     const on = () => {
+      if (!mq.matches) {
+        setPin(false);
+        setP(1);
+        return;
+      }
+      setPin(true);
       const r = el.getBoundingClientRect();
       const span = r.height - window.innerHeight;
       const v = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : r.top < 0 ? 1 : 0;
@@ -27,9 +36,15 @@ export function Stage({ vh = 240, children, className }: { vh?: number; children
       window.removeEventListener("resize", on);
     };
   }, []);
+  if (!pin)
+    return (
+      <div ref={ref} className={className}>
+        {children(p)}
+      </div>
+    );
   return (
     <div ref={ref} className={className} style={{ height: `${vh}vh` }}>
-      <div className="sticky top-0 flex min-h-[100svh] items-center">
+      <div className="sticky top-14 flex min-h-[calc(100svh-3.5rem)] items-center">
         <div className="w-full">{children(p)}</div>
       </div>
     </div>

@@ -415,7 +415,7 @@ export function DropHero() {
             </span>
           </h1>
           <div className="pointer-events-auto mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#money" className="btn btn-primary">
+            <a href="#receipt" className="btn btn-primary">
               See it work <span aria-hidden>→</span>
             </a>
             <a href="#register" className="btn btn-ghost">

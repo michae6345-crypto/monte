@@ -10,16 +10,16 @@ type Step = { id: string; title: string; cue: string; tap?: string; tab?: string
 
 const STEPS: Step[] = [
   { id: "top", title: "Hook", cue: "Every card, played right. Scroll: the market lands around Jordan's three cards." },
-  { id: "money", tab: "stores", title: "Your year", cue: "Every store he paid, sized by spend, with its own logo." },
-  { id: "receipt", title: "Receipt", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
-  { id: "misses", tab: "replay", title: "Replay", cue: "Flip it: same purchases, better cards, $104 back." },
+  { id: "receipt", tab: "receipt", title: "The problem", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
+  { id: "misses", tab: "replay", title: "Replay", cue: "Scroll: the same purchases move to the right card. $104 back." },
   { id: "register", tab: "tap", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
   { id: "register", tab: "card", title: "The Monte Card", cue: "One card, the engine picks at the tap. Simulated, and we say why." },
   { id: "plan", tab: "payoff", title: "Pay this first", cue: "$250 a month: 13 months. Minimums: 12 years. Then +$521 a year." },
-  { id: "plan", tab: "keep", title: "Keep or cancel", cue: "Amex Gold: pays for itself in 0 of 1,000 years. Downgrade." },
+  { id: "plan", tab: "keep", title: "Keep or cancel", cue: "Amex Gold pays for itself in 0 of 1,000 years. Downgrade." },
   { id: "next", title: "Next year", cue: "1,000 simulated years: routing alone moves every dot right." },
   { id: "how", tab: "trace", title: "How it works", cue: "One purchase traced: merchant code, rule, cents, source. No model does the math." },
   { id: "how", tab: "real", title: "Real vs simulated", cue: "Card terms and engine are real. Jordan is synthetic. Plaid is sandbox." },
+  { id: "how", tab: "moat", title: "Why it wins", cue: "Uno picks the card. Monte also counts the fees and the interest, and isn't paid by banks." },
 ];
 
 const noop = () => () => {};
@@ -30,11 +30,12 @@ export function Presenter() {
   const [toggled, setToggled] = useState<boolean | null>(null);
   const on = toggled ?? urlOn;
   // the pitch always runs on the canonical numbers: no leftover store corrections
-  const { overrides, resetOverrides } = useAce();
+  const { overrides, resetOverrides, persona, setPersona } = useAce();
   const dirty = Object.keys(overrides).length > 0;
   useEffect(() => {
     if (on && dirty) resetOverrides();
-  }, [on, dirty, resetOverrides]);
+    if (on && persona.id !== "jordan") setPersona("jordan");
+  }, [on, dirty, resetOverrides, persona.id, setPersona]);
   const [i, setI] = useState(0);
   const [t0, setT0] = useState<number | null>(null);
   const [now, setNow] = useState(0);

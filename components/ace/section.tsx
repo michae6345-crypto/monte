@@ -26,7 +26,7 @@ export function Section({
   const bare = useBare();
   if (bare)
     return (
-      <div id={id} className="scroll-mt-24">
+      <div id={`${id}-view`} className="scroll-mt-24">
         <h3 className="mb-8 max-w-3xl text-3xl md:text-[2.4rem]">{title}</h3>
         {children}
       </div>

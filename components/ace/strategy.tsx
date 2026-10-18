@@ -70,7 +70,7 @@ export function StrategyChart() {
   const detailCard = sel ? card(sel.cardId) : null;
 
   return (
-    <div className="mt-16">
+    <div>
       <div className="mono mb-3 flex flex-wrap items-baseline justify-between gap-2 text-[11px] uppercase tracking-[0.18em] text-ace-dim">
         <span>Strategy chart · {persona.name}&apos;s wallet · cents back per dollar, Oct 2026</span>
         <span className="flex items-center gap-4 normal-case tracking-normal">

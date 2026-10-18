@@ -123,9 +123,9 @@ export function HowSection() {
       </div>
       {t && trace && (
         <div className="overflow-x-auto m-panel-ink text-[13px]">
-          <div className="mono flex items-center justify-between border-b border-white/10 px-5 py-2.5 text-[11px] text-white/50">
+          <div className="mono flex items-center justify-between border-b border-white/10 px-5 py-2.5 text-[11px] text-white/80">
             <span>
-              <span className="text-white/50">$</span> {b.name.toLowerCase()} trace {t.id}
+              <span className="text-white/80">$</span> {b.name.toLowerCase()} trace {t.id}
             </span>
             <span>deterministic · same input, same output</span>
           </div>
@@ -138,12 +138,12 @@ export function HowSection() {
             </Line>
             {trace.res.ranked.map((o) => (
               <Line key={o.cardId} k={o.cardId === trace.res.pick.cardId ? "pick" : "card"}>
-                <span className={o.cardId === trace.res.pick.cardId ? "text-white" : "text-white/60"}>
+                <span className={o.cardId === trace.res.pick.cardId ? "text-white" : "text-white/80"}>
                   {o.cardId}: {o.rule} → {money(t.amount, { cents: true })} × {o.mult.toFixed(o.mult % 1 ? 1 : 0)} × {cents(o.cardId)}¢ ={" "}
                   {money(o.reward, { cents: true })}
                 </span>
                 {o.blocked ? <span style={{ color: "var(--ace-loss)" }}> · off limits: carries a balance</span> : null}
-                <span className="text-white/35"> · src {hostOf(card(o.cardId).source_urls[0])}, checked {card(o.cardId).checked ?? "2026-10-17"}</span>
+                <span className="text-white/80"> · src {hostOf(card(o.cardId).source_urls[0])}, checked {card(o.cardId).checked ?? "2026-10-17"}</span>
               </Line>
             ))}
             {trace.ha && trace.hb && (
@@ -177,7 +177,7 @@ function cents(id: string) {
 function Line({ k, children }: { k: string; children: ReactNode }) {
   return (
     <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4 whitespace-nowrap">
-      <dt className="w-16 shrink-0 text-white/40">{k}</dt>
+      <dt className="w-16 shrink-0 text-white/80">{k}</dt>
       <dd className="text-white/80">{children}</dd>
     </motion.div>
   );
