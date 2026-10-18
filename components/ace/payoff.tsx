@@ -210,7 +210,7 @@ export function PayoffSection() {
           </p>
         </div>
 
-        <div className={`m-panel p-5 transition-opacity duration-500 md:p-6 ${done ? "opacity-100" : "opacity-40"}`}>
+        <div className={`m-panel p-5 transition-opacity duration-500 md:p-6`}>
           <p className="m-label">once it&apos;s clear</p>
           {proj && proj.after.hypothetical ? (
             <>

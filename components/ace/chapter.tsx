@@ -68,7 +68,7 @@ export function Chapter({
                 onClick={() => setKey(t.key)}
                 className={`btn btn-sm ${t.key === cur.key ? "btn-primary" : "btn-ghost"}`}
               >
-                <span className="m-num text-[11px] opacity-60">{String(i + 1).padStart(2, "0")}</span> {t.label}
+                <span className="m-num text-[11px]">{String(i + 1).padStart(2, "0")}</span> {t.label}
               </button>
             ))}
           </div>

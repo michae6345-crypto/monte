@@ -26,7 +26,7 @@ function Row({ k, v, sub, i, strong, trace }: { k: string; v: number; sub?: stri
       className="flex items-baseline justify-between gap-4"
     >
       <span className="min-w-0">
-        <span className={`block truncate ${strong ? "text-ace-ink" : "text-ace-ink/80"}`}>{k}</span>
+        <span className={`block truncate ${strong ? "text-ace-ink font-medium" : "text-ace-ink"}`}>{k}</span>
         {sub && <span className="block text-[10.5px] text-ace-dim">{sub}</span>}
       </span>
       <span className={`m-num shrink-0 ${v < 0 ? "text-ace-loss" : v > 0 ? "text-ace-gain" : "text-ace-dim"} ${strong ? "font-semibold" : ""}`}>
@@ -151,7 +151,7 @@ export function PaperReceipt({
           <Row k="fees" v={-r.fees} i={i++} />
           <Row k="interest" v={-r.interest} i={i++} />
         </div>
-        <div className="mt-4 flex items-end justify-between gap-3">
+        <div id="receipt-net" className="mt-4 flex scroll-mt-40 items-end justify-between gap-3">
           <span className="m-label">net, last 12 months</span>
           <span className={`text-[2.6rem] leading-none ${r.net < 0 ? "text-ace-loss" : "text-ace-gain"}`}>
             <Bracketed>{c2(r.net)}</Bracketed>

@@ -144,7 +144,7 @@ export function MonteCardDemo() {
         <div className="m-mono min-h-[420px] p-6 text-[13px] leading-[1.7]">
           {!shown && (
             <div className="flex h-full flex-col items-start justify-center gap-4 text-m-slate">
-              <span className="m-display text-5xl text-m-mute">[ ]</span>
+              <span className="m-display text-5xl text-m-accent">[ ]</span>
               <p className="m-body max-w-sm text-sm">
                 Pick a place and tap. You&apos;ll see the request the card network would send Monte, and the card Monte&apos;s engine would charge.
               </p>
@@ -177,7 +177,7 @@ export function MonteCardDemo() {
 
               <div>
                 <div className="m-label mb-1.5">2 · ranking your cards</div>
-                {phase === "request" && <span className="text-m-mute">waiting for the request…</span>}
+                {phase === "request" && <span>waiting for the request…</span>}
                 {phase === "ranking" && <Sampler label="Ranking your cards" className="text-xl" />}
                 {phase === "done" &&
                   res.ranked.map((r, n) => (
@@ -186,7 +186,7 @@ export function MonteCardDemo() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: n * 0.08 }}
-                      className={`grid grid-cols-[1fr_auto_auto] items-baseline gap-4 ${r.blocked ? "text-m-mute" : ""}`}
+                      className={`grid grid-cols-[1fr_auto_auto] items-baseline gap-4 ${r.blocked ? "line-through" : ""}`}
                     >
                       <span className={r.cardId === pick?.cardId ? "text-m-ink" : "text-m-slate"}>
                         {r.cardId === pick?.cardId ? "→ " : "  "}
@@ -272,7 +272,7 @@ export function WhyNotRealCard() {
         <ol className="mt-5 space-y-4">
           {WHY.map((w, n) => (
             <li key={w.t} className="grid grid-cols-[28px_1fr] gap-2">
-              <span className="m-num text-m-mute">{String(n + 1).padStart(2, "0")}</span>
+              <span className="m-num text-m-accent">{String(n + 1).padStart(2, "0")}</span>
               <div>
                 <div className="font-medium">{w.t}</div>
                 <p className="mt-1 text-sm leading-relaxed text-m-slate">{w.d}</p>

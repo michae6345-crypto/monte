@@ -119,7 +119,7 @@ export function StrategyChart() {
                         aria-label={`${shortName(c.cardId)} at ${label(r.cat)}: ${c.cpd.toFixed(1)} cents per dollar${c.best ? ", the play" : ""}${c.blocked ? ", off limits" : ""}`}
                       >
                         {c.best && <span className="absolute inset-1 rounded-sm border-2 border-ace-ink" />}
-                        <span className={c.best ? "font-semibold text-ace-ink" : c.blocked ? "text-ace-mute line-through" : "text-ace-dim"}>{c.cpd.toFixed(1)}¢</span>
+                        <span className={c.best ? "font-semibold text-ace-ink" : c.blocked ? "text-ace-ink line-through" : "text-ace-ink"}>{c.cpd.toFixed(1)}¢</span>
                       </button>
                     </td>
                   );

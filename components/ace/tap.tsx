@@ -129,9 +129,9 @@ export function TapSection() {
                     key={h.cardId}
                     className="absolute inset-x-0 mx-auto w-[240px]"
                     animate={{
-                      y: isPick ? 0 : 92 + rank * 16,
-                      scale: isPick ? 1 : 0.86,
-                      rotate: isPick ? 0 : (k - 1) * 4,
+                      y: isPick ? 40 : 40 - rank * 14,
+                      scale: isPick ? 1 : 1 - rank * 0.04,
+                      rotate: isPick ? 0 : (k - 1) * 2,
                       zIndex: isPick ? 20 : 10 - rank,
                     }}
                     transition={{ type: "spring", stiffness: 140, damping: 18 }}
@@ -153,7 +153,7 @@ export function TapSection() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-x-4 bottom-5 rounded-2xl bg-ace-panel p-3.5 shadow-[0_0_0_1px_var(--m-line-strong)]"
+                className="absolute inset-x-4 bottom-5 z-30 rounded-2xl bg-ace-panel p-3.5 shadow-[0_0_0_1px_var(--m-line-strong)]"
               >
                 <div className="text-sm font-semibold leading-tight">{solving ? "ranking your cards" : shortName(pick.cardId)}</div>
                 <div className="mt-1 flex items-baseline justify-between gap-2">

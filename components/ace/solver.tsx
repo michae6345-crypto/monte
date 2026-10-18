@@ -313,7 +313,7 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
             onClick={() => setK(i)}
             className={`btn btn-sm ${i === k ? "btn-primary" : "btn-ghost"}`}
           >
-            <span className="opacity-60">{String(i + 1).padStart(2, "0")}</span> {s.short}
+            <span>{String(i + 1).padStart(2, "0")}</span> {s.short}
           </button>
         ))}
         <span className="m-label ml-auto normal-case tracking-normal">spending held at last year&apos;s pattern</span>

@@ -1,18 +1,18 @@
 "use client";
 
 // Presenter mode for the pitch. Press P (or open ?present) and the arrow keys walk the demo
-// path section by section, with a one-line cue and a 4:00 clock. Esc leaves.
+// path section by section, with a 4:00 clock. C shows the speaker cue; Esc leaves.
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAce } from "./store";
 
 // persona: whose year the step shows (Jordan unless it says otherwise)
-type Step = { id: string; title: string; cue: string; tap?: string; tab?: string; target?: string; persona?: string };
+type Step = { id: string; title: string; cue: string; tap?: string; tab?: string; target?: string; persona?: string; block?: ScrollLogicalPosition };
 
 const STEPS: Step[] = [
   { id: "top", title: "Hook", cue: "Every dollar, played right. For anyone with money moving through a bank, not just card collectors." },
   { id: "see", tab: "stores", target: "money-view", title: "See where it goes", cue: "A year of Jordan's spending: every store, sized by money, growing month by month." },
-  { id: "see", tab: "receipt", target: "receipt-view", title: "What his cards cost", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
+  { id: "see", tab: "receipt", target: "receipt-net", block: "center", title: "What his cards cost", cue: "$553 rewards, $80 perks, −$325 fee, −$735 interest. Net −$427." },
   { id: "leaks", tab: "leaks", target: "leaks-list", title: "Stop the leaks", cue: "Monte found $891 a year leaking: interest, a fee that doesn't pay, the wrong card. Each with its fix." },
   { id: "spend", tab: "replay", target: "replay-view", title: "Spend it right", cue: "Scroll: the same purchases move to the right card. $104 back." },
   { id: "spend", tab: "tap", target: "tap-view", title: "Tap", cue: "At Mobil the Apple Card earns 3x, but it carries a balance. Not this one.", tap: "Mobil" },
@@ -35,6 +35,8 @@ export function Presenter() {
   const { overrides, resetOverrides, persona, setPersona } = useAce();
   const dirty = Object.keys(overrides).length > 0;
   const [i, setI] = useState(0);
+  // the cue is for the speaker; on a projector the pill stays small unless C opens it
+  const [cue, setCue] = useState(false);
   const want = STEPS[i].persona ?? "jordan";
   useEffect(() => {
     if (on && dirty) resetOverrides();
@@ -49,7 +51,7 @@ export function Presenter() {
       setI(n);
       const s = STEPS[n];
       // open the tab first, then land on the view itself, not the chapter heading
-      window.setTimeout(() => document.getElementById(s.target ?? s.id)?.scrollIntoView({ behavior: "smooth", block: "start" }), s.tab ? 120 : 0);
+      window.setTimeout(() => document.getElementById(s.target ?? s.id)?.scrollIntoView({ behavior: "smooth", block: s.block ?? "start" }), s.tab ? 120 : 0);
       if (s.tab) window.dispatchEvent(new CustomEvent("monte:tab", { detail: { chapter: s.id, tab: s.tab } }));
       if (s.tap) window.setTimeout(() => window.dispatchEvent(new CustomEvent("monte:tap", { detail: s.tap })), 450);
     };
@@ -62,6 +64,7 @@ export function Presenter() {
       }
       if (!on) return;
       if (e.key === "Escape") setToggled(false);
+      if (e.key === "c" || e.key === "C") setCue((v) => !v);
       if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
         e.preventDefault();
         setT0((t) => t ?? Date.now());
@@ -89,15 +92,17 @@ export function Presenter() {
   const clock = `${left < 0 ? "−" : ""}${Math.floor(Math.abs(left) / 60)}:${String(Math.abs(left) % 60).padStart(2, "0")}`;
 
   return (
-    <div className="mono fixed bottom-3 right-3 z-[80] flex max-w-[min(440px,calc(100vw-24px))] items-center gap-3 rounded-full bg-ace-ink px-4 py-2 text-[11px] text-ace-bg shadow-[0_8px_24px_-12px_rgba(14,15,18,.5)]">
+    <div
+      className={`mono fixed bottom-3 right-3 z-[80] flex items-center gap-3 bg-ace-ink px-3 py-1.5 text-[11px] text-ace-bg shadow-[0_8px_24px_-12px_rgba(14,15,18,.5)] ${cue ? "max-w-[min(440px,calc(100vw-24px))] rounded-2xl" : "rounded-full"}`}
+    >
       <span className="shrink-0 tnum" style={{ color: "var(--ace-gold)" }}>
         {String(i + 1).padStart(2, "0")}/{STEPS.length}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="font-semibold">{s.title}</span> <span className="opacity-70">· {s.cue}</span>
+        <span className="font-semibold">{s.title}</span>
+        {cue && <span> · {s.cue}</span>}
       </span>
-      <span className={`shrink-0 tnum ${left < 30 ? "text-red-400" : "opacity-70"}`}>{clock}</span>
-      <span className="hidden shrink-0 opacity-50 sm:inline">← → · P</span>
+      <span className={`shrink-0 tnum ${left < 30 ? "text-red-400" : ""}`}>{clock}</span>
     </div>
   );
 }

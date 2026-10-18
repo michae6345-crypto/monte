@@ -57,7 +57,7 @@ export function StageSteps({ steps, p }: { steps: string[]; p: number }) {
   return (
     <div className="m-label flex flex-wrap items-center gap-3">
       {steps.map((s, i) => (
-        <span key={s} className={`flex items-center gap-2 transition-opacity ${i <= at ? "opacity-100" : "opacity-60"}`}>
+        <span key={s} className={`flex items-center gap-2 ${i === at ? "font-semibold" : ""}`}>
           <span className={`inline-block h-[3px] w-8 rounded-full ${i <= at ? "bg-ace-ink" : "bg-[var(--m-line-strong)]"}`} />
           {s}
         </span>

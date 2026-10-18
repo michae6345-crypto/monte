@@ -124,7 +124,7 @@ export function WrappedSection() {
               <span className="w-28">
                 <CardArt id={best.cardId} size="sm" />
               </span>
-              <span className="w-28 opacity-60">
+              <span className="w-28 font-light">
                 <CardArt id={worst.cardId} size="sm" />
               </span>
             </span>
