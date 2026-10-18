@@ -2,6 +2,8 @@
 
 **Every card played right, and what your cards really cost you.**
 
+**[Live site](https://ace-eta-beryl.vercel.app)** · **[Demo video](https://youtu.be/Tn4YrpoLjh8)** · [Devpost](https://devpost.com/software/monte-calygj)
+
 Built at ACM@USC TrojanHacks 2026 (Finance vertical) by Adrian Erlikhman and Michael
 Tarekegn.
 
