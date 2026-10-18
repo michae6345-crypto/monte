@@ -119,8 +119,8 @@ Keys belong in `.env.local` and the host's environment. This repo is public.
 engine, the Monte Carlo, the LP, the receipt and every number it produces, statement CSV
 upload, and the Plaid integration code.
 
-**Simulated:** the five demo people (Jordan, Maya, the Parks, Sam, Rosa) and their transactions are synthetic. Tap is a web
-demo, not NFC. Plaid runs against the sandbox, not a real bank.
+**Simulated:** the five demo people (Jordan, Maya, the Parks, Sam, Rosa) and their
+transactions are synthetic. Tap is a web demo, not NFC. Plaid runs against the sandbox, not a real bank.
 
 **Flagged:** 11 of the 29 cards are marked `UNVERIFIED` in the catalog and badged in the
 UI. Jordan's wallet is fully verified.
