@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Bracketed, Estimator, Expect, HandNote, Lockup, MonteMark, PenMark, Sampler } from "@/components/brand";
+import { AceProvider } from "@/components/ace/store";
+import { MonteCardDemo, WhyNotRealCard } from "@/components/monte-card/monte-card";
 
 export const metadata: Metadata = { title: "𝔼[monte] · brand", robots: { index: false } };
 
@@ -98,13 +100,13 @@ export default function BrandPage() {
             <Cell label="in a nav bar" className="lg:col-span-2">
               <div className="m-panel flex w-full items-center justify-between rounded-full px-5 py-3">
                 <Lockup size={18} />
-                <div className="flex gap-6 text-sm text-m-slate">
+                <div className="hidden gap-6 text-sm text-m-slate lg:flex">
                   <span>Tap</span>
                   <span>Money</span>
                   <span>Keep or cancel</span>
                   <span>Apply</span>
                 </div>
-                <span className="rounded-full bg-m-accent px-4 py-1.5 text-sm text-white">Try Jordan&apos;s year</span>
+                <span className="whitespace-nowrap rounded-full bg-m-accent px-4 py-1.5 text-sm text-white">Try Jordan&apos;s year</span>
               </div>
             </Cell>
           </div>
@@ -299,6 +301,14 @@ export default function BrandPage() {
               </div>
             </Cell>
           </div>
+        </Block>
+        <Block n="08" title="Monte Card (simulated)" note="One card in Apple Pay; at the tap, the engine picks which real card pays. The request is made up; the pick is the real engine. Always shown with the explainer beside it.">
+          <AceProvider>
+            <div className="space-y-4">
+              <MonteCardDemo />
+              <WhyNotRealCard />
+            </div>
+          </AceProvider>
         </Block>
       </div>
     </main>
