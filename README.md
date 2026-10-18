@@ -120,7 +120,8 @@ engine, the Monte Carlo, the LP, the receipt and every number it produces, state
 upload, and the Plaid integration code.
 
 **Simulated:** the five demo people (Jordan, Maya, the Parks, Sam, Rosa) and their
-transactions are synthetic. Tap is a web demo, not NFC. Plaid runs against the sandbox, not a real bank.
+transactions are synthetic. Tap is a web demo, not NFC. Plaid runs against the sandbox,
+not a real bank.
 
 **Flagged:** cards marked `UNVERIFIED` in the catalog are badged in the UI. Jordan's wallet
 is fully verified.
