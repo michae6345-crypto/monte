@@ -11,7 +11,7 @@
 import { NextResponse } from "next/server";
 import { evaluate, pointValue, type Holding, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
-import { capMapFrom, type CapRow } from "@/lib/db/cap-state";
+import { capMapFrom, choiceFor, type CapRow } from "@/lib/db/cap-state";
 import { serviceDb, notConfigured, requestUser, unauthorized } from "@/lib/db/client";
 
 
@@ -58,7 +58,8 @@ export async function POST(req: Request) {
   const ranked = wallet
     .map((h) => {
       const c = card(h.cardId);
-      const ev = evaluate(c, txn, used, null);
+      // choiceFor: a pick-one card earns its bonus on the chosen category only, never all six.
+      const ev = evaluate(c, txn, used, choiceFor(h.cardId, []));
       // The one rule the engine never breaks: a card carrying a balance is not a
       // candidate. New spending on it accrues interest from the day it posts, so any
       // reward it pays is a discount on a loan you are losing.

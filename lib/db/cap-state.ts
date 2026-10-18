@@ -8,8 +8,18 @@
 // The rule: sync walks the history once and writes these counters. Every purchase after
 // that increments them. Nothing replays.
 
-import { evaluate, type Holding, type Txn } from "@/lib/engine";
+import { chooseOptions, evaluate, type Holding, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
+
+/** Pick-one cards (BofA Customized Cash) must be evaluated with the category the person
+ *  chose. Passing null to evaluate() turns on EVERY choice option at once, which pays 3%
+ *  on six categories instead of one. With a history we choose the way the engine does;
+ *  without one we choose none, so the card is understated rather than overstated. */
+export function choiceFor(cardId: string, txns: Txn[]): Set<string> | null {
+  const hasChoice = card(cardId).earn_rules.some((r) => r.choice_group);
+  if (!hasChoice) return null;
+  return txns.length ? chooseOptions(cardId, txns) : new Set();
+}
 
 export type CapRow = { card_id: string; pool_key: string; period_key: string; consumed: number };
 
@@ -18,11 +28,12 @@ export type CapRow = { card_id: string; pool_key: string; period_key: string; co
 export function capStateFrom(wallet: Holding[], txns: Txn[]): CapRow[] {
   const used = new Map<string, number>();
   const byCard = new Map<string, Map<string, number>>();
+  const choices = new Map(wallet.map((h) => [h.cardId, choiceFor(h.cardId, txns)]));
 
   for (const t of [...txns].sort((a, b) => a.date.localeCompare(b.date))) {
     const holding = wallet.find((h) => h.cardId === t.cardUsed);
     if (!holding) continue;
-    const ev = evaluate(card(holding.cardId), t, used, null);
+    const ev = evaluate(card(holding.cardId), t, used, choices.get(holding.cardId) ?? null);
     for (const c of ev.consume) {
       used.set(c.pool, (used.get(c.pool) ?? 0) + c.amount);
       if (!byCard.has(holding.cardId)) byCard.set(holding.cardId, new Map());
@@ -55,9 +66,9 @@ export function capMapFrom(rows: CapRow[]): Map<string, number> {
 }
 
 /** After a purchase is approved, add what it consumed. This is the only write a tap makes. */
-export function applyPurchase(rows: CapRow[], holding: Holding, t: Txn): CapRow[] {
+export function applyPurchase(rows: CapRow[], holding: Holding, t: Txn, choice: Set<string> | null = choiceFor(holding.cardId, [])): CapRow[] {
   const used = capMapFrom(rows);
-  const ev = evaluate(card(holding.cardId), t, used, null);
+  const ev = evaluate(card(holding.cardId), t, used, choice);
   const next = [...rows];
   for (const c of ev.consume) {
     const i = c.pool.lastIndexOf("|");
