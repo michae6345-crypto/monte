@@ -16,6 +16,9 @@ import { Cards } from "./cards";
 import { Year } from "./year";
 import { Connect } from "./connect";
 import { useWallet } from "./use-wallet";
+import { walletFromHash } from "./share";
+import { shortName } from "@/lib/card-name";
+import type { Holding } from "@/lib/engine";
 
 type Tab = "pay" | "cards" | "year" | "connect";
 const TABS: { k: Tab; label: string; Icon: typeof ScanLine }[] = [
@@ -29,8 +32,16 @@ export function MonteApp() {
   const { saved, save, update, clear } = useWallet();
   const [tab, setTab] = useState<Tab>("pay");
   // a link straight to a tab (/app#cards), e.g. from the extension or the story page
+  const [incoming, setIncoming] = useState<Holding[] | null>(null);
   useEffect(() => {
     const read = () => {
+      // a link with cards in it (from "Copy to another device"): offer them, then tidy the address
+      const shared = walletFromHash(window.location.hash);
+      if (shared) {
+        setIncoming(shared);
+        history.replaceState(null, "", "/app");
+        return;
+      }
       const h = window.location.hash.slice(1) as Tab;
       if (TABS.some((t) => t.k === h)) setTab(h);
     };
@@ -65,6 +76,30 @@ export function MonteApp() {
       </header>
 
       <main className="flex-1 px-4 pb-28 pt-2">
+        {incoming && (
+          <section role="status" className="m-panel mb-4 border-l-4 border-[var(--m-accent)] p-4 text-sm">
+            <p>
+              This link has {incoming.length} card{incoming.length === 1 ? "" : "s"}: {incoming.map((h) => shortName(h.cardId)).join(", ")}.
+              {saved && saved.wallet.length ? " Using them replaces the cards in this browser." : ""}
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => {
+                  save({ source: "manual", label: "Cards from a link", wallet: incoming, txns: [] });
+                  setIncoming(null);
+                  go("pay");
+                }}
+              >
+                Use these cards
+              </button>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setIncoming(null)}>
+                No thanks
+              </button>
+            </div>
+          </section>
+        )}
         {saved === undefined ? (
           <div className="m-panel h-64 animate-pulse" aria-busy />
         ) : !saved || !wallet.length ? (

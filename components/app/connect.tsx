@@ -8,7 +8,9 @@
 //  - Forget: drops the Plaid item server-side and clears this browser.
 
 import { useEffect, useRef, useState } from "react";
-import { Building2, FileUp, Puzzle, Sparkles, Trash2 } from "lucide-react";
+import { Building2, FileUp, Puzzle, RefreshCw, Share2, Sparkles, Trash2 } from "lucide-react";
+import { fetchPlaidData } from "@/lib/data/plaid-feed";
+import { walletLink } from "./share";
 import { PERSONAS, yearOf } from "@/lib/data/personas";
 import { connectSandboxBank, connectWithPlaid, disconnectPlaid, plaidStatus, type Linked } from "@/lib/data/plaid-link";
 import { PlaidUnavailable } from "@/lib/data/plaid-feed";
@@ -170,6 +172,49 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
           <p className="text-ace-dim">
             Showing: <span className="text-ace-ink">{saved.label}</span>, saved in this browser only.
           </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {saved.source === "plaid" && (
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={async () => {
+                  setBusy("plaid");
+                  try {
+                    const feed = await fetchPlaidData();
+                    onSave({ source: "plaid", label: saved.label, wallet: feed.wallet, txns: feed.txns });
+                    setMsg(`Refreshed: ${feed.txns.length.toLocaleString()} purchases on ${feed.wallet.length} cards.`);
+                  } catch (e) {
+                    setMsg(e instanceof PlaidUnavailable && e.code === "plaid_not_linked" ? "The bank link has expired. Connect with Plaid again to refresh." : "Plaid didn't answer. Try again in a minute.");
+                  } finally {
+                    setBusy(null);
+                  }
+                }}
+                className="btn btn-ghost btn-sm"
+              >
+                <RefreshCw className="h-4 w-4" /> Refresh from bank
+              </button>
+            )}
+            {saved.wallet.length > 0 && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const url = walletLink(saved.wallet);
+                  try {
+                    if (navigator.share) await navigator.share({ title: "My cards in Monte", url });
+                    else {
+                      await navigator.clipboard.writeText(url);
+                      setMsg("Link copied. Open it on your phone or another browser to bring these cards over (just the cards: no purchases).");
+                    }
+                  } catch {
+                    setMsg(url);
+                  }
+                }}
+                className="btn btn-ghost btn-sm"
+              >
+                <Share2 className="h-4 w-4" /> Copy to another device
+              </button>
+            )}
+          </div>
           <button
             type="button"
             onClick={async () => {

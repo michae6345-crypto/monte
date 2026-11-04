@@ -10,7 +10,8 @@ import { CardMini, shortName } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money } from "@/components/ace/store";
 
-const fmt = (n: number, sign = false) => money(n, { cents: true, sign });
+// nothing is "$0.00", not "+$0.00" (Maya has no interest and no perks)
+const fmt = (n: number, sign = false) => (Math.abs(n) < 0.005 ? "$0.00" : money(n, { cents: true, sign }));
 
 export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn[]; onConnect: () => void }) {
   const r = useMemo(() => (txns.length && wallet.length ? receipt(wallet, txns) : null), [wallet, txns]);
@@ -55,13 +56,13 @@ export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn
         <p className="mt-1 text-sm text-ace-dim">what your cards made you, after fees and interest</p>
         <dl className="mono mt-4 grid grid-cols-2 gap-y-1.5 text-[13px]">
           <dt className="text-ace-dim">rewards</dt>
-          <dd className="text-right m-gain">{fmt(r.rewards, true)}</dd>
+          <dd className={`text-right ${r.rewards > 0.005 ? "m-gain" : "text-ace-dim"}`}>{fmt(r.rewards, true)}</dd>
           <dt className="text-ace-dim">credits used</dt>
-          <dd className="text-right m-gain">{fmt(r.credits, true)}</dd>
+          <dd className={`text-right ${r.credits > 0.005 ? "m-gain" : "text-ace-dim"}`}>{fmt(r.credits, true)}</dd>
           <dt className="text-ace-dim">annual fees</dt>
-          <dd className="text-right m-loss">{fmt(-r.fees, true)}</dd>
+          <dd className={`text-right ${r.fees > 0.005 ? "m-loss" : "text-ace-dim"}`}>{fmt(-r.fees, true)}</dd>
           <dt className="text-ace-dim">interest (a year at today&apos;s balance)</dt>
-          <dd className="text-right m-loss">{fmt(-r.interest, true)}</dd>
+          <dd className={`text-right ${r.interest > 0.005 ? "m-loss" : "text-ace-dim"}`}>{fmt(-r.interest, true)}</dd>
         </dl>
         {r.leftOnTable > 0.005 && (
           <p className="mt-4 rounded-[12px] bg-[var(--m-accent-wash)] p-3 text-sm">
