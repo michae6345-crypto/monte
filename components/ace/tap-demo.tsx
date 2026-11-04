@@ -47,12 +47,24 @@ export function TapDemo() {
     return () => window.removeEventListener("monte:tapdemo", on);
   }, []);
 
+  // step aside at the footer, so the button never sits on its links (it's bottom-left, like them)
+  const [atFoot, setAtFoot] = useState(false);
+  useEffect(() => {
+    const foot = document.querySelector("footer");
+    if (!foot) return;
+    const io = new IntersectionObserver(([e]) => setAtFoot(e.isIntersecting));
+    io.observe(foot);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 left-4 z-[75] flex items-center gap-2 rounded-full bg-ace-ink px-4 py-2.5 text-sm font-medium text-ace-bg shadow-[0_12px_30px_-12px_rgba(12,14,20,.6)] transition hover:scale-[1.03]"
+        className={`fixed bottom-4 left-4 z-[75] flex items-center gap-2 rounded-full bg-ace-ink px-4 py-2.5 text-sm font-medium text-ace-bg shadow-[0_12px_30px_-12px_rgba(12,14,20,.6)] transition hover:scale-[1.03] ${atFoot ? "pointer-events-none translate-y-3 opacity-0" : ""}`}
         aria-label="Open the tap-to-pay demo"
+        aria-hidden={atFoot || undefined}
+        tabIndex={atFoot ? -1 : undefined}
       >
         <Contactless className="h-4 w-4" />
         Try tap to pay

@@ -214,9 +214,10 @@ function Proof() {
   ];
   return (
     <div className="mb-10">
-      <ol className="grid gap-px overflow-hidden rounded-[14px] bg-[var(--m-line)] sm:grid-cols-5">
+      {/* two across on a phone (the last, the net, across both), five in a row from sm up */}
+      <ol className="grid grid-cols-2 gap-px overflow-hidden rounded-[14px] bg-[var(--m-line)] sm:grid-cols-5">
         {steps.map(([n, l], k) => (
-          <li key={l} className="bg-ace-panel px-4 py-3">
+          <li key={l} className={`bg-ace-panel px-4 py-3 ${k === steps.length - 1 ? "col-span-2 sm:col-span-1" : ""}`}>
             <div className="m-num text-[11px]">{String(k + 1).padStart(2, "0")}</div>
             <div className="mt-1 text-xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
               {n}
@@ -356,7 +357,22 @@ export function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-5 text-sm text-ace-dim md:flex-row">
         <div className="flex flex-col gap-3">
           <Lockup size={28} state="resolved" />
-          <p>Built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with Claude Code.</p>
+          <p>
+            Built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with Claude Code.{" "}
+            <span className="text-ace-ink">1st place, Finance track.</span>
+          </p>
+          <p className="flex flex-wrap gap-x-4 gap-y-1">
+            {[
+              ["Code", "https://github.com/michae6345-crypto/monte"],
+              ["Devpost", "https://devpost.com/software/monte-calygj"],
+              ["Launch film", "https://youtu.be/Tn4YrpoLjh8"],
+              ["Under the hood", "/engine"],
+            ].map(([l, href]) => (
+              <a key={l} href={href} {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})} className="underline decoration-[var(--m-line-strong)] underline-offset-4 hover:text-ace-ink">
+                {l}
+              </a>
+            ))}
+          </p>
         </div>
         <p className="mono text-[11px] uppercase tracking-wider">Card terms checked 17 Oct 2026 · Demo people are synthetic · Not financial advice</p>
       </div>

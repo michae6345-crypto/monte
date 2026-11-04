@@ -15,7 +15,7 @@
   <a href="https://devpost.com/software/monte-calygj">Devpost</a>
 </p>
 
-<p align="center"><sub>ACM@USC TrojanHacks 2026 · Finance</sub></p>
+<p align="center"><sub>ACM@USC TrojanHacks 2026 · 1st place, Finance track</sub></p>
 
 ## The problem
 
@@ -200,4 +200,4 @@ Each folder has its own README with a line per file.
 ## Team
 
 Built at **ACM@USC TrojanHacks 2026** (Finance) by Michael Tarekegn (backend: Plaid, Monte Carlo,
-LP, tests) and Adrian Erlikhman (product, UI, brand).
+LP, tests) and Adrian Erlikhman (product, UI, brand). It won **1st place in the Finance track**.
