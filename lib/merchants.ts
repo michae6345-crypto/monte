@@ -8,7 +8,9 @@
 import { categorize } from "@/lib/data/plaid";
 import { PERSONAS, yearOf } from "@/lib/data/personas";
 
-export type Place = { name: string; category: string; via: "rule" | "known" | "words" | "unknown" };
+/** via: rule (category_map.json), known (a merchant we know), words (in its name), map (its
+ *  OpenStreetMap tags, for nearby stores), unknown (everything else). */
+export type Place = { name: string; category: string; via: "rule" | "known" | "words" | "map" | "unknown" };
 
 export const CATEGORY_LABEL: Record<string, string> = {
   groceries: "Groceries",
@@ -141,7 +143,7 @@ export function searchPlaces(q: string, limit = 6): Place[] {
   return out.slice(0, limit);
 }
 
-// ---------- near me: OpenStreetMap, through the public Overpass API ----------
+// ---------- near me: OpenStreetMap, through Photon (komoot), Overpass as the fallback ----------
 
 export type Nearby = Place & { meters: number; osm: string };
 
@@ -170,34 +172,78 @@ const metersBetween = (a: [number, number], b: [number, number]) => {
   return 2 * R * Math.asin(Math.sqrt(h));
 };
 
-type OsmElement = { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> };
+type Raw = { id: string; name: string; lat: number; lon: number; tags: Record<string, string> };
 
-/** Named stores within `radius` meters, nearest first. Browser only; throws on network errors. */
-export async function nearbyPlaces(lat: number, lon: number, radius = 250): Promise<Nearby[]> {
+const AMENITIES = /^(restaurant|cafe|fast_food|bar|pub|food_court|ice_cream|fuel|pharmacy|charging_station|cinema|theatre)$/;
+
+async function timed(url: string, init: RequestInit = {}, ms = 8000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const res = await fetch(url, { ...init, signal: ctl.signal });
+    if (!res.ok) throw new Error(`answered ${res.status}`);
+    return await res.json();
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/** Photon (komoot's OpenStreetMap geocoder): quick, and answers when Overpass is overloaded. */
+async function viaPhoton(lat: number, lon: number, radius: number): Promise<Raw[]> {
+  type F = { geometry: { coordinates: [number, number] }; properties: { name?: string; osm_key?: string; osm_value?: string; osm_type?: string; osm_id?: number } };
+  const u = `https://photon.komoot.io/reverse?lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}&limit=30&radius=${radius / 1000}&osm_tag=shop&osm_tag=amenity&osm_tag=tourism`;
+  const d = (await timed(u)) as { features?: F[] };
+  return (d.features ?? [])
+    .filter((f) => f.properties.name && f.properties.osm_key && (f.properties.osm_key !== "amenity" || AMENITIES.test(f.properties.osm_value ?? "")))
+    .map((f) => ({
+      id: `${f.properties.osm_type ?? "x"}/${f.properties.osm_id ?? f.properties.name}`,
+      name: f.properties.name!,
+      lon: f.geometry.coordinates[0],
+      lat: f.geometry.coordinates[1],
+      tags: { [f.properties.osm_key!]: f.properties.osm_value ?? "" },
+    }));
+}
+
+/** Overpass: the full OpenStreetMap query, as a fallback. */
+async function viaOverpass(lat: number, lon: number, radius: number): Promise<Raw[]> {
+  type E = { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> };
   const around = `(around:${radius},${lat.toFixed(5)},${lon.toFixed(5)})`;
-  const q = `[out:json][timeout:12];(nwr${around}["shop"]["name"];nwr${around}["amenity"~"^(restaurant|cafe|fast_food|bar|pub|food_court|ice_cream|fuel|pharmacy|charging_station|cinema|theatre)$"]["name"];nwr${around}["tourism"~"^(hotel|motel)$"]["name"];);out center 60;`;
-  const res = await fetch("https://overpass-api.de/api/interpreter", {
+  const q = `[out:json][timeout:8];(nwr${around}["shop"]["name"];nwr${around}["amenity"~"${AMENITIES.source}"]["name"];nwr${around}["tourism"~"^(hotel|motel)$"]["name"];);out center 60;`;
+  const d = (await timed("https://overpass-api.de/api/interpreter", {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+    headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
     body: "data=" + encodeURIComponent(q),
+  })) as { elements?: E[] };
+  return (d.elements ?? []).flatMap((e) => {
+    const tags = e.tags ?? {};
+    const pos = e.center ?? (e.lat != null && e.lon != null ? { lat: e.lat, lon: e.lon } : null);
+    const name = tags.brand ?? tags.name;
+    return name && pos ? [{ id: `${e.type}/${e.id}`, name, lat: pos.lat, lon: pos.lon, tags }] : [];
   });
-  if (!res.ok) throw new Error(`OpenStreetMap answered ${res.status}`);
-  const data = (await res.json()) as { elements?: OsmElement[] };
+}
+
+/** Named stores within `radius` meters, nearest first. Browser only; throws if no source answers. */
+export async function nearbyPlaces(lat: number, lon: number, radius = 250): Promise<Nearby[]> {
+  let raw: Raw[];
+  try {
+    raw = await viaPhoton(lat, lon, radius);
+  } catch {
+    raw = await viaOverpass(lat, lon, radius);
+  }
   const seen = new Set<string>();
   const out: Nearby[] = [];
-  for (const e of data.elements ?? []) {
-    const tags = e.tags ?? {};
-    const name = tags.brand ?? tags.name;
-    const pos = e.center ?? (e.lat != null && e.lon != null ? { lat: e.lat, lon: e.lon } : null);
-    if (!name || !pos) continue;
+  for (const e of raw) {
+    const { tags, name } = e;
+    const pos = { lat: e.lat, lon: e.lon };
     const meters = Math.round(metersBetween([lat, lon], [pos.lat, pos.lon]));
+    if (meters > radius * 1.2) continue;
     const dedupe = key(name) + Math.round(meters / 40);
     if (seen.has(dedupe)) continue;
     seen.add(dedupe);
     // the name first (a Costco's tags say "wholesale", its name says Costco; a Shell is gas)
     const byName = placeFor(name);
     const category = byName.via === "rule" || byName.via === "known" ? byName.category : categoryFromTags(tags);
-    out.push({ name, category, via: byName.via === "unknown" ? "words" : byName.via, meters, osm: `${e.type}/${e.id}` });
+    out.push({ name, category, via: byName.via === "rule" || byName.via === "known" ? byName.via : "map", meters, osm: e.id });
   }
   return out.sort((a, b) => a.meters - b.meters).slice(0, 20);
 }

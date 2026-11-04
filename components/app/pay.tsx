@@ -3,7 +3,7 @@
 // Pay: where are you, roughly how much, and which card to hold up to the reader. The answer
 // counts interest as well as points (lib/engine/interest.ts), and says why in a sentence.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapPin, Search, X } from "lucide-react";
 import type { Holding, Txn } from "@/lib/engine";
 import { choose, type Decision } from "@/lib/engine/interest";
@@ -45,22 +45,47 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
     setQ(p.name);
     setNear({ k: "idle" });
   };
-  const findNear = () => {
-    if (!("geolocation" in navigator)) return setNear({ k: "error", msg: "This browser can't share a location. Type the store instead." });
-    setNear({ k: "asking" });
+  const [auto, setAuto] = useState<Nearby | null>(null);
+  const findNear = (opts: { quiet?: boolean } = {}) => {
+    if (!("geolocation" in navigator)) return opts.quiet ? undefined : setNear({ k: "error", msg: "This browser can't share a location. Type the store instead." });
+    if (!opts.quiet) setNear({ k: "asking" });
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
           const list = await nearbyPlaces(pos.coords.latitude, pos.coords.longitude);
+          if (opts.quiet) {
+            // opened at a store: take it, if it's close enough to be the one you're standing in
+            const here = list[0];
+            if (here && here.meters <= 60) {
+              setAuto(here);
+              setPlace((cur) => cur ?? here);
+              setQ((cur) => cur || here.name);
+            }
+            return;
+          }
           setNear(list.length ? { k: "done", list } : { k: "error", msg: "No stores found within 250 m. Type the store instead." });
         } catch {
-          setNear({ k: "error", msg: "OpenStreetMap didn't answer. Type the store instead." });
+          if (!opts.quiet) setNear({ k: "error", msg: "OpenStreetMap didn't answer. Type the store instead." });
         }
       },
-      () => setNear({ k: "error", msg: "Location is off for this site. Type the store instead." }),
+      () => (opts.quiet ? undefined : setNear({ k: "error", msg: "Location is off for this site. Type the store instead." })),
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
     );
   };
+  // Like a wallet that knows where you are: if this site already has location permission (it
+  // never asks on its own), look up the store you're at as the screen opens.
+  useEffect(() => {
+    let live = true;
+    navigator.permissions
+      ?.query({ name: "geolocation" as PermissionName })
+      .then((s) => {
+        if (live && s.state === "granted") findNear({ quiet: true });
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -113,13 +138,31 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
         )}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={findNear} disabled={near.k === "asking"} className="btn btn-ghost btn-sm">
+          <button type="button" onClick={() => findNear()} disabled={near.k === "asking"} className="btn btn-ghost btn-sm">
             <MapPin className="h-4 w-4" /> {near.k === "asking" ? "Finding stores…" : "Near me"}
           </button>
           {place && (
             <span className="text-xs text-ace-dim">
               {CATEGORY_LABEL[place.category]}
               {place.via === "words" || place.via === "unknown" ? " (a guess from the name)" : ""}
+              {auto && place.name === auto.name && (
+                <>
+                  {" "}
+                  · you&apos;re {auto.meters} m away ·{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuto(null);
+                      setPlace(null);
+                      setQ("");
+                      findNear();
+                    }}
+                    className="underline underline-offset-2"
+                  >
+                    not here?
+                  </button>
+                </>
+              )}
             </span>
           )}
         </div>
@@ -139,7 +182,7 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
                 </button>
               </li>
             ))}
-            <li className="px-3 py-2 text-[11px] text-ace-dim">Stores from OpenStreetMap. Your location goes to its Overpass service for this one search and isn&apos;t kept.</li>
+            <li className="px-3 py-2 text-[11px] text-ace-dim">Stores from OpenStreetMap. Your location goes to komoot&apos;s Photon search (or OpenStreetMap&apos;s Overpass) for this one lookup and isn&apos;t kept by Monte.</li>
           </ul>
         )}
 
