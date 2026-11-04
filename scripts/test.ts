@@ -6,3 +6,4 @@ import "@/tests/provenance.test";
 import "@/tests/interest.test";
 import "@/tests/merchants.test";
 import "@/tests/apportion.test";
+import "@/tests/api-best.test";

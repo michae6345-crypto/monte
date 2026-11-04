@@ -85,7 +85,7 @@ For Jordan, `scripts/jordan-check.ts` rebuilds the receipt line by line:
 | Same purchases, best card in the same wallet | $656.83 |
 | **Left on the table** | **$104.14** |
 
-`npm test` runs 52 tests, including five hand-computed earn cases, the interest-aware choice, and a check that the
+`npm test` runs 55 tests, including five hand-computed earn cases, the interest-aware choice, and a check that the
 receipt's sourced lines add up to the engine's total, to the cent, for every demo person.
 
 ## How it works
@@ -175,14 +175,14 @@ for presenter mode and walk the demo with the arrow keys, or open [`/#tap-demo`]
 npm install
 npm run dev          # http://localhost:3000
 npm run check        # typecheck, lint, build
-npm test             # 52 tests
+npm test             # 55 tests
 npm run smoke        # checks a deployment's demo path
 ```
 
 **Check the numbers.** Each script prints its working:
 
 ```bash
-node --import ./scripts/_alias.mjs scripts/test.ts          # 52 tests, hand-computed cases
+node --import ./scripts/_alias.mjs scripts/test.ts          # 55 tests, hand-computed cases
 node --import ./scripts/_alias.mjs scripts/jordan-check.ts  # the −$427.03 receipt, line by line
 node --import ./scripts/_alias.mjs scripts/mc.ts            # Monte Carlo odds per person
 node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy, with a worked cap trap
@@ -249,7 +249,7 @@ is fully verified.
 | `lib/data/` | The five demo people and the Plaid mapping |
 | `data/` | Card catalog and category map, each rule with its source |
 | `scripts/` | Verification scripts and the smoke test |
-| `tests/` | 52 tests, including hand-computed cases |
+| `tests/` | 55 tests, including hand-computed cases |
 | `docs/` | Spec, deploy runbook, brand, judge Q&A |
 
 Each folder has its own README with a line per file.
