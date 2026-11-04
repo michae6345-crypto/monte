@@ -68,8 +68,11 @@ async function run() {
       return `<li class="${cls}"><span>${esc(c.name)}${note}</span><span class="n ${c.net >= 0 ? "gain" : "loss"}">${money(c.net)}</span></li>`;
     })
     .join("");
+  const perks = (r.perks || [])
+    .map((p) => `<p class="perk">Use your ${esc(p.name)}'s <b>${money(p.amount)} ${esc(p.per)}</b> ${esc(p.credit)} first, if it isn't used yet.</p>`)
+    .join("");
   render(
-    `<p class="label">${esc(r.place.label)} at ${esc(r.place.name)}${r.place.via === "words" ? " (best guess)" : ""}</p>
+    `${perks}<p class="label">${esc(r.place.label)} at ${esc(r.place.name)}${r.place.via === "words" ? " (best guess)" : ""}</p>
      <div class="pick">${esc(p.name)}</div>
      <div class="earn"><span class="${p.net >= 0 ? "gain" : "loss"}">${p.interest > 0 ? money(p.net) + " net" : money(p.reward) + " back"}</span> <span class="dim">on ${money(r.amount)}</span></div>
      <div class="rule">${esc(p.rule)}</div>

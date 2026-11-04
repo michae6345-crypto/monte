@@ -12,6 +12,7 @@ import { CardArt, CardMini, shortName } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money } from "@/components/ace/store";
 import { why } from "@/lib/explain";
+import { perksAt } from "@/lib/perks";
 
 const fmt = (n: number) => money(n, { cents: true });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -180,8 +181,29 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
         </div>
       </section>
 
+      {place && <Perks wallet={wallet} merchant={place.name} />}
       {d && <Answer d={d} where={place ? `at ${place.name}` : `on ${(CATEGORY_LABEL[cat] ?? cat).toLowerCase()}`} />}
     </div>
+  );
+}
+
+/** A credit one of your cards has at this store: free money that expires, so it comes first. */
+function Perks({ wallet, merchant }: { wallet: Holding[]; merchant: string }) {
+  const list = perksAt(wallet, merchant);
+  if (!list.length) return null;
+  return (
+    <section className="m-panel border-l-4 border-[var(--m-gain)] p-4" aria-label="Perks here">
+      <p className="m-label">use a perk first</p>
+      {list.map((p) => (
+        <div key={p.cardId + p.credit.name} className="mt-2 flex items-center gap-3">
+          <CardMini id={p.cardId} width={40} />
+          <p className="text-sm">
+            Your {shortName(p.cardId)} has <b>{money(p.credit.amount, { cents: p.credit.amount % 1 !== 0 })} {p.per}</b> of {p.credit.name.replace(/ credit$/i, " credit")}.{" "}
+            <span className="text-ace-dim">If this period&apos;s isn&apos;t used yet, pay with it before any card&apos;s points: it doesn&apos;t roll over.</span>
+          </p>
+        </div>
+      ))}
+    </section>
   );
 }
 

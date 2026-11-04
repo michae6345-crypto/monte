@@ -11,6 +11,7 @@ import { choose } from "@/lib/engine/interest";
 import { CATEGORY_LABEL, placeFor, type Place } from "@/lib/merchants";
 import { shortName } from "@/lib/card-name";
 import { why } from "@/lib/explain";
+import { perksAt } from "@/lib/perks";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -92,6 +93,8 @@ export async function POST(req: Request) {
       skipped: d.skipped ? view(d.skipped) : null,
       why: why(d),
       capNotes: d.capNotes,
+      // a credit one of the cards has here (Uber Cash, the Dunkin' credit...): use it before any points
+      perks: perksAt(wallet, place.name).map((p) => ({ cardId: p.cardId, name: shortName(p.cardId), credit: p.credit.name, amount: p.credit.amount, per: p.per })),
     },
     { headers: CORS },
   );
