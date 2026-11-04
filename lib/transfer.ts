@@ -29,7 +29,12 @@ export function transferMonths(intro: string | undefined | null): number | null 
   return Number(m[1]);
 }
 
-const issuerOf = (id: string) => card(id).issuer.replace(/\s*\(.*\)\s*/, "").trim();
+// the bank that owns the card: "Discover (Capital One)" is Capital One's since it bought Discover,
+// and a bank won't take a transfer from a card it already owns
+const issuerOf = (id: string) => {
+  const s = card(id).issuer;
+  return (/\(([^)]+)\)/.exec(s)?.[1] ?? s).trim();
+};
 
 /** The longest 0% balance-transfer offer from a different issuer (issuers don't take transfers
  *  from their own cards) on a card you don't already have (intro offers are for new accounts), if

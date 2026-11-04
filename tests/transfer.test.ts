@@ -31,4 +31,6 @@ test("never a card you already have: Rosa holds the Double Cash, so it isn't off
   const rosa = [{ cardId: "capital_one_quicksilver", balance: 1900, apr: 28.74 }, { cardId: "citi_double_cash" }];
   const t = bestTransfer(rosa[0], rosa);
   assert.ok(!t || t.toCardId !== "citi_double_cash");
+  // nor Discover: Capital One owns it, and won't take a transfer from its own Quicksilver
+  assert.ok(!t || !t.toCardId.startsWith("discover_"));
 });
