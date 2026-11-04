@@ -56,18 +56,31 @@ export function TapDemo() {
     io.observe(foot);
     return () => io.disconnect();
   }, []);
+  // past the hero it shrinks to its icon (it sat on headings and text at the page's left edge),
+  // and opens back up on hover or focus
+  const [small, setSmall] = useState(false);
+  useEffect(() => {
+    const on = () => setSmall(window.scrollY > window.innerHeight * 0.9);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`fixed bottom-4 left-4 z-[75] flex items-center gap-2 rounded-full bg-ace-ink px-4 py-2.5 text-sm font-medium text-ace-bg shadow-[0_12px_30px_-12px_rgba(12,14,20,.6)] transition hover:scale-[1.03] ${atFoot ? "pointer-events-none translate-y-3 opacity-0" : ""}`}
+        className={`group fixed bottom-4 left-4 z-[75] flex items-center rounded-full bg-ace-ink py-2.5 text-sm font-medium text-ace-bg shadow-[0_12px_30px_-12px_rgba(12,14,20,.6)] transition-all hover:scale-[1.03] ${small ? "px-2.5 hover:px-4 focus-visible:px-4" : "px-4"} ${atFoot ? "pointer-events-none translate-y-3 opacity-0" : ""}`}
         aria-label="Open the tap-to-pay demo"
         aria-hidden={atFoot || undefined}
         tabIndex={atFoot ? -1 : undefined}
       >
-        <Contactless className="h-4 w-4" />
-        Try tap to pay
+        <Contactless className="h-4 w-4 shrink-0" />
+        <span
+          className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${small ? "max-w-0 opacity-0 group-hover:ml-2 group-hover:max-w-[8rem] group-hover:opacity-100 group-focus-visible:ml-2 group-focus-visible:max-w-[8rem] group-focus-visible:opacity-100" : "ml-2 max-w-[8rem]"}`}
+        >
+          Try tap to pay
+        </span>
       </button>
       <AnimatePresence>{open && <Dashboard onClose={() => setOpen(false)} />}</AnimatePresence>
     </>
