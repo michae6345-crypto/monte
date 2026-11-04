@@ -1,0 +1,40 @@
+:root {
+  --ground: #f7f8fa;
+  --panel: #ffffff;
+  --ink: #0e0f12;
+  --accent: #2f45ff;
+  --accent-wash: #eef0ff;
+  --slate: #6b6f78;
+  --line: #e4e6ea;
+  --gain: #1f7a4d;
+  --loss: #c2412d;
+}
+* { box-sizing: border-box; }
+body {
+  width: 340px;
+  margin: 0;
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--ground);
+}
+header { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.word { font-weight: 600; letter-spacing: -0.02em; }
+.site { margin-left: auto; font: 11px ui-monospace, monospace; color: var(--slate); max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+main { padding: 14px; }
+.label { font: 10px ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); }
+.pick { margin-top: 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.earn { margin-top: 2px; }
+.gain { color: var(--gain); }
+.loss { color: var(--loss); }
+.dim { color: var(--slate); }
+.rule { font: 11px ui-monospace, monospace; color: var(--slate); margin-top: 2px; }
+.why { margin: 10px 0 0; }
+ul { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--line); }
+li { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+li.on { font-weight: 600; }
+li .n { font: 12px ui-monospace, monospace; white-space: nowrap; }
+li.off .n { text-decoration: line-through; color: var(--slate); }
+footer { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--panel); font-size: 12px; color: var(--slate); }
+footer input { width: 70px; height: 26px; border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; font: inherit; color: var(--ink); }
+footer a { margin-left: auto; color: var(--accent); }
+.btn { display: inline-block; margin-top: 10px; padding: 7px 12px; border-radius: 999px; background: var(--ink); color: #fff; text-decoration: none; }
