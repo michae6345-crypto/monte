@@ -3,3 +3,4 @@
 // Exits non-zero if any test fails. The two files can also be run on their own.
 import "@/tests/engine.test";
 import "@/tests/provenance.test";
+import "@/tests/interest.test";
