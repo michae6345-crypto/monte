@@ -19,6 +19,8 @@ const ROWS: [string, string, string, string][] = [
   ["Useful with one card, or with a balance", "yes", "not advertised", "sells a new card"],
   ["Finds double charges and price rises", "yes", "not advertised", "no"],
   ["Counts interest on a carried balance", "yes", "not advertised", "no"],
+  ["Online checkout (browser extension)", "yes", "not advertised", "no"],
+  ["Works without linking a bank", "yes", "not advertised", "yes"],
   ["Paid by card referrals", "no", "unknown", "yes"],
 ];
 
