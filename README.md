@@ -173,6 +173,10 @@ tested; moving the money needs a bank partner. Details and the funding options: 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` (or open `?present`)
 for presenter mode and walk the demo with the arrow keys, or open [`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) to watch a tap at the register.
 
+- [`/app`](https://ace-eta-beryl.vercel.app/app): the app (add your cards, or load a demo person). Installable; works offline.
+- [`/card`](https://ace-eta-beryl.vercel.app/card): the Monte card MVP, tap it and watch the authorization round trip.
+- The Chrome extension: download it from the app's Connect tab (`npm run pack:extension` rebuilds the zip).
+
 **Run it locally:**
 
 ```bash
