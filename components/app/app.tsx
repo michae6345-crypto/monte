@@ -116,7 +116,7 @@ export function MonteApp() {
         ) : tab === "pay" ? (
           <Pay wallet={wallet} txns={txns} />
         ) : tab === "cards" ? (
-          <Cards wallet={wallet} txns={txns} onChange={update} />
+          <Cards wallet={wallet} txns={txns} bills={saved.bills} onChange={update} />
         ) : tab === "year" ? (
           <Year wallet={wallet} txns={txns} onConnect={() => go("connect")} />
         ) : (

@@ -10,6 +10,7 @@ import { evaluate, marginalValue, type Holding, type Txn } from "@/lib/engine";
 import { CARDS, card } from "@/lib/engine/catalog";
 import { aprOf } from "@/lib/engine/interest";
 import { capsUsed, type CapUse } from "@/lib/caps";
+import type { CardBill } from "@/lib/data/plaid";
 import { CATEGORY_LABEL } from "@/lib/merchants";
 import { CardMini, shortName } from "@/components/ace/card-art";
 import { money } from "@/components/ace/store";
@@ -81,6 +82,32 @@ function Rotating({ cardId }: { cardId: string }) {
   );
 }
 
+/** From the bank (Plaid Liabilities): what's due and when, and how much of the limit is in use. */
+function Bill({ bill }: { bill?: CardBill }) {
+  if (!bill) return null;
+  const due = bill.dueDate ? new Date(bill.dueDate + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : null;
+  const used = bill.limit && bill.owedNow != null ? bill.owedNow / bill.limit : null;
+  return (
+    <div className="mt-2 space-y-1 text-xs">
+      {(due || bill.minimum != null) && (
+        <p className={bill.overdue ? "font-medium m-loss" : ""}>
+          {bill.overdue ? "Overdue: " : ""}
+          {bill.statement != null ? `statement ${money(bill.statement, { cents: true })}` : ""}
+          {bill.minimum != null ? `${bill.statement != null ? " · " : ""}minimum ${money(bill.minimum, { cents: true })}` : ""}
+          {due ? ` due ${due}` : ""}
+          {bill.statement ? <span className="text-ace-dim"> · pay the statement in full and new purchases cost no interest</span> : null}
+        </p>
+      )}
+      {used != null && (
+        <p className={used >= 0.3 ? "m-loss" : "text-ace-dim"}>
+          {money(bill.owedNow!)} of a {money(bill.limit!)} limit in use ({Math.round(used * 100)}%)
+          {used >= 0.3 ? ": over 30% can lower your credit score; paying before the statement closes brings it down" : ""}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Each capped bonus on this card: how much of the cap is used this period. */
 function Caps({ uses }: { uses: CapUse[] }) {
   if (!uses.length) return null;
@@ -139,7 +166,7 @@ function Worth({ wallet, txns, cardId }: { wallet: Holding[]; txns: Txn[]; cardI
   );
 }
 
-export function Cards({ wallet, txns = [], onChange }: { wallet: Holding[]; txns?: Txn[]; onChange: (w: Holding[]) => void }) {
+export function Cards({ wallet, txns = [], bills, onChange }: { wallet: Holding[]; txns?: Txn[]; bills?: Record<string, CardBill>; onChange: (w: Holding[]) => void }) {
   const [adding, setAdding] = useState(wallet.length === 0);
   const [q, setQ] = useState("");
   const have = new Set(wallet.map((h) => h.cardId));
@@ -158,6 +185,7 @@ export function Cards({ wallet, txns = [], onChange }: { wallet: Holding[]; txns
       <PayFirst wallet={wallet} />
       {wallet.map((h) => (
         <CardRow key={h.cardId} h={h} onSet={(p) => set(h.cardId, p)} onRemove={() => onChange(wallet.filter((x) => x.cardId !== h.cardId))}>
+          <Bill bill={bills?.[h.cardId]} />
           <Caps uses={caps.filter((u) => u.cardId === h.cardId)} />
           <Worth wallet={wallet} txns={txns} cardId={h.cardId} />
         </CardRow>

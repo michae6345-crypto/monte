@@ -7,6 +7,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import type { Holding, Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
+import type { CardBill } from "@/lib/data/plaid";
 
 export type Source = "plaid" | "statement" | "manual" | "demo";
 
@@ -17,6 +18,8 @@ export type Saved = {
   label: string;
   wallet: Holding[];
   txns: Txn[];
+  /** from Plaid Liabilities: due dates, minimums, limits, per card id */
+  bills?: Record<string, CardBill>;
   at: string;
 };
 
@@ -78,7 +81,7 @@ export function useWallet() {
   const save = useCallback((s: Omit<Saved, "v" | "at">) => write({ ...s, v: 1, at: new Date().toISOString() }), []);
   const update = useCallback((wallet: Holding[]) => {
     const cur = read();
-    write({ v: 1, source: cur?.source ?? "manual", label: cur?.label ?? "Added by hand", txns: cur?.txns ?? [], wallet, at: new Date().toISOString() });
+    write({ v: 1, source: cur?.source ?? "manual", label: cur?.label ?? "Added by hand", txns: cur?.txns ?? [], bills: cur?.bills, wallet, at: new Date().toISOString() });
   }, []);
   const clear = useCallback(() => write(null), []);
   return { saved, save, update, clear };

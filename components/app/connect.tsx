@@ -34,7 +34,7 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
   }, []);
 
   const took = (feed: Linked, label: string) => {
-    onSave({ source: "plaid", label, wallet: feed.wallet, txns: feed.txns });
+    onSave({ source: "plaid", label, wallet: feed.wallet, txns: feed.txns, bills: feed.bills });
     const d = feed.dropped;
     setMsg(
       `${feed.wallet.length} card${feed.wallet.length === 1 ? "" : "s"} and ${feed.txns.length.toLocaleString()} purchases from ${feed.institution ?? "your bank"}.` +
@@ -187,7 +187,7 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
                   setBusy("plaid");
                   try {
                     const feed = await fetchPlaidData();
-                    onSave({ source: "plaid", label: saved.label, wallet: feed.wallet, txns: feed.txns });
+                    onSave({ source: "plaid", label: saved.label, wallet: feed.wallet, txns: feed.txns, bills: feed.bills });
                     setMsg(`Refreshed: ${feed.txns.length.toLocaleString()} purchases on ${feed.wallet.length} cards.`);
                   } catch (e) {
                     setMsg(e instanceof PlaidUnavailable && e.code === "plaid_not_linked" ? "The bank link has expired. Connect with Plaid again to refresh." : "Plaid didn't answer. Try again in a minute.");

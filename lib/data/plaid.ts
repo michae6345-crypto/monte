@@ -91,8 +91,39 @@ export type PlaidCreditLiability = {
   last_statement_balance?: number | null;
   last_payment_amount?: number | null;
   minimum_payment_amount?: number | null;
+  next_payment_due_date?: string | null;
   is_overdue?: boolean | null;
 };
+
+/** What's due on a card, from Plaid Liabilities (and the account's limit and current balance). */
+export type CardBill = {
+  dueDate?: string;
+  minimum?: number;
+  statement?: number;
+  overdue?: boolean;
+  limit?: number;
+  /** what's on the card right now, this month's purchases included */
+  owedNow?: number;
+};
+
+/** catalog card id -> its bill, for every credit account Plaid reported. */
+export function cardBills(accounts: PlaidAccount[], credit: PlaidCreditLiability[] = []): Record<string, CardBill> {
+  const out: Record<string, CardBill> = {};
+  const liability = new Map(credit.filter((c) => c.account_id).map((c) => [c.account_id as string, c]));
+  for (const a of accounts) {
+    if (a.type !== "credit" && !liability.has(a.account_id)) continue;
+    const l = liability.get(a.account_id);
+    const bill: CardBill = {};
+    if (l?.next_payment_due_date) bill.dueDate = l.next_payment_due_date.slice(0, 10);
+    if (typeof l?.minimum_payment_amount === "number") bill.minimum = round2(l.minimum_payment_amount);
+    if (typeof l?.last_statement_balance === "number") bill.statement = round2(l.last_statement_balance);
+    if (l?.is_overdue) bill.overdue = true;
+    if (typeof a.balances?.limit === "number" && a.balances.limit > 0) bill.limit = round2(a.balances.limit);
+    if (typeof a.balances?.current === "number") bill.owedNow = round2(Math.max(0, a.balances.current));
+    if (Object.keys(bill).length) out[matchCardId(a)] = bill;
+  }
+  return out;
+}
 
 // ---------- card matching ----------
 
@@ -388,6 +419,8 @@ export function mapWallet(accounts: PlaidAccount[], credit: PlaidCreditLiability
 export type PlaidFeed = {
   txns: Txn[];
   wallet: Holding[];
+  /** due dates, minimums, limits per card (Liabilities); empty when Plaid had none */
+  bills: Record<string, CardBill>;
   source: "plaid-sandbox";
   dropped: { refundOrPayment: number; excluded: number; pending: number };
   lowConfidenceIds: string[];
@@ -418,5 +451,5 @@ export function buildFeed(input: {
   }
   if (wallet.length === 0) wallet.push({ cardId: DEFAULT_CARD_ID });
 
-  return { txns, wallet, source: "plaid-sandbox", dropped, lowConfidenceIds };
+  return { txns, wallet, bills: cardBills(input.accounts, input.credit ?? []), source: "plaid-sandbox", dropped, lowConfidenceIds };
 }
