@@ -457,8 +457,9 @@ function Note({
         <div className={`flex items-baseline gap-2 ${right ? "justify-end" : ""}`}>
           <span className={`mono shrink-0 text-[11px] ${open ? "text-ace-ink" : "text-ace-gain"}`}>{open ? String(step + 1).padStart(2, "0") : "✓"}</span>
           <span className={`m-note leading-tight text-ace-ink ${open ? "text-[22px]" : "shrink-0 whitespace-nowrap text-[15px]"}`}>{title}</span>
-          {!open && summary && <span className="mono min-w-0 truncate text-[11px] text-ace-dim">· {summary}</span>}
         </div>
+        {/* its own line under the title: inline it was cut to "store code · 5411 · gro…" */}
+        {!open && summary && <div className="mono mt-0.5 text-[11px] leading-snug text-ace-dim">{summary}</div>}
         <AnimatePresence initial={false}>
           {open && (
             <motion.div
