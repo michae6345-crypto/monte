@@ -5,3 +5,4 @@ import "@/tests/engine.test";
 import "@/tests/provenance.test";
 import "@/tests/interest.test";
 import "@/tests/merchants.test";
+import "@/tests/apportion.test";
