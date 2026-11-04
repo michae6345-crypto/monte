@@ -65,19 +65,53 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
     type P = { x: number; y: number; r: number; data: Node; value?: number };
     const cats = (root.children ?? []) as unknown as P[];
     const leaves = root.leaves() as unknown as P[];
-    return { cats, leaves, total: root.value ?? 1 };
+    const total = root.value ?? 1;
+
+    // A label per big category, set just outside its circle. Packed circles sit flush, so the
+    // spot above one is often inside its neighbour: try above, then below, then just inside the
+    // top edge, and take the first spot that clears the labels already placed and the year's
+    // total in the top-left corner.
+    type Box = { x0: number; x1: number; y0: number; y1: number };
+    const hit = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+    const taken: Box[] = [{ x0: 0, x1: 250, y0: 0, y1: 90 }];
+    const labels = cats
+      .filter((c) => c.r > 46)
+      .sort((a, b) => b.r - a.r)
+      .map((c) => {
+        const text = `${label(c.data.name)} ${Math.round(((c.value ?? 0) / total) * 100)}%`;
+        const w = text.length * 8.4 + 10;
+        const x = Math.min(W - w / 2, Math.max(w / 2, c.x));
+        const box = (y: number): Box => ({ x0: x - w / 2, x1: x + w / 2, y0: y - 16, y1: y + 5 });
+        const spots = [c.y - c.r - 6, c.y + c.r + 18, c.y - c.r + 22, c.y];
+        const y = spots.find((y) => y > 16 && y < H - 4 && !taken.some((t) => hit(t, box(y)))) ?? spots[2];
+        taken.push(box(y));
+        return { key: c.data.name, text, x, y };
+      });
+    return { cats, leaves, labels, total };
   }, [stores]);
 
   const top = [...stores].sort((a, b) => b.total - a.total)[0];
   const [sel, setSel] = useState<string | null>(null);
   const cur = stores.find((s) => s.merchant === (sel ?? top?.merchant)) ?? top;
-  const pick = useMemo(() => (cur ? tap(wallet, { date: "2026-10-18", merchant: cur.merchant, category: cur.category, amount: cur.total / cur.count }).pick : null), [cur, wallet]);
+  const tapped = useMemo(() => (cur ? tap(wallet, { date: "2026-10-18", merchant: cur.merchant, category: cur.category, amount: cur.total / cur.count }) : null), [cur, wallet]);
+  const pick = tapped?.pick ?? null;
+  // a card that would earn more here but is off limits because it carries a balance
+  const skipped = tapped?.ranked.find((r) => r.blocked && pick && r.reward > pick.reward);
+  // which cards actually paid at this store, most-used first
+  const paidWith = useMemo(() => {
+    if (!cur) return [];
+    const n = new Map<string, number>();
+    for (const t of txns) if (t.merchant === cur.merchant && t.cardUsed) n.set(t.cardUsed, (n.get(t.cardUsed) ?? 0) + 1);
+    return [...n.entries()].map(([cardId, count]) => ({ cardId, count })).sort((a, b) => b.count - a.count);
+  }, [cur, txns]);
+  const allOnPick = !!pick && paidWith.length === 1 && paidWith[0].cardId === pick.cardId;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr] [&>*]:min-w-0">
       <div className="m-panel relative overflow-hidden p-3 md:p-5">
         {upTo.label && (
-          <div className="pointer-events-none absolute left-5 top-4 z-10" style={display}>
+          // over the chart's empty corner on wide screens; above it on a phone, where the pack fills the width
+          <div className="pointer-events-none z-10 mb-2 px-2 pt-1 md:absolute md:left-5 md:top-4 md:mb-0 md:p-0" style={display}>
             <div className="text-4xl">{money(upTo.total)}</div>
             <div className="text-sm" style={{ fontFamily: "var(--m-font-body)", fontWeight: 400, letterSpacing: 0 }}>
               {month >= 12 ? "spent last year" : `spent by the end of ${new Date(upTo.label + "-15T12:00:00Z").toLocaleString("en-US", { month: "long", timeZone: "UTC" })}`}
@@ -125,18 +159,31 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
               </motion.g>
             );
           })}
-          {layout.cats
-            .filter((c) => c.r > 46)
-            .map((c) => (
-              <text key={"t" + c.data.name} x={c.x} y={c.y - c.r - 6} textAnchor="middle" fontSize={17} style={{ ...hand, fill: "var(--m-slate)" }}>
-                {label(c.data.name)} {Math.round(((c.value ?? 0) / layout.total) * 100)}%
-              </text>
-            ))}
+          {/* on a phone these would be ~8px; the legend under the chart takes over there */}
+          {layout.labels.map((t) => (
+            <text
+              key={"t" + t.key}
+              x={t.x}
+              y={t.y}
+              textAnchor="middle"
+              fontSize={17}
+              className="max-md:hidden"
+              style={{ ...hand, fill: "var(--m-slate)", stroke: "var(--m-panel)", strokeWidth: 5, strokeLinejoin: "round", paintOrder: "stroke" }}
+            >
+              {t.text}
+            </text>
+          ))}
         </svg>
+        <p className="mono px-2 pb-1 pt-3 text-[11px] leading-5 text-ace-dim md:hidden">
+          {layout.labels.map((t) => t.text).join(" · ")}
+        </p>
       </div>
 
       <div className="m-panel flex flex-col p-6">
-        <p className="m-label">hover a store</p>
+        <p className="m-label">
+          <span className="[@media(hover:hover)]:hidden">tap</span>
+          <span className="hidden [@media(hover:hover)]:inline">hover</span> a store
+        </p>
         <AnimatePresence mode="wait">
           {cur && (
             <motion.div key={cur.merchant} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }} className="mt-4 flex flex-1 flex-col">
@@ -163,14 +210,34 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
                   <div className="mt-1 text-sm text-ace-dim">purchases · {money(cur.total / cur.count)} each</div>
                 </div>
               </div>
+              {paidWith.length > 0 && (
+                <div className="mt-6 border-t border-[var(--m-line)] pt-4">
+                  <div className="m-label mb-2">paid with</div>
+                  <ul className="space-y-1.5 text-sm">
+                    {paidWith.map((u) => (
+                      <li key={u.cardId} className="flex items-baseline justify-between gap-3">
+                        <span className="truncate">{shortName(u.cardId)}</span>
+                        <span className="mono shrink-0 text-xs text-ace-dim">
+                          {u.count === cur.count ? "every time" : `${u.count} of ${cur.count}`}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {pick && wallet.length > 1 && (
-                <div className="mt-auto flex items-center gap-3 rounded-[14px] bg-[var(--m-wash)] p-3 pt-3">
+                <div className="mt-6 flex items-center gap-3 rounded-[14px] bg-[var(--m-wash)] p-3 pt-3 lg:mt-auto">
                   <CardArt id={pick.cardId} size="sm" className="w-16 shrink-0 shadow-none" />
                   <div className="min-w-0 text-sm">
-                    <div className="text-ace-dim">Right card here</div>
-                    <div className="truncate font-medium">
+                    <div className="text-ace-dim">{allOnPick ? "Already on the right card" : "Right card here"}</div>
+                    <div className="font-medium">
                       {shortName(pick.cardId)} · {pick.mult % 1 ? pick.mult.toFixed(1) : pick.mult}×
                     </div>
+                    {skipped && (
+                      <div className="mt-0.5 text-xs text-ace-dim">
+                        not the {shortName(skipped.cardId)} ({skipped.mult % 1 ? skipped.mult.toFixed(1) : skipped.mult}×): it carries a balance
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -233,10 +300,11 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
           </p>
         )}
       </div>
-      <div className="grid min-w-[640px] grid-cols-12 gap-2 lg:min-w-0">
+      {/* two rows of six on a phone, so every month fits without a sideways scroll */}
+      <div className="grid grid-cols-6 gap-x-1.5 gap-y-6 md:grid-cols-12 md:gap-2">
         {months.map((m) => (
-          <div key={m.k} className="flex flex-col items-center gap-2">
-            <div className="flex h-32 w-full items-end">
+          <div key={m.k} className="flex min-w-0 flex-col items-center gap-2">
+            <div className="flex h-20 w-full items-end md:h-32">
               <motion.div
                 key={Math.round(m.total)}
                 className="w-full rounded-t-[8px]"
@@ -251,7 +319,7 @@ export function MonthStrip({ txns }: { txns: Txn[] }) {
               />
             </div>
             <MerchantLogo name={m.top} size={26} />
-            <div className="text-[15px]" style={display}>
+            <div className="text-[13px] md:text-[15px]" style={display}>
               {money(m.total)}
             </div>
             <div className="m-label">
