@@ -57,11 +57,11 @@ function PayFirst({ wallet }: { wallet: Holding[] }) {
         About {money(yearly)} a year in interest at today&apos;s balances. Each extra dollar paid on the {shortName(owed[0].cardId)} saves {aprOf(owed[0])}¢ a year, more than any card pays back. While a card carries a balance, Monte keeps new purchases off it.
       </p>
       {owed.map((h) => {
-        const t = bestTransfer(h);
+        const t = bestTransfer(h, wallet);
         if (!t) return null;
         return (
           <p key={h.cardId} className="mt-3 rounded-[10px] bg-[var(--m-wash)] p-3 text-xs leading-relaxed">
-            <span className="font-medium">Or move the {shortName(h.cardId)}&apos;s balance.</span> The {shortName(t.toCardId)} takes balance transfers at 0% for {t.months} months. Paying {money(t.monthly)} a month clears it with no interest; the same payoff at {aprOf(h)}% costs about {money(t.interestStaying)}. With a 3-5% transfer fee ({money(t.feeLow)}-{money(t.feeHigh)}), that&apos;s at least {money(t.saved)} saved, if you&apos;re approved. Keep new purchases off it until it&apos;s paid.
+            <span className="font-medium">Or move the balance on the {shortName(h.cardId)}.</span> A new {shortName(t.toCardId)} takes balance transfers at 0% for {t.months} months. Paying {money(t.monthly)} a month clears it with no interest; the same payoff at {aprOf(h)}% costs about {money(t.interestStaying)}. With a 3-5% transfer fee ({money(t.feeLow)}-{money(t.feeHigh)}), that&apos;s at least {money(t.saved)} saved, if you&apos;re approved. Keep new purchases off it until it&apos;s paid.
           </p>
         );
       })}

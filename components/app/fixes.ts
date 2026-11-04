@@ -47,6 +47,17 @@ export function useFixes() {
   return { fixes, setFix };
 }
 
+/** "Forget everything" forgets these too. */
+export function clearFixes() {
+  cache = {};
+  try {
+    window.localStorage.removeItem(KEY);
+  } catch {
+    // nothing stored
+  }
+  listeners.forEach((l) => l());
+}
+
 /** Purchases with your corrections applied (by store name). */
 export function applyFixes(txns: Txn[], fixes: Record<string, string>): Txn[] {
   if (!Object.keys(fixes).length) return txns;

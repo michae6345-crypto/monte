@@ -26,3 +26,9 @@ test("no transfer to the same issuer, none for a card paid in full", () => {
   assert.ok(t && !t.toCardId.startsWith("citi_"));
   assert.equal(bestTransfer({ cardId: "apple_card" }), null);
 });
+
+test("never a card you already have: Rosa holds the Double Cash, so it isn't offered", () => {
+  const rosa = [{ cardId: "capital_one_quicksilver", balance: 1900, apr: 28.74 }, { cardId: "citi_double_cash" }];
+  const t = bestTransfer(rosa[0], rosa);
+  assert.ok(!t || t.toCardId !== "citi_double_cash");
+});

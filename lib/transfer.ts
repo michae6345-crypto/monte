@@ -32,14 +32,16 @@ export function transferMonths(intro: string | undefined | null): number | null 
 const issuerOf = (id: string) => card(id).issuer.replace(/\s*\(.*\)\s*/, "").trim();
 
 /** The longest 0% balance-transfer offer from a different issuer (issuers don't take transfers
- *  from their own cards), if it saves money on this balance. */
-export function bestTransfer(h: Holding): Transfer | null {
+ *  from their own cards) on a card you don't already have (intro offers are for new accounts), if
+ *  it saves money on this balance. */
+export function bestTransfer(h: Holding, wallet: Holding[] = []): Transfer | null {
   const balance = h.balance ?? 0;
   if (!(balance > 0)) return null;
   const apr = aprOf(h) / 100;
+  const held = new Set([h.cardId, ...wallet.map((w) => w.cardId)]);
   let best: Transfer | null = null;
   for (const c of CARDS) {
-    if (c.id === h.cardId || issuerOf(c.id) === issuerOf(h.cardId) || !openToNewApplicants(c)) continue;
+    if (held.has(c.id) || issuerOf(c.id) === issuerOf(h.cardId) || !openToNewApplicants(c)) continue;
     const months = transferMonths((c as { intro_apr?: string }).intro_apr);
     if (!months) continue;
     // a steady payoff over the intro months: the balance averages about half its size

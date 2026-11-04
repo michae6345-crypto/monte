@@ -58,7 +58,10 @@ export function MonteApp() {
       window.removeEventListener("hashchange", read);
     };
   }, []);
-  const go = (t: Tab) => {
+  // a message that outlives the tab that made it (Connect switches to Pay as it finishes)
+  const [notice, setNotice] = useState<string | null>(null);
+  const go = (t: Tab, message?: string) => {
+    setNotice(message ?? null);
     setTab(t);
     history.replaceState(null, "", t === "pay" ? "/app" : `/app#${t}`);
     window.scrollTo({ top: 0 });
@@ -83,6 +86,14 @@ export function MonteApp() {
       </header>
 
       <main className="flex-1 px-4 pb-28 pt-2">
+        {notice && (
+          <p role="status" className="mb-4 flex items-start justify-between gap-3 rounded-[12px] bg-[var(--m-accent-wash)] p-3 text-sm">
+            <span>{notice}</span>
+            <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss" className="text-ace-dim">
+              ×
+            </button>
+          </p>
+        )}
         {incoming && (
           <section role="status" className="m-panel mb-4 border-l-4 border-[var(--m-accent)] p-4 text-sm">
             <p>
@@ -111,7 +122,7 @@ export function MonteApp() {
           <div className="m-panel h-64 animate-pulse" aria-busy />
         ) : !saved || !wallet.length ? (
           tab === "connect" ? (
-            <Connect saved={saved} onSave={save} onClear={clear} onDone={() => go("pay")} />
+            <Connect saved={saved} onSave={save} onClear={clear} onDone={(m) => go("pay", m)} />
           ) : tab === "cards" ? (
             <Cards wallet={[]} onChange={(w) => save({ source: "manual", label: "Added by hand", wallet: w, txns: [] })} />
           ) : (
@@ -124,7 +135,7 @@ export function MonteApp() {
         ) : tab === "year" ? (
           <Year wallet={wallet} txns={txns} onConnect={() => go("connect")} />
         ) : (
-          <Connect saved={saved} onSave={save} onClear={clear} onDone={() => go("pay")} />
+          <Connect saved={saved} onSave={save} onClear={clear} onDone={(m) => go("pay", m)} />
         )}
       </main>
 

@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from "react";
 import { Building2, FileUp, Puzzle, RefreshCw, Share2, Sparkles, Trash2 } from "lucide-react";
 import { fetchPlaidData } from "@/lib/data/plaid-feed";
 import { walletLink } from "./share";
+import { clearFixes } from "./fixes";
+import { merchantName } from "@/lib/card/authorize";
 import { PERSONAS, yearOf } from "@/lib/data/personas";
 import { connectSandboxBank, connectWithPlaid, disconnectPlaid, plaidStatus, type Linked } from "@/lib/data/plaid-link";
 import { PlaidUnavailable } from "@/lib/data/plaid-feed";
@@ -21,7 +23,7 @@ import type { Saved } from "./use-wallet";
 
 type Busy = null | "plaid" | "sandbox" | "file";
 
-export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | null; onSave: (s: Omit<Saved, "v" | "at">) => void; onClear: () => void; onDone: () => void }) {
+export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | null; onSave: (s: Omit<Saved, "v" | "at">) => void; onClear: () => void; onDone: (message?: string) => void }) {
   const [plaid, setPlaid] = useState<{ ready: boolean; env?: string } | null>(null);
   const [busy, setBusy] = useState<Busy>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -36,11 +38,10 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
   const took = (feed: Linked, label: string) => {
     onSave({ source: "plaid", label, wallet: feed.wallet, txns: feed.txns, bills: feed.bills });
     const d = feed.dropped;
-    setMsg(
+    onDone(
       `${feed.wallet.length} card${feed.wallet.length === 1 ? "" : "s"} and ${feed.txns.length.toLocaleString()} purchases from ${feed.institution ?? "your bank"}.` +
         (d ? ` Left out ${d.refundOrPayment + d.excluded + d.pending} that aren't purchases (payments, refunds, transfers, pending).` : ""),
     );
-    onDone();
   };
   const fail = (e: unknown) => {
     const code = e instanceof PlaidUnavailable ? e.code : "plaid_failed";
@@ -117,9 +118,10 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
         setBusy={setBusy}
         onLoad={(txns, cardId) => {
           const wallet = saved?.wallet.some((h) => h.cardId === cardId) ? saved.wallet : [...(saved?.wallet ?? []), { cardId }];
-          onSave({ source: "statement", label: `${shortName(cardId)} statement`, wallet, txns });
-          setMsg(`${txns.length.toLocaleString()} purchases loaded from the statement. They stay in this browser.`);
-          onDone();
+          // bank descriptors ("TRADER JOE S #071") become store names, so logos, "your usual" and perks work
+          const named = txns.map((t) => ({ ...t, merchant: merchantName(t.merchant) }));
+          onSave({ source: "statement", label: `${shortName(cardId)} statement`, wallet, txns: named });
+          onDone(`${txns.length.toLocaleString()} purchases loaded from the statement. They stay in this browser.`);
         }}
         onError={setMsg}
       />
@@ -137,8 +139,7 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
               type="button"
               onClick={() => {
                 onSave({ source: "demo", label: `${p.name} (demo)`, wallet: p.wallet, txns: yearOf(p) });
-                setMsg(`Now showing ${p.name}'s wallet: ${p.blurb}.`);
-                onDone();
+                onDone(`Now showing ${p.name}'s wallet: ${p.blurb}.`);
               }}
               className="btn btn-ghost btn-sm"
             >
@@ -226,6 +227,7 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
             onClick={async () => {
               if (saved.source === "plaid") await disconnectPlaid();
               onClear();
+              clearFixes();
               setMsg("Forgotten. Nothing about your cards is left in this browser or on our server.");
             }}
             className="btn btn-ghost btn-sm mt-2"

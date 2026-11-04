@@ -341,10 +341,16 @@ function Answer({ d, where }: { d: Decision; where: string }) {
               <span className="block truncate">{shortName(c.cardId)}</span>
               <span className="mono block text-[11px] text-ace-dim">
                 {c.mult % 1 ? c.mult.toFixed(1) : c.mult}× · {fmt(c.reward)} back
-                {c.interest > 0 ? ` · ${fmt(c.interest)}/mo interest at ${c.apr}%` : ""}
+                {c.interest > 0 ? ` · ${fmt(c.interest)}/mo interest at ${c.apr}%, for as long as the balance stays` : ""}
               </span>
             </span>
-            <span className={`mono shrink-0 text-xs ${c.carries && d.mode === "grace" ? "text-ace-dim line-through" : c.net >= 0 ? "m-gain" : "m-loss"}`}>{fmt(c.net)}</span>
+            {/* a skipped card shows why, not a one-month "net" that could look better than the pick:
+                its interest runs for as long as the balance does, not one month */}
+            {c.carries && d.mode === "grace" ? (
+              <span className="mono shrink-0 text-[11px] text-ace-dim">has a balance</span>
+            ) : (
+              <span className={`mono shrink-0 text-xs ${c.net >= 0 ? "m-gain" : "m-loss"}`}>{fmt(c.net)}</span>
+            )}
           </li>
         ))}
       </ul>
