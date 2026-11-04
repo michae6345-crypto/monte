@@ -295,7 +295,7 @@ export function HowSection() {
               <span className="text-white">$</span> {b.name.toLowerCase()} trace {t.id}
             </span>
           </div>
-          <motion.dl key={t.id} className="mono min-w-[640px] space-y-1.5 px-5 py-4" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.09 } } }}>
+          <motion.dl key={t.id} className="mono space-y-3 px-5 py-4 sm:space-y-1.5" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.09 } } }}>
             <Line k="purchase">
               {t.date} · {t.merchant} · {money(t.amount, { cents: true })}
             </Line>
@@ -342,8 +342,9 @@ function cents(id: string) {
 
 function Line({ k, children }: { k: string; children: ReactNode }) {
   return (
-    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4">
-      <dt className="w-24 shrink-0 text-white">{k}</dt>
+    // on a phone the key sits over its line, so the line wraps in the panel instead of scrolling sideways
+    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex flex-col gap-0.5 sm:flex-row sm:gap-4">
+      <dt className="shrink-0 text-white/60 sm:w-24 sm:text-white">{k}</dt>
       <dd className="min-w-0 break-words text-white">{children}</dd>
     </motion.div>
   );
