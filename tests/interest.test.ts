@@ -79,6 +79,17 @@ test("Plaid: a card paid in full is not carrying a balance, whatever its current
   assert.equal(revolvingBalance(acct, undefined), 0);
 });
 
+test("Costco: only Visa in the warehouse; no Amex online either", () => {
+  const wallet: Holding[] = [{ cardId: "amex_gold" }, { cardId: "citi_double_cash" }, { cardId: "discover_it_cash_back" }];
+  // Double Cash is a Mastercard: not in the warehouse, so with no Visa every card stays a candidate
+  const store = choose([{ cardId: "amex_gold" }, { cardId: "chase_freedom_unlimited" }], at("Costco", "wholesale_clubs", 100));
+  assert.equal(store.pick.cardId, "chase_freedom_unlimited"); // Visa
+  assert.ok(!store.ranked.some((c) => c.cardId === "amex_gold"));
+  const online = choose(wallet, at("Costco", "wholesale_clubs", 100), [], undefined, "best", "online");
+  assert.ok(!online.ranked.some((c) => c.cardId === "amex_gold"));
+  assert.equal(online.ranked.length, 2);
+});
+
 test("the ranked list covers every card once, the pick first", () => {
   const wallet: Holding[] = [
     { cardId: "amex_gold", balance: 1200, apr: 30 },

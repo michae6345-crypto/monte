@@ -39,7 +39,7 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
     return txns.filter((t) => t.date.startsWith(y));
   }, [txns]);
   const d = useMemo(
-    () => (wallet.length && amount > 0 ? choose(wallet, { date: today(), merchant, category, amount }, history) : null),
+    () => (wallet.length && amount > 0 ? choose(wallet, { date: today(), merchant, category, amount }, history, undefined, "actual") : null),
     [wallet, merchant, category, amount, history],
   );
   // the stores you go to most (not the bills that charge you on their own), with a typical amount

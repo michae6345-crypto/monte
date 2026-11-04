@@ -1,5 +1,5 @@
-// capsUsed(): how much of each capped bonus is used this period, on the demo people's years
-// (which end 17 Oct 2026).
+// capsUsed(): how much of each capped bonus is used this period, counting what was actually
+// charged to each card (the demo people's years end 17 Oct 2026).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { capsUsed } from "@/lib/caps";
@@ -7,19 +7,27 @@ import { JORDAN, PARKS, SAM, yearOf } from "@/lib/data/personas";
 
 const at = "2026-10-17";
 
-test("caps: Jordan's Amex Gold, 4x groceries and dining toward their yearly caps", () => {
+test("caps count what was charged: Jordan's Amex Gold has dining on it, not groceries", () => {
   const caps = capsUsed(JORDAN.wallet, yearOf(JORDAN), at);
-  const groceries = caps.find((c) => c.cardId === "amex_gold" && c.label === "4x groceries")!;
-  assert.equal(groceries.cap, 25000);
-  assert.equal(groceries.when, "this year");
-  assert.ok(groceries.used > 0 && groceries.used < groceries.cap);
-  assert.ok(caps.some((c) => c.label === "4x dining" && c.cap === 50000));
+  const dining = caps.find((c) => c.cardId === "amex_gold" && c.label === "4x dining")!;
+  assert.equal(dining.cap, 50000);
+  assert.equal(dining.when, "this year");
+  assert.ok(dining.used > 0 && dining.used < dining.cap);
+  // he buys groceries on the Apple Card, so nothing counts toward the Gold's grocery cap
+  assert.equal(caps.find((c) => c.label === "4x groceries"), undefined);
 });
 
-test("caps: the Parks are past Blue Cash Everyday's $6,000 grocery cap", () => {
+test("caps: the Parks' Blue Cash Everyday groceries, $2,659 of $6,000 (most of their groceries go on the Discover)", () => {
   const g = capsUsed(PARKS.wallet, yearOf(PARKS), at).find((c) => c.label === "3x groceries")!;
   assert.equal(g.cap, 6000);
-  assert.ok(g.used > g.cap);
+  assert.ok(Math.abs(g.used - 2659.49) < 0.01);
+});
+
+test("caps: a card with no purchases on it has used none of its caps", () => {
+  // a statement from one card, with a second card added by hand
+  const txns = yearOf(JORDAN).filter((t) => t.cardUsed === "chase_freedom_unlimited");
+  const caps = capsUsed([{ cardId: "chase_freedom_unlimited" }, { cardId: "amex_gold" }], txns, at);
+  assert.equal(caps.filter((c) => c.cardId === "amex_gold").length, 0);
 });
 
 test("caps: a rotating card counts this quarter only", () => {

@@ -71,7 +71,8 @@ export async function POST(req: Request) {
     place = p.via === "unknown" ? { name: store, category: "online_retail", via: "words" } : p;
   } else return bad("one of domain, merchant or category is required");
 
-  const d = choose(wallet, { date: new Date().toISOString().slice(0, 10), merchant: place.name, category: place.category, amount });
+  // a website: online acceptance rules (costco.com takes Mastercard and Discover, the warehouses don't)
+  const d = choose(wallet, { date: new Date().toISOString().slice(0, 10), merchant: place.name, category: place.category, amount }, [], undefined, "best", typeof body.domain === "string" ? "online" : "store");
   const view = (c: (typeof d.ranked)[number]) => ({
     cardId: c.cardId,
     name: shortName(c.cardId),

@@ -1,7 +1,7 @@
 // How much of each capped bonus is used this period: Amex Gold's 4x groceries stops at $25,000 a
 // year, Blue Cash Preferred's 6% at $6,000, a Freedom Flex quarter's 5% at $1,500. Spend counts
-// toward a cap when it went on that card in that category, as Monte would have routed it (the
-// "best" replay), in the cap's current period.
+// toward a cap when it actually went on that card, in that category, in the cap's current period:
+// the issuer counts what was charged, not what Monte would have picked.
 
 import { simulate, type Holding, type Txn } from "@/lib/engine";
 import { card, type Period } from "@/lib/engine/catalog";
@@ -33,7 +33,7 @@ export function capsUsed(wallet: Holding[], txns: Txn[], today = new Date().toIS
   const inYear = txns.filter((t) => t.date.startsWith(thisYear));
   if (!inYear.length) return [];
   const byId = new Map(inYear.map((t) => [t.id, t]));
-  const hits = simulate(wallet, inYear, "best").hits;
+  const hits = simulate(wallet, inYear, "actual").hits;
   const out: CapUse[] = [];
   for (const h of wallet) {
     const c = card(h.cardId);

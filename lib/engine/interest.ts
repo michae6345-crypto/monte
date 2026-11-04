@@ -16,8 +16,20 @@
 //
 // tap() is unchanged (the demo's numbers and tests rest on it); this wraps it.
 
-import { tap, type Holding, type TapOption, type Txn } from "./index";
+import { tap, type Holding, type Policy, type TapOption, type Txn } from "./index";
 import { card } from "./catalog";
+
+export type Channel = "store" | "online";
+
+/** Stores that take only some card networks, in a store and online. Costco's U.S. warehouses take
+ *  Visa as their only credit card; costco.com takes Visa, Mastercard and Discover. Neither takes Amex. */
+const NETWORK_LIMITS: { re: RegExp; store: string[]; online: string[] }[] = [
+  { re: /\bcostco\b/i, store: ["Visa"], online: ["Visa", "Mastercard", "Discover"] },
+];
+
+export function networksAt(merchant: string, channel: Channel = "store"): string[] | null {
+  return NETWORK_LIMITS.find((l) => l.re.test(merchant))?.[channel] ?? null;
+}
 
 /** How long a purchase on a card with a balance is assumed to ride that balance. One month
  *  is the floor (the purchase posts, then the statement closes, then it is due); a balance
@@ -56,9 +68,20 @@ export type Decision = {
   capNotes: string[];
 };
 
-export function choose(wallet: Holding[], t: Omit<Txn, "id" | "cardUsed">, history: Txn[] = [], months = CARRY_MONTHS): Decision {
+export function choose(
+  wallet: Holding[],
+  t: Omit<Txn, "id" | "cardUsed">,
+  history: Txn[] = [],
+  months = CARRY_MONTHS,
+  policy: Policy = "best",
+  channel: Channel = "store",
+): Decision {
   if (!wallet.length) throw new Error("choose: the wallet is empty");
-  const base = tap(wallet, t, history);
+  // a store that takes only some networks (Costco: Visa only): cards it won't take aren't candidates
+  const takes = networksAt(t.merchant, channel);
+  const usable = takes ? wallet.filter((h) => takes.includes(card(h.cardId).network ?? "")) : wallet;
+  if (usable.length && usable.length < wallet.length) wallet = usable;
+  const base = tap(wallet, t, history, policy);
   const hold = new Map(wallet.map((h) => [h.cardId, h]));
   const all: Choice[] = base.ranked.map((o) => {
     const h = hold.get(o.cardId)!;
