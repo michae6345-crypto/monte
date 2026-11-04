@@ -12,3 +12,4 @@ import "@/tests/card.test";
 import "@/tests/caps.test";
 import "@/tests/bills.test";
 import "@/tests/transfer.test";
+import "@/tests/fuzz.test";
