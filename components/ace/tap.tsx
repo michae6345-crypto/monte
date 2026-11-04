@@ -43,6 +43,7 @@ export function TapSection() {
   const [solving, setSolving] = useState(false);
   const timer = useRef(0);
   const [manual, setManual] = useState(false);
+  const phoneRef = useRef<HTMLDivElement>(null);
   const choose = (k: number) => {
     setI(k);
     setSolving(true);
@@ -100,6 +101,10 @@ export function TapSection() {
               onClick={() => {
                 setManual(true);
                 choose(k);
+                // stacked (below lg) the phone sits under all eight stores: bring it into view, or the
+                // tap seems to do nothing
+                if (!window.matchMedia("(min-width: 1024px)").matches)
+                  phoneRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
               }}
               className={`flex items-center gap-3 rounded-[10px] px-4 py-3 text-left transition ${
                 k === i ? "bg-ace-panel shadow-[0_0_0_1.5px_var(--m-ink)]" : "bg-ace-panel shadow-[0_0_0_1px_var(--m-line)] hover:shadow-[0_0_0_1px_var(--m-line-strong)]"
@@ -115,7 +120,7 @@ export function TapSection() {
         </div>
 
         {/* phone */}
-        <div className="relative mx-auto h-[600px] w-[300px] rounded-[48px] border border-ace-line bg-[#e9ebef] p-3 shadow-[0_1px_2px_rgba(12,14,20,.06),0_30px_60px_-30px_rgba(12,14,20,.28)]">
+        <div ref={phoneRef} className="relative mx-auto h-[600px] w-[300px] scroll-mt-20 rounded-[48px] border border-ace-line bg-[#e9ebef] p-3 shadow-[0_1px_2px_rgba(12,14,20,.06),0_30px_60px_-30px_rgba(12,14,20,.28)]">
           <div className="absolute left-1/2 top-5 z-10 h-6 w-24 -translate-x-1/2 rounded-full bg-[#0c0e14]" />
           <div className="relative h-full overflow-hidden rounded-[38px] bg-ace-panel px-4 pt-12 ring-1 ring-ace-line">
             <div className="mono text-center text-[11px] uppercase tracking-[0.25em] text-ace-dim">You&apos;re at</div>
