@@ -42,8 +42,16 @@ Built, not yet run (no key on this project): `lib/card/lithic.ts` and `/api/card
    runs a test purchase on Lithic's network; Lithic calls the responder, and the decision shows in
    `GET /api/card/authorize`.
 
-Without the key every action answers `503 issuer_not_configured`. Stripe Issuing (test mode,
-`issuing_authorization.request` webhooks) would take a second adapter in `fromLithic`'s place.
+Without the key every action answers `503 issuer_not_configured`.
+
+## Or Stripe Issuing
+
+`POST /api/card/stripe` answers Stripe's synchronous `issuing_authorization.request` (2-second
+limit) with `{"approved": true}`, using the same decision (`fromStripe()` reads
+`pending_request.amount`, `merchant_data.category_code`, the card's `metadata.monte`). Set
+`STRIPE_WEBHOOK_SECRET` and it checks `Stripe-Signature`. Stripe's test mode needs no approval, but
+anyone under 18 needs a parent or guardian as the account owner. Tested with signed synthetic events;
+not yet run against Stripe.
 
 ## What isn't built: moving the money
 

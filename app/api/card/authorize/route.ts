@@ -17,17 +17,10 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Holding } from "@/lib/engine";
 import { CARDS } from "@/lib/engine/catalog";
-import { decide, fromLithic, type Decision } from "@/lib/card/authorize";
-import { walletFromHash } from "@/components/app/share";
+import { decide, fromLithic, walletFromCode } from "@/lib/card/authorize";
+import { recent, record } from "@/lib/card/log";
 
 const KNOWN = new Set(CARDS.map((c) => c.id));
-const LOG: (Decision & { at: string; via: string })[] = [];
-
-function walletFromCode(s: string | undefined): Holding[] | null {
-  if (!s) return null;
-  const code = s.replace(/^monte:/, "").replace(/^.*#/, "");
-  return walletFromHash("#" + (code.startsWith("w=") ? code : "w=" + code));
-}
 
 function verified(req: Request, body: string): boolean {
   const secret = process.env.LITHIC_WEBHOOK_SECRET;
@@ -71,8 +64,7 @@ export async function POST(req: Request) {
   }
 
   const d = decide(wallet, auth);
-  LOG.unshift({ ...d, at: new Date().toISOString(), via: wallet ? via : "none" });
-  LOG.length = Math.min(LOG.length, 50);
+  record({ ...d, at: new Date().toISOString(), via: wallet ? via : "none", issuer: via === "request" ? "simulator" : "lithic" });
 
   // Lithic's answer shape (lithic-com/asa-demo-node): result, the request's token, AVS, balance
   const answer = { result: d.result, token: auth.token, avs_result: "MATCH", balance: { amount: 0, available: 0 } };
@@ -83,5 +75,5 @@ export async function POST(req: Request) {
 
 /** The recent decisions this server instance made, newest first (for the /card page). */
 export function GET() {
-  return Response.json({ decisions: LOG }, { headers: { "cache-control": "no-store" } });
+  return Response.json({ decisions: recent() }, { headers: { "cache-control": "no-store" } });
 }

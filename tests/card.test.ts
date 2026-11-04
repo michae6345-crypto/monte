@@ -7,6 +7,7 @@ import { categoryForMcc, mccLabel } from "@/lib/card/mcc";
 import { merchantName } from "@/lib/card/authorize";
 import { walletLink } from "@/components/app/share";
 import { POST } from "@/app/api/card/authorize/route";
+import { POST as STRIPE } from "@/app/api/card/stripe/route";
 
 test("MCC -> category: exact codes, airline and hotel blocks, and everything else", () => {
   assert.equal(categoryForMcc("5411"), "groceries");
@@ -52,6 +53,33 @@ test("authorize: Lithic gets the plain answer; no wallet still approves", async 
   const r = await ask({ token: "auth_9", amount: 1000, merchant: { descriptor: "NETFLIX.COM", mcc: "4899" } }, {});
   assert.deepEqual(Object.keys(r.json).sort(), ["avs_result", "balance", "result", "token"]);
   assert.equal(r.json.result, "APPROVED");
+});
+
+test("stripe: issuing_authorization.request in, {approved: true} out, the same pick", async () => {
+  const memo = walletLink([{ cardId: "chase_freedom_unlimited" }, { cardId: "amex_gold" }], "https://m").split("#")[1];
+  const event = {
+    type: "issuing_authorization.request",
+    data: { object: { id: "iauth_1", pending_request: { amount: 1845 }, merchant_data: { name: "SWEETGREEN LA BREA", category_code: "5812", city: "Los Angeles", state: "CA" }, card: { id: "ic_1", metadata: { monte: memo } } } },
+  };
+  const body = JSON.stringify(event);
+  const secret = "whsec_stripe_test";
+  process.env.STRIPE_WEBHOOK_SECRET = secret;
+  try {
+    const t = String(Math.floor(Date.now() / 1000));
+    const v1 = createHmac("sha256", secret).update(`${t}.${body}`).digest("hex");
+    const ok = await STRIPE(new Request("http://x", { method: "POST", body, headers: { "stripe-signature": `t=${t},v1=${v1}`, "x-monte-debug": "1" } }));
+    const json = (await ok.json()) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    assert.equal(json.approved, true);
+    assert.equal(json.monte.category, "dining");
+    // Gold 4x dining: $18.45 × 4 × 1¢ = $0.74 beats CFU 3x ($0.55)
+    assert.equal(json.monte.play.cardId, "amex_gold");
+    const forged = await STRIPE(new Request("http://x", { method: "POST", body, headers: { "stripe-signature": `t=${t},v1=${"0".repeat(64)}` } }));
+    assert.equal(forged.status, 400);
+    const other = await STRIPE(new Request("http://x", { method: "POST", body: JSON.stringify({ type: "issuing_transaction.created" }), headers: { "stripe-signature": `t=${t},v1=${createHmac("sha256", secret).update(`${t}.${JSON.stringify({ type: "issuing_transaction.created" })}`).digest("hex")}` } }));
+    assert.deepEqual(await other.json(), { received: true });
+  } finally {
+    delete process.env.STRIPE_WEBHOOK_SECRET;
+  }
 });
 
 test("authorize: with a webhook secret, only signed requests get through", async () => {

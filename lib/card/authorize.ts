@@ -17,6 +17,7 @@ import { choose, type Choice, type Mode } from "@/lib/engine/interest";
 import { stripDescriptorPrefix } from "@/lib/data/plaid";
 import { perksAt, type Perk } from "@/lib/perks";
 import { knownMerchantIn } from "@/lib/merchants";
+import { walletFromHash } from "@/components/app/share";
 import { why } from "@/lib/explain";
 import { categoryForMcc, mccLabel } from "./mcc";
 
@@ -50,6 +51,35 @@ export function fromLithic(body: Record<string, unknown>): Auth {
     cardToken: card.token ? String(card.token) : undefined,
     cardMemo: card.memo ? String(card.memo) : undefined,
   };
+}
+
+/** Stripe Issuing's `issuing_authorization.request` event: data.object is the Authorization
+ *  (id, pending_request.amount in cents, merchant_data{name, category_code (the MCC), city, state},
+ *  card{id, metadata}). The wallet code rides in the card's metadata.monte. */
+export function fromStripe(event: Record<string, unknown>): Auth {
+  const o = ((event.data as Record<string, unknown> | undefined)?.object ?? {}) as Record<string, unknown>;
+  const m = (o.merchant_data ?? {}) as Record<string, unknown>;
+  const pending = (o.pending_request ?? {}) as Record<string, unknown>;
+  const card = (o.card ?? {}) as Record<string, unknown>;
+  const meta = (card.metadata ?? {}) as Record<string, unknown>;
+  const amount = Number(pending.amount ?? o.amount ?? 0);
+  return {
+    token: String(o.id ?? ""),
+    amountCents: Number.isFinite(amount) ? Math.round(amount) : 0,
+    descriptor: String(m.name ?? ""),
+    mcc: String(m.category_code ?? ""),
+    city: m.city ? String(m.city) : undefined,
+    state: m.state ? String(m.state) : undefined,
+    cardToken: card.id ? String(card.id) : undefined,
+    cardMemo: meta.monte ? String(meta.monte) : undefined,
+  };
+}
+
+/** A wallet from "monte:w=<code>", "w=<code>", a bare code or a whole share link. */
+export function walletFromCode(s: string | undefined): Holding[] | null {
+  if (!s) return null;
+  const code = s.replace(/^monte:/, "").replace(/^.*#/, "");
+  return walletFromHash("#" + (code.startsWith("w=") ? code : "w=" + code));
 }
 
 /** "TRADER JOE'S #071" -> "Trader Joe's"; "UBER *TRIP" -> "Uber"; "SQ *BLUE BOTTLE" -> "Blue Bottle". */
