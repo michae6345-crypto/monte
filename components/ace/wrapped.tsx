@@ -123,10 +123,12 @@ export function WrappedSection() {
         kicker: "still billing",
         body: (
           <>
-            <span className="mb-5 flex -space-x-3">
-              {subs.slice(0, 4).map((s, k) => (
-                <motion.span key={s.merchant} initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 + k * 0.1 }} style={{ rotate: (k - 1.5) * 6 }}>
-                  <MerchantLogo name={s.merchant} size={46} className="rounded-[14px] shadow-[0_6px_14px_-6px_rgba(12,14,20,.4)] ring-2 ring-white" />
+            {/* every one of them (up to six), fanned with a small overlap so wordmarks like Spectrum
+                stay readable; it showed 4 logos for "5 subscriptions" */}
+            <span className="mb-5 flex -space-x-1.5">
+              {subs.slice(0, 6).map((s, k, all) => (
+                <motion.span key={s.merchant} initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 + k * 0.1 }} style={{ rotate: (k - (all.length - 1) / 2) * 5 }}>
+                  <MerchantLogo name={s.merchant} size={all.length > 4 ? 40 : 46} className="rounded-[14px] shadow-[0_6px_14px_-6px_rgba(12,14,20,.4)] ring-2 ring-white" />
                 </motion.span>
               ))}
             </span>
@@ -143,7 +145,7 @@ export function WrappedSection() {
           <>
             {money(miss.amount, { cents: true })} at {miss.merchant} went on the {shortName(miss.used)}.
             <Second>
-              The {shortName(miss.pick)} would have paid {mark("miss", money(miss.gap, { sign: true, cents: true }))} more.
+              The {shortName(miss.pick)} would have paid {mark("miss", money(miss.gap, { cents: true }))} more.
             </Second>
           </>
         ),
