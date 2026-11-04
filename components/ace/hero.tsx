@@ -30,7 +30,12 @@ export function Nav() {
             Tap demo
           </button>
         </nav>
-        <HandPicker />
+        <div className="flex items-center gap-2">
+          <HandPicker />
+          <a href="/app" className="btn btn-primary btn-sm hidden sm:inline-flex">
+            Open the app
+          </a>
+        </div>
       </div>
     </header>
   );

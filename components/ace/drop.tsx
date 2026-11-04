@@ -432,11 +432,11 @@ export function DropHero() {
             </span>
           </h1>
           <div className="pointer-events-auto mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#see" className="btn btn-primary">
-              See it work <span aria-hidden>→</span>
+            <a href="/app" className="btn btn-primary">
+              Open the app <span aria-hidden>→</span>
             </a>
-            <a href="#leaks" className="btn btn-ghost">
-              Find the leaks
+            <a href="#see" className="btn btn-ghost">
+              See how it works
             </a>
           </div>
           <button
