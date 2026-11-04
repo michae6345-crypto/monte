@@ -128,7 +128,7 @@ export function searchPlaces(q: string, limit = 6): Place[] {
   const k = key(q);
   if (!k) return [];
   const hits: { p: Place; score: number }[] = [];
-  for (const [m, c] of known()) {
+  for (const [m] of known()) {
     const mk = key(m);
     const at = mk.indexOf(k);
     if (at < 0) continue;
