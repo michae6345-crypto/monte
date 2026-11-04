@@ -11,6 +11,7 @@ import { CARDS, card } from "@/lib/engine/catalog";
 import { aprOf } from "@/lib/engine/interest";
 import { capsUsed, type CapUse } from "@/lib/caps";
 import type { CardBill } from "@/lib/data/plaid";
+import { bestTransfer } from "@/lib/transfer";
 import { CATEGORY_LABEL } from "@/lib/merchants";
 import { CardMini, shortName } from "@/components/ace/card-art";
 import { money } from "@/components/ace/store";
@@ -55,6 +56,15 @@ function PayFirst({ wallet }: { wallet: Holding[] }) {
       <p className="mt-2 text-xs text-ace-dim">
         About {money(yearly)} a year in interest at today&apos;s balances. Each extra dollar paid on the {shortName(owed[0].cardId)} saves {aprOf(owed[0])}¢ a year, more than any card pays back. While a card carries a balance, Monte keeps new purchases off it.
       </p>
+      {owed.map((h) => {
+        const t = bestTransfer(h);
+        if (!t) return null;
+        return (
+          <p key={h.cardId} className="mt-3 rounded-[10px] bg-[var(--m-wash)] p-3 text-xs leading-relaxed">
+            <span className="font-medium">Or move the {shortName(h.cardId)}&apos;s balance.</span> The {shortName(t.toCardId)} takes balance transfers at 0% for {t.months} months. Paying {money(t.monthly)} a month clears it with no interest; the same payoff at {aprOf(h)}% costs about {money(t.interestStaying)}. With a 3-5% transfer fee ({money(t.feeLow)}-{money(t.feeHigh)}), that&apos;s at least {money(t.saved)} saved, if you&apos;re approved. Keep new purchases off it until it&apos;s paid.
+          </p>
+        );
+      })}
     </section>
   );
 }
