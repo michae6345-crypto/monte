@@ -80,7 +80,9 @@ export function subscriptions(txns: Txn[]): Subscription[] {
       first: amts[0],
       count: s.length,
       cadenceDays: Math.round(gmed),
-      perYear: (last * 365) / gmed,
+      // whole charges a year: a monthly bill (gaps of ~30 days) is 12, not 365/30 = 12.17, so
+      // $70 a month is $840 a year, not $851.67
+      perYear: last * Math.max(1, Math.round(365 / gmed)),
       priceHike: last > amts[0] * 1.04,
     });
   }
