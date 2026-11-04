@@ -11,6 +11,7 @@ import { CATEGORY_LABEL, QUICK_CATEGORIES, nearbyPlaces, searchPlaces, type Near
 import { CardArt, CardMini, shortName } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money } from "@/components/ace/store";
+import { why } from "@/lib/explain";
 
 const fmt = (n: number) => money(n, { cents: true });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -229,20 +230,4 @@ function Answer({ d, where }: { d: Decision; where: string }) {
       </ul>
     </section>
   );
-}
-
-/** One sentence: why this card, in the terms the person can check. */
-export function why(d: Decision): string {
-  const p = d.pick;
-  const name = shortName(p.cardId);
-  if (d.mode === "all")
-    return `Every card you have carries a balance, so this costs interest wherever it goes. The ${name} costs the least: it earns ${fmt(p.reward)} and adds about ${fmt(p.interest)} a month at ${p.apr}% APR.`;
-  if (d.skipped) {
-    const s = d.skipped;
-    return `Your ${shortName(s.cardId)} would earn ${fmt(s.reward)}, but it carries a balance, so it has no grace period: this would start costing about ${fmt(s.interest)} a month in interest the day it posts. The ${name} is paid in full, so this costs nothing if you pay that statement.`;
-  }
-  const next = d.ranked.find((c) => c.cardId !== p.cardId && !c.carries);
-  if (!next) return `It's the only card in your wallet${d.mode === "grace" ? " without a balance" : ""}.`;
-  if (p.reward - next.reward > 0.004) return `${fmt(p.reward - next.reward)} more than your next-best card here, the ${shortName(next.cardId)}.`;
-  return `It ties with your ${shortName(next.cardId)} here, so either works.`;
 }

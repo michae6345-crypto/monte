@@ -44,14 +44,7 @@ export function cardArt(id: string) {
   return ART[id] ?? { bg: "linear-gradient(135deg,#2a2a33,#45454f)", ink: "#f4f4f6" };
 }
 
-export function shortName(id: string) {
-  return card(id)
-    .name.replace("American Express", "Amex")
-    .replace("Card from American Express", "")
-    .replace(" Credit Card", "")
-    .replace("Cash Back", "")
-    .trim();
-}
+export { shortName } from "@/lib/card-name";
 
 /** The card's own name without the issuer or "Card": for steps, chips and narrow columns. */
 const NICK: Record<string, string> = {
