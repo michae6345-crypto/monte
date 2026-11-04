@@ -18,7 +18,7 @@ export function RealSection() {
         ["The engine", "Every number on the page is arithmetic on those terms, counting interest as well as points."],
         ["The app", `${b.name} at the register: your cards, the store you're at (search or near me), the card to use.`],
         ["Online", "A Chrome extension names the card on any store's site, and at checkout if you turn it on."],
-        ["The card's brain", "Answers a card network's authorization request with the card to play, in about a millisecond."],
+        ["The card's brain", "Answers a card network's authorization request with the card to play, in a few milliseconds."],
         ["Monte Carlo", "1,000 simulated years from the person's own months."],
         ["Solver check", "Proves no other card choice earns more. 62 tests pass."],
         ["Your statement", "CSV upload, read in your browser, never uploaded."],

@@ -183,7 +183,7 @@ export function CardLab() {
           </h2>
           <ul className="mt-3 space-y-2 text-[15px] leading-relaxed">
             <li>· The decision runs on the network&apos;s own message: the store&apos;s category code and the amount, not a guess from where you are.</li>
-            <li>· Monte answers in an issuing platform&apos;s format (Lithic&apos;s Auth Stream Access), checks its signature, and decides in about a millisecond, well inside the few seconds a terminal waits.</li>
+            <li>· Monte answers in an issuing platform&apos;s format (Lithic&apos;s Auth Stream Access), checks its signature, and decides in a few milliseconds, well inside the few seconds a terminal waits.</li>
             <li>· The pick counts interest as well as points, and perks like Uber Cash first.</li>
             <li>
               ·{" "}
@@ -236,14 +236,17 @@ function RecentDecisions({ bump }: { bump?: string }) {
       <p className="m-label">recent decisions on this server</p>
       <ul className="mt-3 divide-y divide-[var(--m-line)]">
         {list.slice(0, 8).map((d) => (
-          <li key={d.token + d.at} className="flex items-center gap-3 py-2 text-sm">
-            <span className="mono w-16 shrink-0 text-[11px] text-ace-dim">{new Date(d.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" })}</span>
-            <MerchantLogo name={d.merchant} size={22} />
-            <span className="min-w-0 flex-1 truncate">
-              {d.merchant} · {fmt(d.amount)}
-              <span className="mono ml-2 text-[11px] text-ace-dim">MCC {d.mcc}</span>
+          <li key={d.token + d.at} className="flex items-center gap-3 py-2.5 text-sm">
+            <MerchantLogo name={d.merchant} size={26} />
+            {/* two lines, so it fits a phone: the store and amount, then when, the code and the card played */}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">
+                {d.merchant} · {fmt(d.amount)}
+              </span>
+              <span className="mono block truncate text-[11px] text-ace-dim">
+                {new Date(d.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" })} · MCC {d.mcc} · {d.play ? shortName(d.play.cardId) : "no wallet"}
+              </span>
             </span>
-            <span className="hidden truncate text-xs sm:inline">{d.play ? shortName(d.play.cardId) : "no wallet"}</span>
             <span className="mono shrink-0 rounded-full bg-[var(--m-wash)] px-2 py-0.5 text-[10px] uppercase tracking-wider text-ace-dim">{d.issuer}</span>
           </li>
         ))}

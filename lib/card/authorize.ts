@@ -123,5 +123,5 @@ export function decide(wallet: Holding[] | null, auth: Auth): Decision {
   if (!wallet?.length || !(amount > 0))
     return { ...base, play: null, ranked: [], mode: null, why: wallet?.length ? "Nothing to route: a $0 authorization (a card check)." : "No wallet is enrolled for this card yet.", perks: [], ms: performance.now() - t0 };
   const d = choose(wallet, { date: new Date().toISOString().slice(0, 10), merchant, category, amount });
-  return { ...base, play: d.pick, ranked: d.ranked, mode: d.mode, why: why(d), perks: perksAt(wallet, merchant), ms: performance.now() - t0 };
+  return { ...base, play: d.pick, ranked: d.ranked, mode: d.mode, why: why(d), perks: perksAt(wallet, merchant), ms: Math.round((performance.now() - t0) * 100) / 100 };
 }

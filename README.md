@@ -165,7 +165,7 @@ replays the year to show what each card cost.
 
 **The Monte card, as a working MVP:** [`/card`](https://ace-eta-beryl.vercel.app/card) answers a
 real authorization request (Lithic's Auth Stream Access format: the store's descriptor, its MCC and
-the amount) with the card Monte would play, in about a millisecond. Picking the card is built and
+the amount) with the card Monte would play, in a few milliseconds. Picking the card is built and
 tested; moving the money needs a bank partner. Details and the funding options: [`docs/CARD.md`](docs/CARD.md).
 
 ## Try it
