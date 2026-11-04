@@ -9,6 +9,8 @@ import { subscriptions } from "@/lib/engine/insights";
 import { CardMini, shortName } from "@/components/ace/card-art";
 import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money } from "@/components/ace/store";
+import { Share2 } from "lucide-react";
+import { shareYear } from "./share-image";
 
 // nothing is "$0.00", not "+$0.00" (Maya has no interest and no perks)
 const fmt = (n: number, sign = false) => (Math.abs(n) < 0.005 ? "$0.00" : money(n, { cents: true, sign }));
@@ -69,6 +71,16 @@ export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn
             The right card every time would have earned <b>{fmt(r.leftOnTable)}</b> more on the same purchases, with the cards you already have.
           </p>
         )}
+        <button
+          type="button"
+          onClick={() =>
+            shareYear({ net: r.net, rewards: r.rewards, credits: r.credits, fees: r.fees, interest: r.interest, left: r.leftOnTable, purchases: txns.length, cards: wallet.length }).catch(() => undefined)
+          }
+          className="btn btn-ghost btn-sm mt-4"
+        >
+          <Share2 className="h-4 w-4" /> Share my year
+        </button>
+        <p className="mt-1 text-[11px] text-ace-dim">An image of these totals only: no stores, no purchases, no card details.</p>
       </section>
 
       <section className="m-panel p-5">
