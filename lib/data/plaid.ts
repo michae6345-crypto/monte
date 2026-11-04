@@ -89,6 +89,7 @@ export type PlaidCreditLiability = {
   account_id?: string | null;
   aprs: PlaidApr[];
   last_statement_balance?: number | null;
+  last_payment_amount?: number | null;
   minimum_payment_amount?: number | null;
   is_overdue?: boolean | null;
 };
@@ -331,11 +332,21 @@ export function purchaseApr(aprs: PlaidApr[] | undefined | null): number | undef
   return typeof apr === "number" && apr > 0 ? round2(apr) : undefined;
 }
 
-/** Revolving balance in dollars. Plaid reports credit balances as positive = owed. */
-function revolvingBalance(account: PlaidAccount | undefined, liability: PlaidCreditLiability | undefined): number {
+/** The balance that is actually revolving (charging interest), in dollars. Not the card's
+ *  current balance: someone who pays in full every month always has one (this month's
+ *  purchases), and treating that as debt would block every card they own.
+ *   1. the purchase APR's balance_subject_to_apr, when Plaid reports it: exactly what accrues;
+ *   2. else the last statement less the last payment (0 when the statement was paid in full);
+ *   3. else nothing is known to be revolving: 0. The app lets a person mark a balance by hand. */
+export function revolvingBalance(_account: PlaidAccount | undefined, liability: PlaidCreditLiability | undefined): number {
   const subject = liability?.aprs?.find((a) => a.apr_type === "purchase_apr")?.balance_subject_to_apr;
-  const candidate = subject ?? liability?.last_statement_balance ?? account?.balances?.current ?? 0;
-  return Math.max(0, round2(Math.abs(candidate ?? 0)));
+  if (typeof subject === "number") return Math.max(0, round2(Math.abs(subject)));
+  const statement = liability?.last_statement_balance;
+  if (typeof statement === "number") {
+    const paid = liability?.last_payment_amount ?? 0;
+    return Math.max(0, round2(Math.abs(statement) - Math.abs(paid)));
+  }
+  return 0;
 }
 
 export function mapWallet(accounts: PlaidAccount[], credit: PlaidCreditLiability[] = []): Holding[] {
