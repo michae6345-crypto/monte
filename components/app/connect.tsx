@@ -8,7 +8,7 @@
 //  - Forget: drops the Plaid item server-side and clears this browser.
 
 import { useEffect, useRef, useState } from "react";
-import { Building2, FileUp, Sparkles, Trash2 } from "lucide-react";
+import { Building2, FileUp, Puzzle, Sparkles, Trash2 } from "lucide-react";
 import { PERSONAS, yearOf } from "@/lib/data/personas";
 import { connectSandboxBank, connectWithPlaid, disconnectPlaid, plaidStatus, type Linked } from "@/lib/data/plaid-link";
 import { PlaidUnavailable } from "@/lib/data/plaid-feed";
@@ -144,6 +144,19 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="m-panel p-5">
+        <div className="flex items-center gap-2">
+          <Puzzle className="h-5 w-5" aria-hidden />
+          <h2 className="text-lg font-medium">Shopping online?</h2>
+        </div>
+        <p className="mt-2 text-sm text-ace-dim">
+          The Monte extension for Chrome names the card on any store&apos;s website. It picks up the cards you set up here, so there&apos;s nothing to enter twice.
+        </p>
+        <a href="https://github.com/michae6345-crypto/monte/tree/main/extension" target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm mt-3">
+          Get the extension
+        </a>
       </section>
 
       {msg && (
