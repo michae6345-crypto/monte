@@ -119,11 +119,18 @@ export function KeepSection() {
                         tone: "loss",
                         why: `${money(m.fee)} fee, ${money(value)} of value. Switch to a no-fee ${issuer} card.`,
                       }
-                    : {
-                        label: "Keep",
-                        tone: "dim",
-                        why: `No fee. Adds ${money(m.rewardsAdded)}.`,
-                      };
+                    : m.rewardsAdded < 0.5
+                      ? {
+                          // "Keep · +$0/yr · No fee. Adds $0." read like a contradiction: say what it is
+                          label: "Keep as a backup",
+                          tone: "dim",
+                          why: "No fee, and your other cards already earn as much everywhere. Keeping it open helps your credit history.",
+                        }
+                      : {
+                          label: "Keep",
+                          tone: "dim",
+                          why: `No fee. Adds ${money(m.rewardsAdded)}.`,
+                        };
           return (
             <motion.div
               key={h.cardId}
