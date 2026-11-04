@@ -13,6 +13,7 @@ import { Share2 } from "lucide-react";
 import { shareYear } from "./share-image";
 
 // nothing is "$0.00", not "+$0.00" (Maya has no interest and no perks)
+const day = (iso?: string) => (iso ? new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }) : "");
 const fmt = (n: number, sign = false) => (Math.abs(n) < 0.005 ? "$0.00" : money(n, { cents: true, sign }));
 
 export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn[]; onConnect: () => void }) {
@@ -28,8 +29,22 @@ export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn
       .slice(0, 5);
   }, [r, txns]);
   const subs = useMemo(() => subscriptions(txns).slice(0, 6), [txns]);
+  // Fees, perks and interest are yearly; purchases may cover less (a one-month statement). Scale
+  // the yearly items to the days the purchases cover, so a month isn't set against a year.
+  const span = useMemo(() => {
+    if (!txns.length) return { days: 0, f: 1 };
+    const d = (s: string) => Date.parse(s + "T12:00:00Z");
+    const days = Math.round((d(txns[txns.length - 1].date) - d(txns[0].date)) / 864e5) + 1;
+    return { days, f: days >= 330 ? 1 : Math.max(1, days) / 365 };
+  }, [txns]);
+  const y = useMemo(() => {
+    if (!r) return null;
+    const f = span.f;
+    const perCard = r.perCard.map((c) => ({ ...c, credits: c.credits * f, fee: c.fee * f, interest: c.interest * f, net: c.rewards + (c.credits - c.fee - c.interest) * f }));
+    return { rewards: r.rewards, credits: r.credits * f, fees: r.fees * f, interest: r.interest * f, net: r.rewards + (r.credits - r.fees - r.interest) * f, perCard };
+  }, [r, span]);
 
-  if (!r)
+  if (!r || !y)
     return (
       <section className="m-panel p-5 text-center">
         <p className="text-lg" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
@@ -50,21 +65,24 @@ export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn
     <div className="space-y-4">
       <section className="m-panel p-5">
         <p className="m-label">
-          {txns.length.toLocaleString()} purchases · {first} to {last}
+          {txns.length.toLocaleString()} purchases · <span className="whitespace-nowrap">{day(first)}</span> to <span className="whitespace-nowrap">{day(last)}</span>
         </p>
-        <div className={`mt-2 text-5xl ${r.net >= 0 ? "m-gain" : "m-loss"}`} style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.03em" }}>
-          {fmt(r.net, true)}
+        <div className={`mt-2 text-5xl ${y.net >= 0 ? "m-gain" : "m-loss"}`} style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.03em" }}>
+          {fmt(y.net, true)}
         </div>
-        <p className="mt-1 text-sm text-ace-dim">what your cards made you, after fees and interest</p>
+        <p className="mt-1 text-sm text-ace-dim">
+          {y.net >= 0 ? "what your cards made you" : "what your cards cost you"}, after fees and interest
+          {span.f < 1 ? `, over these ${span.days} days (fees, perks and interest prorated)` : ""}
+        </p>
         <dl className="mono mt-4 grid grid-cols-2 gap-y-1.5 text-[13px]">
           <dt className="text-ace-dim">rewards</dt>
-          <dd className={`text-right ${r.rewards > 0.005 ? "m-gain" : "text-ace-dim"}`}>{fmt(r.rewards, true)}</dd>
+          <dd className={`text-right ${y.rewards > 0.005 ? "m-gain" : "text-ace-dim"}`}>{fmt(y.rewards, true)}</dd>
           <dt className="text-ace-dim">credits used</dt>
-          <dd className={`text-right ${r.credits > 0.005 ? "m-gain" : "text-ace-dim"}`}>{fmt(r.credits, true)}</dd>
-          <dt className="text-ace-dim">annual fees</dt>
-          <dd className={`text-right ${r.fees > 0.005 ? "m-loss" : "text-ace-dim"}`}>{fmt(-r.fees, true)}</dd>
-          <dt className="text-ace-dim">interest (a year at today&apos;s balance)</dt>
-          <dd className={`text-right ${r.interest > 0.005 ? "m-loss" : "text-ace-dim"}`}>{fmt(-r.interest, true)}</dd>
+          <dd className={`text-right ${y.credits > 0.005 ? "m-gain" : "text-ace-dim"}`}>{fmt(y.credits, true)}</dd>
+          <dt className="text-ace-dim">{span.f < 1 ? "annual fees (prorated)" : "annual fees"}</dt>
+          <dd className={`text-right ${y.fees > 0.005 ? "m-loss" : "text-ace-dim"}`}>{fmt(-y.fees, true)}</dd>
+          <dt className="text-ace-dim">{span.f < 1 ? "interest (prorated)" : "interest (a year at today’s balance)"}</dt>
+          <dd className={`text-right ${y.interest > 0.005 ? "m-loss" : "text-ace-dim"}`}>{fmt(-y.interest, true)}</dd>
         </dl>
         {r.leftOnTable > 0.005 && (
           <p className="mt-4 rounded-[12px] bg-[var(--m-accent-wash)] p-3 text-sm">
@@ -74,7 +92,7 @@ export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn
         <button
           type="button"
           onClick={() =>
-            shareYear({ net: r.net, rewards: r.rewards, credits: r.credits, fees: r.fees, interest: r.interest, left: r.leftOnTable, purchases: txns.length, cards: wallet.length }).catch(() => undefined)
+            shareYear({ net: y.net, rewards: y.rewards, credits: y.credits, fees: y.fees, interest: y.interest, left: r.leftOnTable, purchases: txns.length, cards: wallet.length }).catch(() => undefined)
           }
           className="btn btn-ghost btn-sm mt-4"
         >
@@ -86,7 +104,7 @@ export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn
       <section className="m-panel p-5">
         <p className="m-label mb-3">each card</p>
         <ul className="space-y-3">
-          {r.perCard.map((c) => (
+          {y.perCard.map((c) => (
             <li key={c.cardId} className="flex items-center gap-3 text-sm">
               <CardMini id={c.cardId} width={40} />
               <span className="min-w-0 flex-1">
@@ -113,7 +131,7 @@ export function Year({ wallet, txns, onConnect }: { wallet: Holding[]; txns: Txn
                     {t.merchant} · {fmt(t.amount)}
                   </span>
                   <span className="mono block text-[11px] text-ace-dim">
-                    {t.date} · {shortName(a.cardId)} → {shortName(b.cardId)}
+                    {day(t.date)} · {shortName(a.cardId)} → {shortName(b.cardId)}
                   </span>
                 </span>
                 <span className="mono m-gain">{fmt(b.reward - a.reward, true)}</span>
