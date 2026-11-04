@@ -36,6 +36,13 @@ test("/api/best: an unknown shop counts as online shopping; perks come back", as
   assert.equal(uber.json.perks[0].credit, "Uber Cash");
 });
 
+test("/api/best: the brand is the label before the TLD, however short; country endings kept", async () => {
+  const w = [{ cardId: "chase_freedom_unlimited" }];
+  assert.equal((await call({ wallet: w, domain: "checkout.cvs.com" })).json.place.category, "drugstores");
+  assert.equal((await call({ wallet: w, domain: "www.amazon.co.uk" })).json.place.category, "online_retail");
+  assert.equal((await call({ wallet: w, domain: "www.amazon.co.uk" })).json.place.name.toLowerCase(), "amazon");
+});
+
 test("/api/best: bad input is a 400, never a crash", async () => {
   assert.equal((await call({ wallet: [] })).status, 400);
   assert.equal((await call({ wallet: [{ cardId: "not_a_card" }], domain: "x.com" })).status, 400);

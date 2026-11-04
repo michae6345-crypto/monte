@@ -32,9 +32,11 @@ function storeFromDomain(domain: string): string {
   const host = domain.toLowerCase().replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "");
   const parts = host.split(".").filter(Boolean);
   if (parts.length <= 2) return parts[0] ?? host;
-  // co.uk-style endings keep one more label; otherwise the label before the TLD is the brand
+  // country endings like .co.uk or .com.au keep one more label; otherwise the label before the
+  // TLD is the brand, however short (checkout.cvs.com is CVS, shop.hp.com is HP)
+  const tld = parts[parts.length - 1];
   const sld = parts[parts.length - 2];
-  return sld.length <= 3 && parts.length > 2 ? parts[parts.length - 3] : sld;
+  return tld.length === 2 && /^(co|com|org|net|gov|ac|edu)$/.test(sld) ? parts[parts.length - 3] : sld;
 }
 
 export async function POST(req: Request) {
