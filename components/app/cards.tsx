@@ -9,6 +9,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { evaluate, marginalValue, type Holding, type Txn } from "@/lib/engine";
 import { CARDS, card } from "@/lib/engine/catalog";
 import { aprOf } from "@/lib/engine/interest";
+import { capsUsed, type CapUse } from "@/lib/caps";
 import { CATEGORY_LABEL } from "@/lib/merchants";
 import { CardMini, shortName } from "@/components/ace/card-art";
 import { money } from "@/components/ace/store";
@@ -80,6 +81,33 @@ function Rotating({ cardId }: { cardId: string }) {
   );
 }
 
+/** Each capped bonus on this card: how much of the cap is used this period. */
+function Caps({ uses }: { uses: CapUse[] }) {
+  if (!uses.length) return null;
+  return (
+    <div className="mt-2 space-y-1.5">
+      {uses.map((u) => {
+        const full = u.used >= u.cap;
+        const pct = Math.min(100, (u.used / u.cap) * 100);
+        return (
+          <div key={u.label} className="text-xs">
+            <div className="flex items-baseline justify-between gap-2">
+              <span>{u.label}</span>
+              <span className={`mono ${full ? "m-loss" : "text-ace-dim"}`}>
+                {full ? `cap reached ${u.when}` : `${money(u.used)} of ${money(u.cap)} ${u.when}`}
+              </span>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[var(--m-wash)]" role="img" aria-label={`${Math.round(pct)}% of the cap used`}>
+              <div className={`h-full rounded-full ${full ? "bg-[var(--m-loss)]" : pct > 85 ? "bg-[var(--m-accent)]" : "bg-ace-ink"}`} style={{ width: `${pct}%` }} />
+            </div>
+            {full && <p className="mt-0.5 text-ace-dim">Past the cap it earns this card&apos;s base rate; the Pay screen already counts that.</p>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** With a year of purchases: what this card adds over the rest of the wallet, after its fee. */
 function Worth({ wallet, txns, cardId }: { wallet: Holding[]; txns: Txn[]; cardId: string }) {
   const m = useMemo(() => (txns.length && wallet.length > 1 ? marginalValue(wallet, txns, cardId) : null), [wallet, txns, cardId]);
@@ -122,12 +150,15 @@ export function Cards({ wallet, txns = [], onChange }: { wallet: Holding[]; txns
   }, [q, wallet]);
 
   const set = (id: string, patch: Partial<Holding>) => onChange(wallet.map((h) => (h.cardId === id ? { ...h, ...patch } : h)));
+  // the demo years end 17 Oct 2026; a real feed ends today. Count caps up to the last purchase.
+  const caps = useMemo(() => (txns.length ? capsUsed(wallet, txns, txns[txns.length - 1].date) : []), [wallet, txns]);
 
   return (
     <div className="space-y-3">
       <PayFirst wallet={wallet} />
       {wallet.map((h) => (
         <CardRow key={h.cardId} h={h} onSet={(p) => set(h.cardId, p)} onRemove={() => onChange(wallet.filter((x) => x.cardId !== h.cardId))}>
+          <Caps uses={caps.filter((u) => u.cardId === h.cardId)} />
           <Worth wallet={wallet} txns={txns} cardId={h.cardId} />
         </CardRow>
       ))}

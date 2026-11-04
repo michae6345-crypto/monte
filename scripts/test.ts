@@ -9,3 +9,4 @@ import "@/tests/apportion.test";
 import "@/tests/api-best.test";
 import "@/tests/share.test";
 import "@/tests/card.test";
+import "@/tests/caps.test";
