@@ -22,7 +22,12 @@ test("MCC -> category: exact codes, airline and hotel blocks, and everything els
 test("descriptor -> merchant name", () => {
   assert.equal(merchantName("TRADER JOE'S #071"), "Trader Joe's");
   assert.equal(merchantName("UBER *TRIP"), "Uber");
-  assert.equal(merchantName("SHELL OIL 57444"), "Shell Oil");
+  assert.equal(merchantName("SHELL OIL 57444"), "Shell");
+  assert.equal(merchantName("CVS/PHARMACY #9213"), "CVS Pharmacy");
+  assert.equal(merchantName("COSTCO WHSE #0479"), "Costco");
+  assert.equal(merchantName("NETFLIX.COM"), "Netflix");
+  assert.equal(merchantName("ZZYZX HARDWARE 0042"), "Zzyzx Hardware"); // unknown: cleaned up
+  assert.equal(merchantName("REIGN BEVERAGE CO"), "Reign Beverage Co"); // not REI: whole words only
 });
 
 const ask = async (body: unknown, headers: Record<string, string> = { "x-monte-debug": "1" }) => {

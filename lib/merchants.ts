@@ -125,6 +125,23 @@ export function placeFor(name: string): Place {
   return { name: n, category: "everything_else", via: "unknown" };
 }
 
+/** A raw card descriptor's store, as we know it: the longest known merchant whose name starts the
+ *  descriptor ("CVS/PHARMACY #9213" -> CVS Pharmacy, "COSTCO WHSE #0479" -> Costco,
+ *  "NETFLIX.COM" -> Netflix), or null. */
+export function knownMerchantIn(descriptor: string): string | null {
+  // whole words only: the descriptor's first one, two, three... words joined, so "REIGN BEVERAGE"
+  // isn't REI, while "TRADER JOE'S" (trader, joe, s) still is Trader Joe's
+  const words = descriptor.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  const starts = new Set<string>();
+  for (let n = 1, acc = ""; n <= Math.min(words.length, 5); n++) starts.add((acc += words[n - 1]));
+  let best: string | null = null;
+  for (const [m] of known()) {
+    const mk = key(m);
+    if (mk.length >= 3 && starts.has(mk) && (!best || mk.length > key(best).length)) best = m;
+  }
+  return best;
+}
+
 /** Type-ahead over the stores we know, best match first. */
 export function searchPlaces(q: string, limit = 6): Place[] {
   const k = key(q);

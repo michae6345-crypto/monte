@@ -16,6 +16,7 @@ import type { Holding } from "@/lib/engine";
 import { choose, type Choice, type Mode } from "@/lib/engine/interest";
 import { stripDescriptorPrefix } from "@/lib/data/plaid";
 import { perksAt, type Perk } from "@/lib/perks";
+import { knownMerchantIn } from "@/lib/merchants";
 import { why } from "@/lib/explain";
 import { categoryForMcc, mccLabel } from "./mcc";
 
@@ -53,6 +54,9 @@ export function fromLithic(body: Record<string, unknown>): Auth {
 
 /** "TRADER JOE'S #071" -> "Trader Joe's"; "UBER *TRIP" -> "Uber"; "SQ *BLUE BOTTLE" -> "Blue Bottle". */
 export function merchantName(descriptor: string): string {
+  // a store we know, by the name it goes by ("CVS/PHARMACY #9213" -> CVS Pharmacy)
+  const known = knownMerchantIn(stripDescriptorPrefix(descriptor));
+  if (known) return known;
   let s = stripDescriptorPrefix(descriptor);
   s = s.split("*")[0]; // "UBER *TRIP": the brand comes before the star
   s = s.replace(/#?\s*\d{2,}.*$/, "").replace(/\s{2,}/g, " ").trim();
