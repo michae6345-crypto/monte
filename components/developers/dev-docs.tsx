@@ -20,7 +20,7 @@ const SAMPLE = {
 const CURL = `curl -X POST https://ace-eta-beryl.vercel.app/api/best \\
   -H "content-type: application/json" \\
   -d '{"wallet":[{"cardId":"amex_gold"},{"cardId":"chase_freedom_unlimited","balance":1200,"apr":27.99}],
-       "merchant":"Trader Joe\\'s","amount":64.20}'`;
+       "merchant":"Whole Foods","amount":64.20}'`;
 
 const FETCH = `const res = await fetch("https://ace-eta-beryl.vercel.app/api/best", {
   method: "POST",

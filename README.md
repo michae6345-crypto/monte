@@ -176,6 +176,7 @@ for presenter mode and walk the demo with the arrow keys, or open [`/#tap-demo`]
 - [`/app`](https://ace-eta-beryl.vercel.app/app): the app (add your cards, or load a demo person). Installable; works offline.
 - [`/card`](https://ace-eta-beryl.vercel.app/card): the Monte card MVP, tap it and watch the authorization round trip.
 - The Chrome extension: download it from the app's Connect tab (`npm run pack:extension` rebuilds the zip).
+- [`/developers`](https://ace-eta-beryl.vercel.app/developers): the API for other apps (`POST /api/best`, `GET /api/cards`), with a live console. The business model and how partners plug in: [`docs/BUSINESS.md`](docs/BUSINESS.md).
 
 **Run it locally:**
 

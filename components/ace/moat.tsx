@@ -386,6 +386,7 @@ export function Footer() {
               ["Devpost", "https://devpost.com/software/monte-calygj"],
               ["Launch film", "https://youtu.be/Tn4YrpoLjh8"],
               ["The Monte card", "/card"],
+              ["Developers", "/developers"],
               ["Under the hood", "/engine"],
             ].map(([l, href]) => (
               <a key={l} href={href} {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})} className="underline decoration-[var(--m-line-strong)] underline-offset-4 hover:text-ace-ink">
