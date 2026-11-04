@@ -161,8 +161,12 @@ workaround, one Monte card that charges your best card behind the scenes, breaks
 
 So Monte works around the wallet: before you tap it shows the right card for the place you're
 at, so you pick it in Apple Pay; after you tap each purchase gets a verdict; once a year it
-replays the year to show what each card cost. The Monte card itself is simulated at
-[`/brand`](https://ace-eta-beryl.vercel.app/brand).
+replays the year to show what each card cost.
+
+**The Monte card, as a working MVP:** [`/card`](https://ace-eta-beryl.vercel.app/card) answers a
+real authorization request (Lithic's Auth Stream Access format: the store's descriptor, its MCC and
+the amount) with the card Monte would play, in about a millisecond. Picking the card is built and
+tested; moving the money needs a bank partner. Details and the funding options: [`docs/CARD.md`](docs/CARD.md).
 
 ## Try it
 

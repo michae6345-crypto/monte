@@ -169,7 +169,10 @@ function Welcome({ onConnect, onAdd }: { onConnect: () => void; onAdd: () => voi
         </button>
       </div>
       <p className="mt-6 text-xs text-ace-dim">
-        No account. Your cards stay in this browser. <Link href="/" className="underline underline-offset-4">How Monte works</Link>
+        No account. Your cards stay in this browser. <Link href="/" className="underline underline-offset-4">How Monte works</Link> ·{" "}
+        <Link href="/card" className="underline underline-offset-4">
+          The Monte card
+        </Link>
       </p>
     </section>
   );
