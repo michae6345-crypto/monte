@@ -139,9 +139,15 @@ export function StorePack({ txns, wallet, month = 12 }: { txns: Txn[]; wallet: H
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: Math.min(1.2, k * 0.012), type: "spring", stiffness: 160, damping: 16 }}
-                style={{ transformOrigin: `${l.x}px ${l.y}px`, cursor: "pointer" }}
+                style={{ transformOrigin: `${l.x}px ${l.y}px`, cursor: "pointer", outline: "none" }}
                 onMouseEnter={() => setSel(s.merchant)}
                 onClick={() => setSel(s.merchant)}
+                // keyboard: Tab walks the stores (biggest first), and focus shows one like a hover
+                tabIndex={0}
+                role="button"
+                aria-label={`${s.merchant}: ${money(s.total)} over ${s.count} purchases`}
+                aria-pressed={on}
+                onFocus={() => setSel(s.merchant)}
               >
                 <circle
                   cx={l.x}
