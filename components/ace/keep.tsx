@@ -181,15 +181,20 @@ export function KeepSection() {
                 <p className="mt-1 text-sm leading-relaxed text-ace-dim">
                   {verdict.why}
                 </p>
-                {drop && (
-                  <p className="mt-2 text-[13px]">
-                    drop it:{" "}
-                    <span className={`m-num ${drop.p50 - mc.current.p50 >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>
-                      {money(drop.p50 - mc.current.p50, { sign: true })}
-                    </span>{" "}
-                    a typical year
-                  </p>
-                )}
+                {drop &&
+                  (() => {
+                    // the card the estimator below covers shows the estimator's own number (the
+                    // average of the paired years), so the two never read $1 apart; others, the median
+                    const same = keepCase?.cardId === h.cardId;
+                    const v = same ? -keepCase.diff.reduce((a, b) => a + b, 0) / keepCase.diff.length : drop.p50 - mc.current.p50;
+                    return (
+                      <p className="mt-2 text-[13px]">
+                        drop it:{" "}
+                        <span className={`m-num ${v >= 0 ? "text-ace-gain" : "text-ace-loss"}`}>{money(v, { sign: true })}</span>{" "}
+                        {same ? "a year on average" : "a typical year"}
+                      </p>
+                    );
+                  })()}
               </div>
             </motion.div>
           );
