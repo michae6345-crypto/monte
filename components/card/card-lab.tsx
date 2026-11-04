@@ -174,6 +174,8 @@ export function CardLab() {
         )}
       </section>
 
+      <RecentDecisions bump={run?.request.token as string | undefined} />
+
       <section className="mt-10 grid gap-6 md:grid-cols-2">
         <div>
           <h2 className="text-2xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
@@ -205,6 +207,48 @@ export function CardLab() {
         </div>
       </section>
     </div>
+  );
+}
+
+type Logged = Decision & { at: string; via: string; issuer: string };
+
+/** Every decision this server made recently: from this page's taps, and from a card network once a
+ *  Lithic or Stripe sandbox is pointed at it. Refreshes every few seconds while the tab is open. */
+function RecentDecisions({ bump }: { bump?: string }) {
+  const [list, setList] = useState<Logged[]>([]);
+  useEffect(() => {
+    let live = true;
+    const load = () =>
+      fetch("/api/card/authorize", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((j: { decisions?: Logged[] }) => live && setList(j.decisions ?? []))
+        .catch(() => undefined);
+    load();
+    const id = window.setInterval(() => document.visibilityState === "visible" && load(), 5000);
+    return () => {
+      live = false;
+      clearInterval(id);
+    };
+  }, [bump]);
+  if (!list.length) return null;
+  return (
+    <section className="m-panel mt-6 p-5">
+      <p className="m-label">recent decisions on this server</p>
+      <ul className="mt-3 divide-y divide-[var(--m-line)]">
+        {list.slice(0, 8).map((d) => (
+          <li key={d.token + d.at} className="flex items-center gap-3 py-2 text-sm">
+            <span className="mono w-16 shrink-0 text-[11px] text-ace-dim">{new Date(d.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" })}</span>
+            <MerchantLogo name={d.merchant} size={22} />
+            <span className="min-w-0 flex-1 truncate">
+              {d.merchant} · {fmt(d.amount)}
+              <span className="mono ml-2 text-[11px] text-ace-dim">MCC {d.mcc}</span>
+            </span>
+            <span className="hidden truncate text-xs sm:inline">{d.play ? shortName(d.play.cardId) : "no wallet"}</span>
+            <span className="mono shrink-0 rounded-full bg-[var(--m-wash)] px-2 py-0.5 text-[10px] uppercase tracking-wider text-ace-dim">{d.issuer}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
