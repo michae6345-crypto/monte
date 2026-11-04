@@ -125,7 +125,7 @@ export default function Dashboard() {
               </div>
               <div className="text-right">
                 <div
-                  className="text-3xl font-semibold tabular-nums"
+                  className="whitespace-nowrap text-3xl font-semibold tabular-nums"
                   style={{ color: r.net < 0 ? "var(--ace-loss)" : "var(--ace-gain)" }}
                 >
                   {usd(r.net, true)}
@@ -139,8 +139,9 @@ export default function Dashboard() {
               {[
                 ["Rewards", usd(r.rewards, true)],
                 ["Perks used", usd(r.credits, true)],
-                ["Annual fees", `−${usd(r.fees, true).replace("−", "")}`],
-                ["Interest", `−${usd(r.interest, true).replace("−", "")}`],
+                // a cost reads −$325.00; no cost reads $0.00, not "−$0.00"
+                ["Annual fees", usd(-Math.abs(r.fees), true)],
+                ["Interest", usd(-Math.abs(r.interest), true)],
               ].map(([k, v]) => (
                 <div key={k}>
                   <dt className="mono text-[10px] uppercase tracking-wider text-[var(--ace-dim)]">{k}</dt>
