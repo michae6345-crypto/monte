@@ -154,7 +154,7 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
           </div>
         )}
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex items-center gap-1.5">
           <label htmlFor="amount" className="m-label mr-1">
             About
           </label>
@@ -168,23 +168,23 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
               step="1"
               value={Number.isFinite(amount) ? amount : ""}
               onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))}
-              className="h-9 w-24 rounded-full bg-[var(--m-wash)] pl-6 pr-3 text-sm outline-none focus:ring-2 focus:ring-[var(--m-accent)]"
+              className="h-9 w-[4.5rem] rounded-full bg-[var(--m-wash)] pl-6 pr-2 text-sm outline-none focus:ring-2 focus:ring-[var(--m-accent)]"
             />
           </div>
           {AMOUNTS.map((a) => (
-            <button key={a} type="button" onClick={() => setAmount(a)} className={`btn btn-sm ${amount === a ? "btn-primary" : "btn-ghost"}`}>
+            <button key={a} type="button" onClick={() => setAmount(a)} className={`btn btn-sm !px-3 ${amount === a ? "btn-primary" : "btn-ghost"}`}>
               ${a}
             </button>
           ))}
         </div>
       </section>
 
-      {d && <Answer d={d} merchant={merchant} />}
+      {d && <Answer d={d} where={place ? `at ${place.name}` : `on ${(CATEGORY_LABEL[cat] ?? cat).toLowerCase()}`} />}
     </div>
   );
 }
 
-function Answer({ d, merchant }: { d: Decision; merchant: string }) {
+function Answer({ d, where }: { d: Decision; where: string }) {
   const p = d.pick;
   return (
     <section className="m-panel overflow-hidden" aria-live="polite">
@@ -200,7 +200,7 @@ function Answer({ d, merchant }: { d: Decision; merchant: string }) {
             </div>
             <div className="mt-1 text-sm">
               <span className={p.net >= 0 ? "m-gain" : "m-loss"}>{p.interest > 0 ? `${fmt(p.net)} net` : `${fmt(p.reward)} back`}</span>
-              <span className="text-ace-dim"> at {merchant}</span>
+              <span className="text-ace-dim"> {where}</span>
             </div>
             <div className="mono mt-1 text-[11px] text-ace-dim">{p.rule}</div>
           </div>

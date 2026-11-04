@@ -50,7 +50,6 @@ export function MonteApp() {
 
   const wallet = saved?.wallet ?? [];
   const txns = saved?.txns ?? [];
-  const carrying = wallet.filter((h) => h.balance && h.balance > 0).length;
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col">
@@ -61,7 +60,6 @@ export function MonteApp() {
         {saved && (
           <button type="button" onClick={() => go("connect")} className="max-w-[60%] truncate text-right text-xs text-ace-dim">
             {saved.label} · {wallet.length} card{wallet.length === 1 ? "" : "s"}
-            {carrying ? ` · ${carrying} with a balance` : ""}
           </button>
         )}
       </header>
