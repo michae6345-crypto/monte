@@ -57,6 +57,29 @@ function PayFirst({ wallet }: { wallet: Holding[] }) {
   );
 }
 
+/** This quarter's 5% categories on a rotating card, and the activation it needs: 5% only starts
+ *  once activated, and isn't backdated. Shown while the catalog's quarter is current. */
+function Rotating({ cardId }: { cardId: string }) {
+  const r = card(cardId).rotating as
+    | { q4_2026_labels?: string[]; multiplier: number; cap?: number; activation_required?: boolean; activation_deadline?: string; period?: string; dates?: string }
+    | undefined;
+  if (!r?.q4_2026_labels?.length) return null;
+  const span = r.period ?? r.dates ?? "";
+  const end = span.split(" to ")[1];
+  const today = new Date().toISOString().slice(0, 10);
+  if (end && today > end) return null; // the catalog's quarter is over; next quarter's isn't on file yet
+  const deadline = r.activation_deadline ? new Date(r.activation_deadline + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : null;
+  return (
+    <p className="mt-2 rounded-[10px] bg-[var(--m-accent-wash)] px-2.5 py-1.5 text-xs">
+      <span className="font-medium">
+        {r.multiplier}% this quarter: {r.q4_2026_labels.join(", ")}
+      </span>
+      {r.cap ? ` (first ${money(r.cap)})` : ""}.{" "}
+      {r.activation_required && <span>Activate it with the issuer first{deadline ? `, by ${deadline}` : ""}: it isn&apos;t backdated.</span>}
+    </p>
+  );
+}
+
 /** With a year of purchases: what this card adds over the rest of the wallet, after its fee. */
 function Worth({ wallet, txns, cardId }: { wallet: Holding[]; txns: Txn[]; cardId: string }) {
   const m = useMemo(() => (txns.length && wallet.length > 1 ? marginalValue(wallet, txns, cardId) : null), [wallet, txns, cardId]);
@@ -180,6 +203,7 @@ function CardRow({ h, onSet, onRemove, children }: { h: Holding; onSet: (p: Part
               </span>
             ))}
           </div>
+          <Rotating cardId={h.cardId} />
           {children}
         </div>
         <button type="button" onClick={onRemove} aria-label={`Remove ${shortName(h.cardId)}`} className="grid h-8 w-8 place-items-center rounded-full text-ace-dim hover:bg-[var(--m-wash)]">
