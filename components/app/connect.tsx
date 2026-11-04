@@ -156,9 +156,15 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
         <p className="mt-2 text-sm text-ace-dim">
           The Monte extension for Chrome names the card on any store&apos;s website. It picks up the cards you set up here, so there&apos;s nothing to enter twice.
         </p>
-        <a href="https://github.com/michae6345-crypto/monte/tree/main/extension" target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm mt-3">
-          Get the extension
+        <a href="/monte-extension.zip" download className="btn btn-ghost btn-sm mt-3">
+          Download the extension (15 KB)
         </a>
+        <ol className="mt-3 list-decimal space-y-0.5 pl-5 text-xs text-ace-dim">
+          <li>Unzip it.</li>
+          <li>In Chrome, open chrome://extensions and turn on Developer mode.</li>
+          <li>Load unpacked, and pick the monte-extension folder.</li>
+          <li>Open Monte once in that browser so it picks up your cards.</li>
+        </ol>
       </section>
 
       {msg && (
