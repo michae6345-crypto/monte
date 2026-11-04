@@ -44,7 +44,9 @@ export function cardArt(id: string) {
   return ART[id] ?? { bg: "linear-gradient(135deg,#2a2a33,#45454f)", ink: "#f4f4f6" };
 }
 
-export { shortName } from "@/lib/card-name";
+// lives in lib so server routes can use it; imported (not just re-exported) because this file uses it too
+import { shortName } from "@/lib/card-name";
+export { shortName };
 
 /** The card's own name without the issuer or "Card": for steps, chips and narrow columns. */
 const NICK: Record<string, string> = {
