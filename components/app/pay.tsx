@@ -42,6 +42,21 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
     () => (wallet.length && amount > 0 ? choose(wallet, { date: today(), merchant, category, amount }, history) : null),
     [wallet, merchant, category, amount, history],
   );
+  // the stores you go to most (not the bills that charge you on their own), with a typical amount
+  const usual = useMemo(() => {
+    const m = new Map<string, { name: string; category: string; n: number; total: number }>();
+    for (const t of txns) {
+      if (["streaming", "phone", "utilities", "rent"].includes(t.category)) continue;
+      const e = m.get(t.merchant) ?? { name: t.merchant, category: t.category, n: 0, total: 0 };
+      e.n++;
+      e.total += t.amount;
+      m.set(t.merchant, e);
+    }
+    return [...m.values()]
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 6)
+      .map((e) => ({ name: e.name, category: e.category, typical: e.total / e.n }));
+  }, [txns]);
 
   const pick = (p: Place) => {
     setPlace(p);
@@ -202,6 +217,28 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
             ))}
             <li className="px-3 py-2 text-[11px] text-ace-dim">Stores from OpenStreetMap. Your location goes to komoot&apos;s Photon search (or OpenStreetMap&apos;s Overpass) for this one lookup and isn&apos;t kept by Monte.</li>
           </ul>
+        )}
+
+        {!place && usual.length > 0 && (
+          <div className="mt-4">
+            <p className="m-label mb-2">your usual</p>
+            <div className="flex flex-wrap gap-1.5">
+              {usual.map((u) => (
+                <button
+                  key={u.name}
+                  type="button"
+                  onClick={() => {
+                    pick({ name: u.name, category: u.category, via: "known" });
+                    setAmount(Math.max(1, Math.round(u.typical)));
+                  }}
+                  className="flex items-center gap-1.5 rounded-full bg-[var(--m-wash)] py-1 pl-1.5 pr-3 text-sm hover:bg-[var(--m-line)]"
+                >
+                  <MerchantLogo name={u.name} size={20} className="rounded-full" />
+                  {u.name}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         {!place && (
