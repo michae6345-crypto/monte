@@ -33,7 +33,24 @@ export function MoatSection() {
       readout={<>compared on what each one advertises, Oct 2026</>}
     >
       <TwoAnswers />
-      <div className="overflow-x-auto m-panel">
+      {/* on a phone the four columns don't fit (they scrolled sideways and broke words mid-way):
+          each question gets its own block with the three answers under it */}
+      <div className="space-y-3 md:hidden">
+        {ROWS.map((row) => (
+          <div key={row[0]} className="m-panel p-4">
+            <p className="font-medium">{row[0]}</p>
+            <dl className="mono mt-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-[12px]">
+              <dt className="text-ace-ink">{b.name}</dt>
+              <dd className="text-right font-medium text-ace-ink">{row[1]}</dd>
+              <dt className="text-ace-dim">Tap-time card pickers</dt>
+              <dd className="text-right text-ace-dim">{row[2]}</dd>
+              <dt className="text-ace-dim">Comparison sites</dt>
+              <dd className="text-right text-ace-dim">{row[3]}</dd>
+            </dl>
+          </div>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto m-panel md:block">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="mono text-[11px] uppercase tracking-[0.15em] text-ace-dim">
             <tr className="border-b border-ace-line">
