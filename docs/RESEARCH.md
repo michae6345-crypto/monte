@@ -25,7 +25,7 @@ issuer pages.
   financial institution or contracted to a licensed payment provider, sign a fee-bearing agreement with
   Apple, meet PCI DSS and EMVCo, and pass a lab review [11]. Putting your Chase or Amex card inside it
   needs network tokens (a registered token requestor, weeks of certification [66]) or a Curve-style
-  staged wallet [67]. That's the "partnerships and compliance" Mordi meant.
+  staged wallet [67]: partnerships and compliance, not code.
 
 ## The other card pickers
 

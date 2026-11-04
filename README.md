@@ -55,8 +55,8 @@ using the cards you set up in the app.
 
 ### Why skip a card with a balance? (interest, not just points)
 
-Mordi Shadpour (Uno Wallet) asked the right question: if you can't pay the balance down, you pay
-interest anyway, so how does routing around the card help? [`lib/engine/interest.ts`](lib/engine/interest.ts)
+A fair question about that rule: if you can't pay the balance down, you pay interest anyway, so how
+does routing around the card help? [`lib/engine/interest.ts`](lib/engine/interest.ts)
 answers in numbers:
 
 - **A card that carries a balance has no grace period.** A new purchase on it accrues interest from

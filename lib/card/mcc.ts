@@ -1,8 +1,8 @@
 // Merchant category codes -> Monte's categories. Every card authorization carries the store's
 // MCC (ISO 18245), assigned by its acquiring bank: the same code the issuers' bonus rules key
 // on. So at the moment of payment there's no guessing which store you're at or what it counts
-// as: the network says. (Mordi's question, "how do you know the merchant before the tap?", has
-// this answer for a card Monte issues.)
+// as: the network says. ("How do you know the merchant before the tap?" has this answer for
+// a card Monte issues.)
 //
 // Ranges follow the published MCC list (Visa Merchant Data Standards Manual; Mastercard Quick
 // Reference Booklet). Airline (3000-3350) and hotel (3501-3999) codes are the brand-specific

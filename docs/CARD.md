@@ -55,9 +55,9 @@ not yet run against Stripe.
 
 ## What isn't built: moving the money
 
-Picking the card is the easy half. Paying with it is where Mordi Shadpour's point applies: "the
-hardest part isn't only the technology... it's navigating the payment ecosystem, securing
-partnerships... and meeting the regulatory and compliance requirements."
+Picking the card is the easy half. Paying with it is the hard part, and it isn't only technology: it's
+the payment ecosystem, partnerships with issuers and networks, and regulatory and compliance
+requirements.
 
 | Model | How | The catch |
 |---|---|---|

@@ -1,8 +1,7 @@
 // Which card to pay with, counting the interest a purchase adds as well as what it earns.
 //
-// Mordi Shadpour (Uno Wallet), 2 Nov 2026: "How does routing to a card without a balance help?
-// The user pays interest on that transaction only at the next billing cycle - assuming they
-// don't have the capital to pay down the balance they'll pay interest anyway."
+// The question this answers: if a person can't pay a balance down and pays interest anyway, how
+// does routing purchases away from the card with the balance help?
 //
 // The answer, as the engine now computes it:
 //  - A card that carries a balance has no grace period. A new purchase on it accrues interest
