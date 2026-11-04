@@ -287,7 +287,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
       aria-label="Tap to pay demo"
     >
       <motion.div
-        className="relative my-auto w-full max-w-[1240px] overflow-hidden rounded-[22px] bg-ace-bg shadow-[0_40px_120px_-30px_rgba(12,14,20,.7)] ring-1 ring-ace-line"
+        // overflow-clip, not -hidden: it rounds the corners the same, but isn't a scroll container,
+        // so the controls bar below can stick to the bottom of the screen on a phone
+        className="relative my-auto w-full max-w-[1240px] overflow-clip rounded-[22px] bg-ace-bg shadow-[0_40px_120px_-30px_rgba(12,14,20,.7)] ring-1 ring-ace-line"
         initial={{ y: 24, scale: 0.98 }}
         animate={{ y: 0, scale: 1 }}
         exit={{ y: 16, opacity: 0 }}
@@ -368,8 +370,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        {/* timeline + controls */}
-        <div className="flex flex-wrap items-center gap-3 border-t border-ace-line bg-ace-panel px-4 py-3">
+        {/* timeline + controls: pinned to the bottom of the screen on a phone, where the stage and the
+            step's note run taller than the screen and pushed Next, Pay and "Tap again" out of sight */}
+        <div className="sticky bottom-0 z-20 flex flex-wrap items-center gap-3 border-t border-ace-line bg-ace-panel px-4 py-3 max-lg:shadow-[0_-10px_24px_-16px_rgba(12,14,20,.35)] lg:static">
           <div className="flex items-center gap-1.5">
             {phase === -1 || paid ? (
               <button onClick={start} className="btn btn-primary btn-sm">
