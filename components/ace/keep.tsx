@@ -251,8 +251,9 @@ function Bar({
 // ---------------- For you: preferences, next card, nudges ----------------
 
 export function ForYouSection() {
-  const { wallet, txns, valuation, setValuationMode, tryCard, persona } =
+  const { wallet, txns, valuation, setValuationMode, tryCard, removeCard, persona } =
     useAce();
+  const [lastTried, setLastTried] = useState<string | null>(null);
   const [noFee, setNoFee] = useState(false);
   const drift = useDrift();
   const { brand: b } = useBrand();
@@ -426,6 +427,24 @@ export function ForYouSection() {
                 <span className="font-medium">Pay the balance first.</span> Then:
               </div>
             )}
+            {/* "what if?" re-ranks the list and the card leaves it; say where it went, right here
+                (the only confirmation used to be the bar at the top of the chapter, off screen) */}
+            {lastTried && wallet.some((h) => h.cardId === lastTried) && (
+              <div role="status" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[10px] bg-[var(--m-accent-wash)] p-3 text-sm">
+                <span>
+                  Added the <span className="font-medium">{shortName(lastTried)}</span> as a what-if. Every section now includes it.
+                </span>
+                <button
+                  onClick={() => {
+                    removeCard(lastTried);
+                    setLastTried(null);
+                  }}
+                  className="underline underline-offset-2"
+                >
+                  undo
+                </button>
+              </div>
+            )}
             <div className="space-y-3">
               {recs.map((x, k) => (
                 <motion.div
@@ -460,6 +479,7 @@ export function ForYouSection() {
                     <button
                       onClick={() => {
                         tryCard(x.id);
+                        setLastTried(x.id);
                       }}
                       className="btn btn-ghost btn-sm"
                       title="Adds this card to the wallet as a what-if; every section reruns with it"
