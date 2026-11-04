@@ -41,13 +41,13 @@ minus interest.
 ## The app: [`/app`](https://ace-eta-beryl.vercel.app/app)
 
 The story page shows a demo year. `/app` is the product you use at the register, phone first,
-installable to the home screen, no account (your cards stay in your browser).
+installable to the home screen, works offline once opened, no account (your cards stay in your browser; "copy to another device" moves them with a link).
 
 | Tab | What it does |
 |---|---|
-| **Pay** | Search the store or tap **Near me** (OpenStreetMap), say roughly how much, and Monte names the card, with one sentence on why. A card's credit at that store (Uber Cash, the Dunkin' credit...) comes first. |
-| **Cards** | Your wallet: each card's best categories, which ones carry a balance and the order to pay them down, and with a year of purchases, whether each card earns its fee. |
-| **Year** | With a bank or statement connected: what your cards made or cost you, each card's net, the biggest misses, what keeps charging you. |
+| **Pay** | Your usual stores, search, or **Near me** (OpenStreetMap; with location already allowed it finds the store you're at on its own); say roughly how much, and Monte names the card, with one sentence on why. A card's credit at that store (Uber Cash, the Dunkin' credit...) comes first. Wrong category? Fix it once ("codes as") and Monte keeps it. |
+| **Cards** | Your wallet: each card's best categories; balances, the order to pay them down and a balance transfer when one saves money; due dates, minimums and utilization from the bank; how much of each capped bonus is used; this quarter's rotating categories and their activation; where each card's offers are; and with a year of purchases, whether each card earns its fee. |
+| **Year** | With a bank or statement connected: what your cards made or cost you, each card's net, the biggest misses, what keeps charging you, and a shareable image of the totals. |
 | **Connect** | [Plaid](#connecting-a-bank) Link, a statement CSV, or one of the five demo people. "Forget everything" drops the Plaid item and clears the browser. |
 
 **Online checkout:** the [Chrome extension](extension/) names the card on any store's website,
