@@ -8,6 +8,7 @@ number comes from a rule in `data/cards.json` and the purchases it applied to.
 | `index.ts` | `simulate`, `receipt`, `tap`, `marginalValue`, `whatIf`: earn rules, caps, shared pools, rotations, credits, interest |
 | `catalog.ts` | Types for `data/cards.json` and `card(id)` lookup |
 | `insights.ts` | Spending by category and merchant, recurring charges |
+| `interest.ts` | `choose()`: wraps `tap()` and ranks by reward minus the interest a purchase adds (no grace period on a card with a balance; when every card has one, the cheapest net wins) |
 | `montecarlo.ts` | Resamples your months into 1,000 years and reruns the engine on each; seeded |
 | `lp.ts` | Solves the year as one LP to check greedy routing against an upper bound |
 | `provenance.ts` | Traces any dollar to its rule, arithmetic, source URL and checked date |
