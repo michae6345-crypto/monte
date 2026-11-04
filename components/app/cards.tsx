@@ -162,9 +162,9 @@ function Caps({ uses }: { uses: CapUse[] }) {
         const pct = Math.min(100, (u.used / u.cap) * 100);
         return (
           <div key={u.label} className="text-xs">
-            <div className="flex items-baseline justify-between gap-2">
-              <span>{u.label}</span>
-              <span className={`mono ${full ? "m-loss" : "text-ace-dim"}`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+              <span className="whitespace-nowrap">{u.label}</span>
+              <span className={`mono whitespace-nowrap ${full ? "m-loss" : "text-ace-dim"}`}>
                 {full ? `cap reached ${u.when}` : `${money(u.used)} of ${money(u.cap)} ${u.when}`}
               </span>
             </div>

@@ -9,16 +9,16 @@ const at = "2026-10-17";
 
 test("caps count what was charged: Jordan's Amex Gold has dining on it, not groceries", () => {
   const caps = capsUsed(JORDAN.wallet, yearOf(JORDAN), at);
-  const dining = caps.find((c) => c.cardId === "amex_gold" && c.label === "4x dining")!;
+  const dining = caps.find((c) => c.cardId === "amex_gold" && c.label === "4× dining")!;
   assert.equal(dining.cap, 50000);
   assert.equal(dining.when, "this year");
   assert.ok(dining.used > 0 && dining.used < dining.cap);
   // he buys groceries on the Apple Card, so nothing counts toward the Gold's grocery cap
-  assert.equal(caps.find((c) => c.label === "4x groceries"), undefined);
+  assert.equal(caps.find((c) => c.label === "4× groceries"), undefined);
 });
 
 test("caps: the Parks' Blue Cash Everyday groceries, $2,659 of $6,000 (most of their groceries go on the Discover)", () => {
-  const g = capsUsed(PARKS.wallet, yearOf(PARKS), at).find((c) => c.label === "3x groceries")!;
+  const g = capsUsed(PARKS.wallet, yearOf(PARKS), at).find((c) => c.label === "3× groceries")!;
   assert.equal(g.cap, 6000);
   assert.ok(Math.abs(g.used - 2659.49) < 0.01);
 });

@@ -79,8 +79,11 @@ export function MonteApp() {
           <Lockup size={20} state="resolved" />
         </Link>
         {saved && (
-          <button type="button" onClick={() => go("connect")} className="max-w-[60%] truncate text-right text-xs text-ace-dim">
-            {saved.label} · {wallet.length} card{wallet.length === 1 ? "" : "s"}
+          <button type="button" onClick={() => go("connect")} className="flex min-w-0 max-w-[65%] items-baseline text-xs text-ace-dim">
+            <span className="truncate">{saved.label}</span>
+            <span className="shrink-0 whitespace-nowrap">
+              &nbsp;· {wallet.length} card{wallet.length === 1 ? "" : "s"}
+            </span>
           </button>
         )}
       </header>

@@ -49,7 +49,7 @@ export function capsUsed(wallet: Holding[], txns: Txn[], today = new Date().toIS
       if (!r.cap) continue;
       const used = spentOn([r.category], r.cap.period, r.merchants);
       if (used > 0)
-        out.push({ cardId: h.cardId, label: `${r.multiplier}x ${r.category.replace(/_/g, " ")}`, cap: r.cap.amount, used, period: r.cap.period, when: WHEN[r.cap.period] ?? "" });
+        out.push({ cardId: h.cardId, label: `${r.multiplier}× ${r.category.replace(/_/g, " ")}`, cap: r.cap.amount, used, period: r.cap.period, when: WHEN[r.cap.period] ?? "" });
     }
     const rot = c.rotating as { q4_2026?: string[]; multiplier?: number; cap?: number; cap_period?: Period; period?: string; dates?: string } | undefined;
     // only while the catalog's quarter is the current one: these are Q4 2026's categories

@@ -266,8 +266,9 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
               inputMode="decimal"
               min={1}
               step="1"
-              value={Number.isFinite(amount) ? amount : ""}
-              onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))}
+              value={amount > 0 ? amount : ""}
+              placeholder="0"
+              onChange={(e) => setAmount(e.target.value === "" ? 0 : Math.max(0, Number(e.target.value)))}
               className="h-9 w-[4.5rem] rounded-full bg-[var(--m-wash)] pl-6 pr-2 text-sm outline-none focus:ring-2 focus:ring-[var(--m-accent)]"
             />
           </div>
@@ -280,6 +281,7 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
       </section>
 
       {place && <Perks wallet={wallet} merchant={place.name} />}
+      {!(amount > 0) && <p className="px-1 text-sm text-ace-dim">Put in roughly how much, and Monte names the card.</p>}
       {d && <Answer d={d} where={place ? `at ${place.name}` : `on ${(CATEGORY_LABEL[cat] ?? cat).toLowerCase()}`} />}
     </div>
   );

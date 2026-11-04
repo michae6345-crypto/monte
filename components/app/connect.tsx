@@ -101,7 +101,7 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
           </div>
         ) : plaid ? (
           <p className="mt-4 rounded-[12px] bg-[var(--m-wash)] p-3 text-sm">
-            Bank linking is coming to this site soon. Until then, upload a statement or add your cards by hand: the card picks work the same.
+            Bank linking is coming to this site soon. Until then, upload a statement below, or add your cards on the Cards tab: the card picks work the same.
           </p>
         ) : (
           <p className="mt-4 text-sm text-ace-dim">Checking…</p>
@@ -212,8 +212,15 @@ export function Connect({ saved, onSave, onClear, onDone }: { saved: Saved | nul
                       await navigator.clipboard.writeText(url);
                       setMsg("Link copied. Open it on your phone or another browser to bring these cards over (just the cards: no purchases).");
                     }
-                  } catch {
-                    setMsg(url);
+                  } catch (e) {
+                    // the share sheet closed, or isn't allowed here: fall back to the clipboard
+                    if ((e as Error)?.name === "AbortError") return;
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      setMsg("Link copied. Open it on your phone or another browser to bring these cards over (just the cards: no purchases).");
+                    } catch {
+                      setMsg("Couldn't share or copy the link from this browser.");
+                    }
                   }
                 }}
                 className="btn btn-ghost btn-sm"
