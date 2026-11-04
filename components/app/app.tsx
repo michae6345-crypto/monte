@@ -16,6 +16,8 @@ import { Cards } from "./cards";
 import { Year } from "./year";
 import { Connect } from "./connect";
 import { useWallet } from "./use-wallet";
+import { QuickStart } from "./quick-start";
+import { JORDAN, yearOf } from "@/lib/data/personas";
 import { walletFromHash } from "./share";
 import { applyFixes, useFixes } from "./fixes";
 import { shortName } from "@/lib/card-name";
@@ -129,7 +131,17 @@ export function MonteApp() {
           ) : tab === "cards" ? (
             <Cards wallet={[]} onChange={(w) => save({ source: "manual", label: "Added by hand", wallet: w, txns: [] })} />
           ) : (
-            <Welcome onConnect={() => go("connect")} onAdd={() => go("cards")} />
+            <QuickStart
+              onStart={(w) => {
+                save({ source: "manual", label: "Your cards", wallet: w, txns: [] });
+                go("pay", `${w.length} card${w.length === 1 ? "" : "s"} added. If one carries a balance, add it on the Cards tab: Monte will keep purchases off it.`);
+              }}
+              onConnect={() => go("connect")}
+              onDemo={() => {
+                save({ source: "demo", label: "Jordan (demo)", wallet: JORDAN.wallet, txns: yearOf(JORDAN) });
+                go("pay", "Showing Jordan's demo wallet: 24, first job in LA, three cards, one with a balance. Swap it for yours on Connect.");
+              }}
+            />
           )
         ) : tab === "pay" ? (
           <Pay wallet={wallet} txns={txns} />
@@ -166,35 +178,3 @@ export function MonteApp() {
   );
 }
 
-function Welcome({ onConnect, onAdd }: { onConnect: () => void; onAdd: () => void }) {
-  return (
-    <section className="pt-8">
-      <h1 className="text-[2.6rem] leading-[1.02]" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500, letterSpacing: "-0.035em" }}>
-        The right card,
-        <span className="block text-ace-dim">every time you pay.</span>
-      </h1>
-      <p className="mt-4 text-[15px] leading-relaxed text-ace-dim">
-        Tell Monte where you are and it names the card to use: the one that earns the most there, unless a balance means it would cost you more in interest than it pays back.
-      </p>
-      <ul className="mt-6 space-y-2 text-sm">
-        <li>· Counts interest, not just points</li>
-        <li>· Knows the store before you tap: search, or use where you are</li>
-        <li>· Shows what each card made or cost you this year</li>
-      </ul>
-      <div className="mt-8 flex flex-col gap-2">
-        <button type="button" onClick={onConnect} className="btn btn-primary justify-center">
-          Connect your bank
-        </button>
-        <button type="button" onClick={onAdd} className="btn btn-ghost justify-center">
-          Add my cards by hand
-        </button>
-      </div>
-      <p className="mt-6 text-xs text-ace-dim">
-        No account. Your cards stay in this browser. <Link href="/" className="underline underline-offset-4">How Monte works</Link> ·{" "}
-        <Link href="/card" className="underline underline-offset-4">
-          The Monte card
-        </Link>
-      </p>
-    </section>
-  );
-}
