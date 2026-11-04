@@ -82,6 +82,40 @@ function Rotating({ cardId }: { cardId: string }) {
   );
 }
 
+// Card-linked offers (Amex Offers, BankAmeriDeals...) are per-account and change weekly, and the
+// issuers don't let apps add them for you without your login, so Monte links you to them instead.
+// Only pages that resolved on 3 Nov 2026 are linked; the rest say where the offers live.
+const OFFERS: { match: RegExp; name: string; url?: string; where?: string }[] = [
+  { match: /^amex_/, name: "Amex Offers", url: "https://global.americanexpress.com/offers/eligible" },
+  { match: /^bofa_/, name: "BankAmeriDeals", url: "https://www.bankofamerica.com/deals/" },
+  { match: /^citi_/, name: "Citi Merchant Offers", url: "https://www.citi.com/credit-cards/citi-merchant-offers" },
+  { match: /^chase_/, name: "Chase Offers", where: "in the Chase app, under Offers" },
+  { match: /^capital_one_/, name: "Capital One Offers", where: "in the Capital One app" },
+  { match: /^wells_fargo_/, name: "Wells Fargo Deals", where: "in the Wells Fargo app" },
+  { match: /^discover_/, name: "Discover Deals", where: "in the Discover app" },
+  { match: /^us_bank_/, name: "U.S. Bank's offers", where: "in the U.S. Bank app" },
+];
+
+function Offers({ cardId }: { cardId: string }) {
+  const o = OFFERS.find((x) => x.match.test(cardId));
+  if (!o) return null;
+  return (
+    <p className="mt-2 text-xs text-ace-dim">
+      Card offers:{" "}
+      {o.url ? (
+        <a href={o.url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-ace-ink">
+          {o.name}
+        </a>
+      ) : (
+        <>
+          {o.name}, {o.where}
+        </>
+      )}
+      . Add the ones you&apos;d use; they stack with the card&apos;s points.
+    </p>
+  );
+}
+
 /** From the bank (Plaid Liabilities): what's due and when, and how much of the limit is in use. */
 function Bill({ bill }: { bill?: CardBill }) {
   if (!bill) return null;
@@ -188,6 +222,7 @@ export function Cards({ wallet, txns = [], bills, onChange }: { wallet: Holding[
           <Bill bill={bills?.[h.cardId]} />
           <Caps uses={caps.filter((u) => u.cardId === h.cardId)} />
           <Worth wallet={wallet} txns={txns} cardId={h.cardId} />
+          <Offers cardId={h.cardId} />
         </CardRow>
       ))}
 
