@@ -7,7 +7,7 @@
 //   Connect  Plaid, a statement, or a demo person; and forget everything
 // Everything lives in this browser (use-wallet.ts). No account, nothing stored server-side.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CalendarRange, CreditCard, Link2, ScanLine } from "lucide-react";
 import { Lockup } from "@/components/brand";
@@ -17,6 +17,7 @@ import { Year } from "./year";
 import { Connect } from "./connect";
 import { useWallet } from "./use-wallet";
 import { walletFromHash } from "./share";
+import { applyFixes, useFixes } from "./fixes";
 import { shortName } from "@/lib/card-name";
 import type { Holding } from "@/lib/engine";
 
@@ -60,7 +61,9 @@ export function MonteApp() {
   };
 
   const wallet = saved?.wallet ?? [];
-  const txns = saved?.txns ?? [];
+  // your category corrections apply to your year too
+  const { fixes } = useFixes();
+  const txns = useMemo(() => applyFixes(saved?.txns ?? [], fixes), [saved, fixes]);
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col">

@@ -13,6 +13,7 @@ import { MerchantLogo } from "@/components/ace/merchant-logo";
 import { money } from "@/components/ace/store";
 import { why } from "@/lib/explain";
 import { perksAt } from "@/lib/perks";
+import { storeKey, useFixes } from "./fixes";
 
 const fmt = (n: number) => money(n, { cents: true });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -28,7 +29,9 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
   const [near, setNear] = useState<Near>({ k: "idle" });
 
   const suggestions = useMemo(() => (q.trim() && !place ? searchPlaces(q) : []), [q, place]);
-  const category = place?.category ?? cat;
+  const { fixes, setFix } = useFixes();
+  const fixed = place ? fixes[storeKey(place.name)] : undefined;
+  const category = place ? (fixed ?? place.category) : cat;
   const merchant = place?.name ?? CATEGORY_LABEL[cat] ?? cat;
   // this calendar year's purchases, so caps already used this year/quarter are counted
   const history = useMemo(() => {
@@ -142,9 +145,24 @@ export function Pay({ wallet, txns }: { wallet: Holding[]; txns: Txn[] }) {
             <MapPin className="h-4 w-4" /> {near.k === "asking" ? "Finding stores…" : "Near me"}
           </button>
           {place && (
-            <span className="text-xs text-ace-dim">
-              {CATEGORY_LABEL[place.category]}
-              {place.via === "words" || place.via === "unknown" ? " (a guess from the name)" : ""}
+            <span className="flex flex-wrap items-center gap-1 text-xs text-ace-dim">
+              {/* "how did this code?": wrong category, fix it once and Monte keeps it */}
+              <label className="flex items-center gap-1">
+                codes as
+                <select
+                  value={category}
+                  onChange={(e) => setFix(place.name, e.target.value === place.category ? null : e.target.value)}
+                  aria-label={`Category ${place.name} codes as`}
+                  className="h-7 rounded-full bg-[var(--m-wash)] px-2 text-xs text-ace-ink"
+                >
+                  {Object.entries(CATEGORY_LABEL).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {fixed ? "(your fix)" : place.via === "words" || place.via === "unknown" ? "(a guess from the name)" : ""}
               {auto && place.name === auto.name && (
                 <>
                   {" "}
