@@ -6,7 +6,7 @@
 
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { evaluate, type Holding, type Txn } from "@/lib/engine";
+import { evaluate, marginalValue, type Holding, type Txn } from "@/lib/engine";
 import { CARDS, card } from "@/lib/engine/catalog";
 import { aprOf } from "@/lib/engine/interest";
 import { CATEGORY_LABEL } from "@/lib/merchants";
@@ -28,7 +28,67 @@ export function bestFor(cardId: string): { category: string; mult: number }[] {
   return top.length ? top : [{ category: "everything_else", mult: rows[0]?.mult ?? 1 }];
 }
 
-export function Cards({ wallet, onChange }: { wallet: Holding[]; onChange: (w: Holding[]) => void }) {
+/** Cards with a balance, highest APR first: the order to pay them down (the avalanche method,
+ *  which costs the least interest). */
+function PayFirst({ wallet }: { wallet: Holding[] }) {
+  const owed = wallet.filter((h) => h.balance && h.balance > 0).sort((a, b) => aprOf(b) - aprOf(a));
+  if (!owed.length) return null;
+  const yearly = owed.reduce((a, h) => a + (h.balance! * aprOf(h)) / 100, 0);
+  return (
+    <section className="m-panel border-l-4 border-[var(--m-loss)] p-4">
+      <p className="m-label">pay {owed.length > 1 ? "these down in this order" : "this down first"}</p>
+      <ol className="mt-2 space-y-1.5 text-sm">
+        {owed.map((h, k) => (
+          <li key={h.cardId} className="flex items-baseline justify-between gap-3">
+            <span>
+              {owed.length > 1 ? `${k + 1}. ` : ""}
+              {shortName(h.cardId)}
+            </span>
+            <span className="mono text-xs text-ace-dim">
+              {money(h.balance!)} at {aprOf(h)}%
+            </span>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-2 text-xs text-ace-dim">
+        About {money(yearly)} a year in interest at today&apos;s balances. Each extra dollar paid on the {shortName(owed[0].cardId)} saves {aprOf(owed[0])}¢ a year, more than any card pays back. While a card carries a balance, Monte keeps new purchases off it.
+      </p>
+    </section>
+  );
+}
+
+/** With a year of purchases: what this card adds over the rest of the wallet, after its fee. */
+function Worth({ wallet, txns, cardId }: { wallet: Holding[]; txns: Txn[]; cardId: string }) {
+  const m = useMemo(() => (txns.length && wallet.length > 1 ? marginalValue(wallet, txns, cardId) : null), [wallet, txns, cardId]);
+  if (!m) return null;
+  // a card with a balance earns nothing here (Monte keeps purchases off it), and closing it
+  // wouldn't erase what's owed: the only advice is the payoff
+  if (wallet.find((h) => h.cardId === cardId)?.balance)
+    return (
+      <p className="mt-2 text-xs">
+        <span className="font-medium m-loss">Pay it off before deciding:</span>{" "}
+        <span className="text-ace-dim">closing a card doesn&apos;t clear its balance, and it would lower your available credit.</span>
+      </p>
+    );
+  const verdict =
+    m.net >= 1
+      ? { t: "Worth keeping", c: "m-gain" }
+      : m.fee > 0
+        ? { t: "Costs more than it adds", c: "m-loss" }
+        : { t: "Keep as a backup", c: "text-ace-dim" };
+  return (
+    <p className="mt-2 text-xs">
+      <span className={`font-medium ${verdict.c}`}>{verdict.t}:</span>{" "}
+      <span className="text-ace-dim">
+        on your year it adds {money(m.rewardsAdded)} over your other cards
+        {m.credits ? `, plus ${money(m.credits)} of perks used` : ""}
+        {m.fee ? `, against its ${money(m.fee)} fee` : ""}.
+      </span>
+    </p>
+  );
+}
+
+export function Cards({ wallet, txns = [], onChange }: { wallet: Holding[]; txns?: Txn[]; onChange: (w: Holding[]) => void }) {
   const [adding, setAdding] = useState(wallet.length === 0);
   const [q, setQ] = useState("");
   const have = new Set(wallet.map((h) => h.cardId));
@@ -42,8 +102,11 @@ export function Cards({ wallet, onChange }: { wallet: Holding[]; onChange: (w: H
 
   return (
     <div className="space-y-3">
+      <PayFirst wallet={wallet} />
       {wallet.map((h) => (
-        <CardRow key={h.cardId} h={h} onSet={(p) => set(h.cardId, p)} onRemove={() => onChange(wallet.filter((x) => x.cardId !== h.cardId))} />
+        <CardRow key={h.cardId} h={h} onSet={(p) => set(h.cardId, p)} onRemove={() => onChange(wallet.filter((x) => x.cardId !== h.cardId))}>
+          <Worth wallet={wallet} txns={txns} cardId={h.cardId} />
+        </CardRow>
       ))}
 
       {adding ? (
@@ -98,7 +161,7 @@ export function Cards({ wallet, onChange }: { wallet: Holding[]; onChange: (w: H
   );
 }
 
-function CardRow({ h, onSet, onRemove }: { h: Holding; onSet: (p: Partial<Holding>) => void; onRemove: () => void }) {
+function CardRow({ h, onSet, onRemove, children }: { h: Holding; onSet: (p: Partial<Holding>) => void; onRemove: () => void; children?: React.ReactNode }) {
   const c = card(h.cardId);
   const best = useMemo(() => bestFor(h.cardId), [h.cardId]);
   const [edit, setEdit] = useState(false);
@@ -113,10 +176,11 @@ function CardRow({ h, onSet, onRemove }: { h: Holding; onSet: (p: Partial<Holdin
           <div className="mt-2 flex flex-wrap gap-1">
             {best.map((b) => (
               <span key={b.category} className="rounded-full bg-[var(--m-wash)] px-2 py-0.5 text-[11px]">
-                {b.mult % 1 ? b.mult.toFixed(1) : b.mult}× {CATEGORY_LABEL[b.category]?.toLowerCase()}
+                {b.mult % 1 ? b.mult.toFixed(1) : b.mult}× {b.category === "everything_else" ? "on everything" : CATEGORY_LABEL[b.category]?.toLowerCase()}
               </span>
             ))}
           </div>
+          {children}
         </div>
         <button type="button" onClick={onRemove} aria-label={`Remove ${shortName(h.cardId)}`} className="grid h-8 w-8 place-items-center rounded-full text-ace-dim hover:bg-[var(--m-wash)]">
           <Trash2 className="h-4 w-4" />
