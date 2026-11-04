@@ -81,6 +81,26 @@ async function run() {
   );
 }
 
+// checkout reminders: opt-in, and the site access is asked for only then (and handed back when off)
+(async () => {
+  const box = $("remind");
+  const { reminders } = await chrome.storage.local.get("reminders");
+  box.checked = !!reminders && (await chrome.permissions.contains({ origins: ["https://*/*"] }));
+  box.addEventListener("change", async () => {
+    if (box.checked) {
+      const ok = await chrome.permissions.request({ origins: ["https://*/*"] });
+      box.checked = ok;
+      if (!ok) return;
+      await chrome.runtime.sendMessage({ type: "reminders", on: true });
+      await chrome.storage.local.set({ reminders: true });
+    } else {
+      await chrome.runtime.sendMessage({ type: "reminders", on: false });
+      await chrome.permissions.remove({ origins: ["https://*/*"] });
+      await chrome.storage.local.set({ reminders: false });
+    }
+  });
+})();
+
 $("amount").addEventListener("change", async (e) => {
   const v = Number(e.target.value);
   if (v > 0) {
