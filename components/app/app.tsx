@@ -33,6 +33,10 @@ export function MonteApp() {
   const { saved, save, update, clear } = useWallet();
   const [tab, setTab] = useState<Tab>("pay");
   // a link straight to a tab (/app#cards), e.g. from the extension or the story page
+  // works with no signal inside a store: production builds cache the app (public/sw.js)
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  }, []);
   const [incoming, setIncoming] = useState<Holding[] | null>(null);
   useEffect(() => {
     const read = () => {
