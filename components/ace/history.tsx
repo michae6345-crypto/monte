@@ -144,8 +144,19 @@ export function HistorySection() {
             </label>
           )}
           <div className="mono ml-auto text-right text-xs text-ace-dim">
-            {filtered.length} purchases · {money(spendTotal)} ·{" "}
-            <span className={missTotal > 0.5 ? "text-ace-loss" : ""}>{money(missTotal, { cents: true })} left on the table (net)</span>
+            {filtered.length} purchases · {money(spendTotal)}
+            {!one && (
+              <>
+                {" · "}
+                {/* when the right card earns less (it keeps purchases off a card with a balance), say that,
+                    not "−$6.67 left on the table" */}
+                {missTotal >= -0.005 ? (
+                  <span className={missTotal > 0.5 ? "text-ace-loss" : ""}>{money(missTotal, { cents: true })} left on the table</span>
+                ) : (
+                  <span>{money(-missTotal, { cents: true })} less in rewards, to stay off the card with a balance</span>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -179,13 +190,20 @@ export function HistorySection() {
                   {label(x.t.category)}
                 </span>
                 <span className="tnum text-right font-semibold" style={{ fontFamily: "var(--m-font-display)" }}>{money(x.t.amount, { cents: true })}</span>
-                <CardTag id={x.used} />
+                {/* on a phone the column headers are hidden, so each card says which it is */}
+                <span className="min-w-0">
+                  <span className="m-label block md:hidden">paid with</span>
+                  <CardTag id={x.used} />
+                </span>
                 {one ? (
                   <span className="mono text-[11px] leading-tight">{x.ha.rule}</span>
                 ) : x.best === x.used ? (
                   <span className="text-[13px] font-medium">✓ right card</span>
                 ) : (
-                  <CardTag id={x.best} hint={x.rule} />
+                  <span className="min-w-0">
+                    <span className="m-label block md:hidden">right card</span>
+                    <CardTag id={x.best} hint={x.rule} />
+                  </span>
                 )}
                 {one ? (
                   <span className="mono text-right">{money(x.got, { cents: true })}</span>
@@ -209,6 +227,21 @@ export function HistorySection() {
               </motion.div>
             ))}
           </AnimatePresence>
+          {filtered.length === 0 && (
+            <p className="py-8 text-center text-sm text-ace-dim">
+              No purchases match {q ? <>&ldquo;{q}&rdquo;</> : "that"}{onlyMiss ? " among the misses" : ""}.{" "}
+              <button
+                onClick={() => {
+                  setQ("");
+                  setOnlyMiss(false);
+                  setMerchant(null);
+                }}
+                className="underline underline-offset-2"
+              >
+                Show all
+              </button>
+            </p>
+          )}
         </div>
         {filtered.length > limit && (
           <button onClick={() => setLimit((l) => l + 40)} className="btn btn-ghost mt-4 w-full">
@@ -224,7 +257,8 @@ function CardTag({ id, hint }: { id: string; hint?: string }) {
   return (
     <span className="flex min-w-0 items-center gap-2" title={hint}>
       <CardMini id={id} />
-      <span className="text-[13px] font-medium leading-tight md:truncate">{shortName(id)}</span>
+      {/* wraps to a second line rather than cutting "Chase Freedom Unlimi…" */}
+      <span className="text-[13px] font-medium leading-tight">{shortName(id)}</span>
     </span>
   );
 }

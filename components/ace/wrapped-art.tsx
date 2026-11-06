@@ -164,7 +164,8 @@ export function Sticker({ theme, k }: { theme: Theme; k: string }) {
   return (
     <motion.span
       key={k}
-      className="absolute right-5 top-12 z-10 rounded-[12px] px-3 py-1.5 text-[15px] shadow-[0_6px_14px_-6px_rgba(12,14,20,.4)]"
+      // below the kicker line (top-12 sat on the end of long kickers: "fave spot" over "money spent")
+      className="absolute right-5 top-[5.5rem] z-10 rounded-[12px] px-3 py-1.5 text-[15px] shadow-[0_6px_14px_-6px_rgba(12,14,20,.4)]"
       style={{ background: theme.fg, color: theme.bg === "#ffffff" ? blue : theme.bg, fontFamily: "var(--m-font-note)", fontWeight: 600 }}
       initial={{ scale: 0.4, rotate: -24, opacity: 0 }}
       animate={{ scale: 1, rotate: -6, opacity: 1 }}

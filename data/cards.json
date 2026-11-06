@@ -913,6 +913,9 @@
         {
           "category": "entertainment",
           "multiplier": 8,
+          "merchants": [
+            "Capital One Entertainment"
+          ],
           "conditions": "Capital One Entertainment ticketing platform only; excludes cardholder-exclusive pre-sales and tickets bought directly through Capital One Hall or Capital One Arena"
         },
         {
@@ -992,6 +995,9 @@
         {
           "category": "entertainment",
           "multiplier": 5,
+          "merchants": [
+            "Capital One Entertainment"
+          ],
           "conditions": "Capital One Entertainment ticketing platform only; excludes cardholder pre-sales and Capital One Hall/Arena box office"
         }
       ],
@@ -1061,6 +1067,9 @@
         {
           "category": "entertainment",
           "multiplier": 5,
+          "merchants": [
+            "Capital One Entertainment"
+          ],
           "conditions": "Capital One Entertainment ticketing platform only; excludes cardholder pre-sales and Capital One Hall/Arena box office"
         }
       ],
@@ -1147,6 +1156,9 @@
         {
           "category": "entertainment",
           "multiplier": 5,
+          "merchants": [
+            "Capital One Entertainment"
+          ],
           "conditions": "Capital One Entertainment ticketing platform only"
         }
       ],

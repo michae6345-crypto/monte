@@ -89,9 +89,41 @@ export type PlaidCreditLiability = {
   account_id?: string | null;
   aprs: PlaidApr[];
   last_statement_balance?: number | null;
+  last_payment_amount?: number | null;
   minimum_payment_amount?: number | null;
+  next_payment_due_date?: string | null;
   is_overdue?: boolean | null;
 };
+
+/** What's due on a card, from Plaid Liabilities (and the account's limit and current balance). */
+export type CardBill = {
+  dueDate?: string;
+  minimum?: number;
+  statement?: number;
+  overdue?: boolean;
+  limit?: number;
+  /** what's on the card right now, this month's purchases included */
+  owedNow?: number;
+};
+
+/** catalog card id -> its bill, for every credit account Plaid reported. */
+export function cardBills(accounts: PlaidAccount[], credit: PlaidCreditLiability[] = []): Record<string, CardBill> {
+  const out: Record<string, CardBill> = {};
+  const liability = new Map(credit.filter((c) => c.account_id).map((c) => [c.account_id as string, c]));
+  for (const a of accounts) {
+    if (a.type !== "credit" && !liability.has(a.account_id)) continue;
+    const l = liability.get(a.account_id);
+    const bill: CardBill = {};
+    if (l?.next_payment_due_date) bill.dueDate = l.next_payment_due_date.slice(0, 10);
+    if (typeof l?.minimum_payment_amount === "number") bill.minimum = round2(l.minimum_payment_amount);
+    if (typeof l?.last_statement_balance === "number") bill.statement = round2(l.last_statement_balance);
+    if (l?.is_overdue) bill.overdue = true;
+    if (typeof a.balances?.limit === "number" && a.balances.limit > 0) bill.limit = round2(a.balances.limit);
+    if (typeof a.balances?.current === "number") bill.owedNow = round2(Math.max(0, a.balances.current));
+    if (Object.keys(bill).length) out[matchCardId(a)] = bill;
+  }
+  return out;
+}
 
 // ---------- card matching ----------
 
@@ -331,11 +363,21 @@ export function purchaseApr(aprs: PlaidApr[] | undefined | null): number | undef
   return typeof apr === "number" && apr > 0 ? round2(apr) : undefined;
 }
 
-/** Revolving balance in dollars. Plaid reports credit balances as positive = owed. */
-function revolvingBalance(account: PlaidAccount | undefined, liability: PlaidCreditLiability | undefined): number {
+/** The balance that is actually revolving (charging interest), in dollars. Not the card's
+ *  current balance: someone who pays in full every month always has one (this month's
+ *  purchases), and treating that as debt would block every card they own.
+ *   1. the purchase APR's balance_subject_to_apr, when Plaid reports it: exactly what accrues;
+ *   2. else the last statement less the last payment (0 when the statement was paid in full);
+ *   3. else nothing is known to be revolving: 0. The app lets a person mark a balance by hand. */
+export function revolvingBalance(_account: PlaidAccount | undefined, liability: PlaidCreditLiability | undefined): number {
   const subject = liability?.aprs?.find((a) => a.apr_type === "purchase_apr")?.balance_subject_to_apr;
-  const candidate = subject ?? liability?.last_statement_balance ?? account?.balances?.current ?? 0;
-  return Math.max(0, round2(Math.abs(candidate ?? 0)));
+  if (typeof subject === "number") return Math.max(0, round2(Math.abs(subject)));
+  const statement = liability?.last_statement_balance;
+  if (typeof statement === "number") {
+    const paid = liability?.last_payment_amount ?? 0;
+    return Math.max(0, round2(Math.abs(statement) - Math.abs(paid)));
+  }
+  return 0;
 }
 
 export function mapWallet(accounts: PlaidAccount[], credit: PlaidCreditLiability[] = []): Holding[] {
@@ -377,6 +419,8 @@ export function mapWallet(accounts: PlaidAccount[], credit: PlaidCreditLiability
 export type PlaidFeed = {
   txns: Txn[];
   wallet: Holding[];
+  /** due dates, minimums, limits per card (Liabilities); empty when Plaid had none */
+  bills: Record<string, CardBill>;
   source: "plaid-sandbox";
   dropped: { refundOrPayment: number; excluded: number; pending: number };
   lowConfidenceIds: string[];
@@ -407,5 +451,5 @@ export function buildFeed(input: {
   }
   if (wallet.length === 0) wallet.push({ cardId: DEFAULT_CARD_ID });
 
-  return { txns, wallet, source: "plaid-sandbox", dropped, lowConfidenceIds };
+  return { txns, wallet, bills: cardBills(input.accounts, input.credit ?? []), source: "plaid-sandbox", dropped, lowConfidenceIds };
 }

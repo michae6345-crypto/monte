@@ -387,18 +387,20 @@ export function Solver({ strategies, txns, title, step }: { strategies: Strategy
         each dot is one simulated year
       </HandNote>
 
-      <dl className="mono grid grid-cols-3 border-t border-ace-line text-[11px]">
+      {/* three across from md up; on a phone the comparison takes its own full-width row,
+          or its sentence wraps a word at a time */}
+      <dl className="mono grid grid-cols-2 border-t border-ace-line text-[11px] md:grid-cols-3">
         <div className="border-r border-ace-line px-4 py-3">
           <dt className="text-ace-dim">typical year</dt>
           <dd className={`mt-0.5 text-base tnum ${r.p50 < 0 ? "text-ace-loss" : "text-ace-gain"}`}>{money(r.p50, { sign: true })}</dd>
         </div>
-        <div className="border-r border-ace-line px-4 py-3">
+        <div className="border-ace-line px-4 py-3 md:border-r">
           <dt className="text-ace-dim">most years</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {money(r.p5)} … {money(r.p95)}
           </dd>
         </div>
-        <div className="px-4 py-3">
+        <div className="col-span-2 border-t border-ace-line px-4 py-3 md:col-span-1 md:border-t-0">
           <dt className="text-ace-dim">{k === 0 ? "the starting point" : `vs ${runs[0].short.replace(/^As T/, "as t").replace(/^As /, "as ")}, typical year`}</dt>
           <dd className="mt-0.5 text-base tnum text-ace-ink">
             {beats === null ? (runs.length > 2 ? "the other two are measured against it" : "the other one is measured against it") : `${money(gain, { sign: true })} · better in ${Math.round(beats * YEARS).toLocaleString()} of ${YEARS.toLocaleString()} years`}

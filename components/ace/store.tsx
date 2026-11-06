@@ -116,7 +116,10 @@ export function AceProvider({ children }: { children: ReactNode }) {
     setOverride: (m, c) =>
       setOverrides((o) => {
         const next = { ...o };
-        if (c) next[m] = c;
+        // picking the category the store already has is not a change (it used to count as one,
+        // and the "1 store with a changed category" chip then followed you to other people)
+        const own = base.find((t) => t.merchant === m)?.category;
+        if (c && c !== own) next[m] = c;
         else delete next[m];
         try {
           localStorage.setItem("monte-overrides", JSON.stringify(next));

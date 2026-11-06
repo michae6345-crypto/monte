@@ -5,7 +5,7 @@ import { byCategory, subscriptions } from "@/lib/engine/insights";
 import { parseStatement } from "@/lib/engine/statement";
 import { tap } from "@/lib/engine";
 import { CARDS } from "@/lib/engine/catalog";
-import { shortName } from "./card-art";
+import { CardArt, shortName } from "./card-art";
 import { Num } from "./num";
 import { Bracketed } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
@@ -74,41 +74,57 @@ export function MoneySection() {
         )}
       </Stage>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.55fr_1fr] [&>*]:min-w-0">
         <MonthStrip txns={txns} />
-        {/* subscriptions */}
-        <div className="m-panel p-5">
-          <div className="mb-4 flex items-baseline justify-between">
-            <div className="m-label">Recurring charges</div>
-            <span className="mono text-sm">
-              <Num value={subs.reduce((a, s) => a + s.perYear, 0)} />
-              <span className="text-ace-dim">/yr</span>
-            </span>
-          </div>
-          {subs.length === 0 && <p className="text-sm text-ace-dim">No recurring charges found.</p>}
-          <div className="space-y-3">
-            {subs.slice(0, 7).map((s) => {
-              const best = tap(wallet, { date: "2026-10-18", merchant: s.merchant, category: s.category, amount: s.amount }).pick;
-              return (
-                <div key={s.merchant} className="flex items-center justify-between gap-3 text-sm">
-                  <MerchantLogo name={s.merchant} size={24} />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">
-                      {s.merchant}
-                      {s.priceHike && <span className="m-label ml-2 rounded-full px-1.5 py-0.5 shadow-[0_0_0_1px_var(--m-line-strong)]">price up</span>}
-                    </div>
-                    <div className="mono truncate text-[11px] text-ace-dim">
-                      every {s.cadenceDays} days{wallet.length > 1 ? ` · right card: ${shortName(best.cardId)}` : ""}
-                    </div>
-                  </div>
-                  <span className="mono shrink-0">{money(s.amount, { cents: true })}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <Recurring subs={subs} wallet={wallet} />
       </div>
     </Section>
+  );
+}
+
+/** The charges that keep coming back, and the card each belongs on. When one card is right for
+ *  all of them (often: phone and streaming bills earn no bonus anywhere), it's said once. */
+function Recurring({ subs, wallet }: { subs: ReturnType<typeof subscriptions>; wallet: import("@/lib/engine").Holding[] }) {
+  const shown = subs.slice(0, 7);
+  const right = shown.map((s) => tap(wallet, { date: "2026-10-18", merchant: s.merchant, category: s.category, amount: s.amount }).pick.cardId);
+  const one = wallet.length > 1 && right.length > 1 && right.every((c) => c === right[0]) ? right[0] : null;
+  return (
+    <div className="m-panel flex flex-col p-5">
+      <div className="mb-4 flex items-baseline justify-between">
+        <div className="m-label">Recurring charges</div>
+        <span className="mono text-sm">
+          <Num value={subs.reduce((a, s) => a + s.perYear, 0)} />
+          <span className="text-ace-dim">/yr</span>
+        </span>
+      </div>
+      {subs.length === 0 && <p className="text-sm text-ace-dim">No recurring charges found.</p>}
+      <div className="space-y-3">
+        {shown.map((s, i) => (
+          <div key={s.merchant} className="flex items-center justify-between gap-3 text-sm">
+            <MerchantLogo name={s.merchant} size={24} />
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-medium">
+                {s.merchant}
+                {s.priceHike && <span className="m-label ml-2 rounded-full px-1.5 py-0.5 shadow-[0_0_0_1px_var(--m-line-strong)]">price up</span>}
+              </div>
+              <div className="mono text-[11px] text-ace-dim">
+                every {s.cadenceDays} days
+                {wallet.length > 1 && !one && <span className="block truncate">right card: {shortName(right[i])}</span>}
+              </div>
+            </div>
+            <span className="mono shrink-0">{money(s.amount, { cents: true })}</span>
+          </div>
+        ))}
+      </div>
+      {one && (
+        <div className="mt-auto flex items-center gap-3 pt-5 text-sm">
+          <CardArt id={one} size="sm" className="w-12 shrink-0 shadow-none" />
+          <span className="text-ace-dim">
+            Right card for {shown.length === 2 ? "both" : `all ${shown.length}`}: <span className="font-medium text-ace-ink">{shortName(one)}</span>
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
 

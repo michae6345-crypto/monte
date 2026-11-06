@@ -354,10 +354,13 @@ export function tap(
   wallet: Holding[],
   t: Omit<Txn, "id" | "cardUsed">,
   history: Txn[] = [],
+  /** how to replay `history` to count caps already used: "best" (as Monte would have routed it,
+   *  the story page's demo) or "actual" (the card each purchase really went on: a real wallet) */
+  policy: Policy = "best",
 ): { ranked: TapOption[]; pick: TapOption; capNotes: string[] } {
   const used = new Map<string, number>();
-  // replay this period's history on the best policy so caps reflect what's already used
-  const sim = simulate(wallet, history, "best");
+  // replay this period's history so caps reflect what's already used
+  const sim = simulate(wallet, history, policy);
   for (const h of sim.hits) {
     const tx = history.find((x) => x.id === h.txnId)!;
     const c = card(h.cardId);

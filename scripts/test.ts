@@ -3,3 +3,13 @@
 // Exits non-zero if any test fails. The two files can also be run on their own.
 import "@/tests/engine.test";
 import "@/tests/provenance.test";
+import "@/tests/interest.test";
+import "@/tests/merchants.test";
+import "@/tests/apportion.test";
+import "@/tests/api-best.test";
+import "@/tests/share.test";
+import "@/tests/card.test";
+import "@/tests/caps.test";
+import "@/tests/bills.test";
+import "@/tests/transfer.test";
+import "@/tests/fuzz.test";

@@ -15,7 +15,7 @@
   <a href="https://devpost.com/software/monte-calygj">Devpost</a>
 </p>
 
-<p align="center"><sub>ACM@USC TrojanHacks 2026 · Finance</sub></p>
+<p align="center"><sub>ACM@USC TrojanHacks 2026 · 1st place, Finance track</sub></p>
 
 ## The problem
 
@@ -38,6 +38,39 @@ minus interest.
 | **Keep or cancel** | Each card's fee against the value it adds over your next-best card |
 | **Apply** | What to get next, with odds from 1,000 simulated years |
 
+## The app: [`/app`](https://ace-eta-beryl.vercel.app/app)
+
+The story page shows a demo year. `/app` is the product you use at the register, phone first,
+installable to the home screen, works offline once opened, no account (your cards stay in your browser; "copy to another device" moves them with a link).
+
+| Tab | What it does |
+|---|---|
+| **Pay** | Your usual stores, search, or **Near me** (OpenStreetMap; with location already allowed it finds the store you're at on its own); say roughly how much, and Monte names the card, with one sentence on why. A card's credit at that store (Uber Cash, the Dunkin' credit...) comes first. Wrong category? Fix it once ("codes as") and Monte keeps it. |
+| **Cards** | Your wallet: each card's best categories; balances, the order to pay them down and a balance transfer when one saves money; due dates, minimums and utilization from the bank; how much of each capped bonus is used; this quarter's rotating categories and their activation; where each card's offers are; and with a year of purchases, whether each card earns its fee. |
+| **Year** | With a bank or statement connected: what your cards made or cost you, each card's net, the biggest misses, what keeps charging you, and a shareable image of the totals. |
+| **Connect** | [Plaid](#connecting-a-bank) Link, a statement CSV, or one of the five demo people. "Forget everything" drops the Plaid item and clears the browser. |
+
+**Online checkout:** the [Chrome extension](extension/) names the card on any store's website,
+using the cards you set up in the app.
+
+### Why skip a card with a balance? (interest, not just points)
+
+A fair question about that rule: if you can't pay the balance down, you pay interest anyway, so how
+does routing around the card help? [`lib/engine/interest.ts`](lib/engine/interest.ts)
+answers in numbers:
+
+- **A card that carries a balance has no grace period.** A new purchase on it accrues interest from
+  the day it posts, for as long as the balance revolves. On a card paid in full the same purchase
+  costs nothing if that statement is paid. One month at 26% APR is about 2.2% of the purchase, more
+  than almost any card earns, so while you have a card paid in full, Monte uses it, and says what
+  the other card would have cost.
+- **When every card carries a balance, Monte doesn't refuse.** The purchase costs interest wherever
+  it goes, so it ranks the cards by reward minus the interest the purchase adds, which usually means
+  the lowest APR.
+
+Only a balance that actually revolves counts: a card you pay in full every month always has this
+month's purchases on it, and that isn't debt (`revolvingBalance()` in `lib/data/plaid.ts`).
+
 ## Does it work?
 
 For Jordan, `scripts/jordan-check.ts` rebuilds the receipt line by line:
@@ -52,7 +85,7 @@ For Jordan, `scripts/jordan-check.ts` rebuilds the receipt line by line:
 | Same purchases, best card in the same wallet | $656.83 |
 | **Left on the table** | **$104.14** |
 
-`npm test` runs 36 tests, including five hand-computed earn cases and a check that the
+`npm test` runs 76 tests, including five hand-computed earn cases, the interest-aware choice, 600 randomized wallets, and a check that the
 receipt's sourced lines add up to the engine's total, to the cent, for every demo person.
 
 ## How it works
@@ -128,13 +161,22 @@ workaround, one Monte card that charges your best card behind the scenes, breaks
 
 So Monte works around the wallet: before you tap it shows the right card for the place you're
 at, so you pick it in Apple Pay; after you tap each purchase gets a verdict; once a year it
-replays the year to show what each card cost. The Monte card itself is simulated at
-[`/brand`](https://ace-eta-beryl.vercel.app/brand).
+replays the year to show what each card cost.
+
+**The Monte card, as a working MVP:** [`/card`](https://ace-eta-beryl.vercel.app/card) answers a
+real authorization request (Lithic's Auth Stream Access format: the store's descriptor, its MCC and
+the amount) with the card Monte would play, in a few milliseconds. Picking the card is built and
+tested; moving the money needs a bank partner. Details and the funding options: [`docs/CARD.md`](docs/CARD.md).
 
 ## Try it
 
 **Online:** the [live site](https://ace-eta-beryl.vercel.app) runs on the demo people. Press `P` (or open `?present`)
 for presenter mode and walk the demo with the arrow keys, or open [`/#tap-demo`](https://ace-eta-beryl.vercel.app/#tap-demo) to watch a tap at the register.
+
+- [`/app`](https://ace-eta-beryl.vercel.app/app): the app (add your cards, or load a demo person). Installable; works offline.
+- [`/card`](https://ace-eta-beryl.vercel.app/card): the Monte card MVP, tap it and watch the authorization round trip.
+- The Chrome extension: download it from the app's Connect tab (`npm run pack:extension` rebuilds the zip).
+- [`/developers`](https://ace-eta-beryl.vercel.app/developers): the API for other apps (`POST /api/best`, `GET /api/cards`), with a live console. The business model and how partners plug in: [`docs/BUSINESS.md`](docs/BUSINESS.md).
 
 **Run it locally:**
 
@@ -142,14 +184,14 @@ for presenter mode and walk the demo with the arrow keys, or open [`/#tap-demo`]
 npm install
 npm run dev          # http://localhost:3000
 npm run check        # typecheck, lint, build
-npm test             # 36 tests
+npm test             # 76 tests
 npm run smoke        # checks a deployment's demo path
 ```
 
 **Check the numbers.** Each script prints its working:
 
 ```bash
-node --import ./scripts/_alias.mjs scripts/test.ts          # 36 tests, hand-computed cases
+node --import ./scripts/_alias.mjs scripts/test.ts          # 76 tests, hand-computed cases
 node --import ./scripts/_alias.mjs scripts/jordan-check.ts  # the −$427.03 receipt, line by line
 node --import ./scripts/_alias.mjs scripts/mc.ts            # Monte Carlo odds per person
 node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy, with a worked cap trap
@@ -159,12 +201,33 @@ node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy, with
 
 ## Connecting a bank
 
-The Plaid sandbox routes are in `app/api/plaid/`. Without keys every route returns
-`503 plaid_not_configured` and the app stays on its demo people. With keys,
-`loadPlaidSandbox()` returns transactions and a wallet in the same shape the demo
-people use. Setup and a curl walkthrough: [`docs/deploy.md`](docs/deploy.md).
+The app's Connect tab runs the real Plaid Link flow (`lib/data/plaid-link.ts`): our server makes a
+`link_token` (transactions + liabilities), Plaid's own window handles the bank login, the
+`public_token` is exchanged server-side, and `/api/plaid/data` returns your cards (with balances and
+purchase APRs from liabilities) and a year of purchases, mapped to the engine's types. In sandbox
+there's also "Use Plaid's test bank", which skips the Link window. `/api/plaid/forget` removes the
+item and the cookie.
 
-Keys belong in `.env.local` and the host's environment. This repo is public.
+**To turn it on** (free sandbox keys from [dashboard.plaid.com](https://dashboard.plaid.com/developers/keys)):
+
+```bash
+# .env.local for local dev, and the same three on Vercel
+PLAID_CLIENT_ID=...
+PLAID_SECRET=...      # the sandbox secret
+PLAID_ENV=sandbox
+```
+
+```bash
+npx vercel env add PLAID_CLIENT_ID production
+npx vercel env add PLAID_SECRET production
+npx vercel env add PLAID_ENV production
+```
+
+Without keys every `/api/plaid/*` route returns `503 plaid_not_configured`, and the app says bank
+linking is coming and offers the statement upload and hand-added cards instead. The access token sits
+in an httpOnly cookie, which is fine for sandbox; production Plaid needs it stored server-side,
+encrypted, per user. More in [`docs/deploy.md`](docs/deploy.md). Keys belong in `.env.local` and the
+host's environment. This repo is public.
 
 ## Real vs simulated
 
@@ -184,15 +247,18 @@ is fully verified.
 
 | Path | What's there |
 |---|---|
-| `app/` | Pages (`/`, `/dashboard`, `/brand`) and the Plaid + health API routes |
+| `app/` | Pages (`/`, `/app`, `/dashboard`, `/brand`, `/engine`) and the API routes: Plaid, `/api/best`, health |
 | `components/ace/` | The product's sections: receipt, replay, tap, keep, odds, presenter mode, tap demo |
+| `components/app/` | The app at `/app`: Pay, Cards, Year, Connect, and the saved wallet |
+| `extension/` | The Chrome extension for online checkout |
 | `components/monte-card/` | The simulated Monte card and why it isn't real |
 | `components/brand/`, `components/ui/` | The Monte mark, hand-drawn notes, and base UI parts |
-| `lib/engine/` | Rules engine, Monte Carlo, LP optimizer, provenance, statement CSV parser |
+| `lib/engine/` | Rules engine, interest-aware choice, Monte Carlo, LP optimizer, provenance, statement CSV parser |
+| `lib/merchants.ts`, `lib/perks.ts` | Store name or website -> category; nearby stores; the card credits a store triggers |
 | `lib/data/` | The five demo people and the Plaid mapping |
 | `data/` | Card catalog and category map, each rule with its source |
 | `scripts/` | Verification scripts and the smoke test |
-| `tests/` | 36 tests, including hand-computed cases |
+| `tests/` | 76 tests, including hand-computed cases and a randomized check |
 | `docs/` | Spec, deploy runbook, brand, judge Q&A |
 
 Each folder has its own README with a line per file.
@@ -200,4 +266,4 @@ Each folder has its own README with a line per file.
 ## Team
 
 Built at **ACM@USC TrojanHacks 2026** (Finance) by Michael Tarekegn (backend: Plaid, Monte Carlo,
-LP, tests) and Adrian Erlikhman (product, UI, brand).
+LP, tests) and Adrian Erlikhman (product, UI, brand). It won **1st place in the Finance track**.

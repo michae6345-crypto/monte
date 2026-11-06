@@ -47,15 +47,40 @@ export function TapDemo() {
     return () => window.removeEventListener("monte:tapdemo", on);
   }, []);
 
+  // step aside at the footer, so the button never sits on its links (it's bottom-left, like them)
+  const [atFoot, setAtFoot] = useState(false);
+  useEffect(() => {
+    const foot = document.querySelector("footer");
+    if (!foot) return;
+    const io = new IntersectionObserver(([e]) => setAtFoot(e.isIntersecting));
+    io.observe(foot);
+    return () => io.disconnect();
+  }, []);
+  // past the hero it shrinks to its icon (it sat on headings and text at the page's left edge),
+  // and opens back up on hover or focus
+  const [small, setSmall] = useState(false);
+  useEffect(() => {
+    const on = () => setSmall(window.scrollY > window.innerHeight * 0.9);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 left-4 z-[75] flex items-center gap-2 rounded-full bg-ace-ink px-4 py-2.5 text-sm font-medium text-ace-bg shadow-[0_12px_30px_-12px_rgba(12,14,20,.6)] transition hover:scale-[1.03]"
+        className={`group fixed bottom-4 left-4 z-[75] flex items-center rounded-full bg-ace-ink py-2.5 text-sm font-medium text-ace-bg shadow-[0_12px_30px_-12px_rgba(12,14,20,.6)] transition-all hover:scale-[1.03] ${small ? "px-2.5 hover:px-4 focus-visible:px-4" : "px-4"} ${atFoot ? "pointer-events-none translate-y-3 opacity-0" : ""}`}
         aria-label="Open the tap-to-pay demo"
+        aria-hidden={atFoot || undefined}
+        tabIndex={atFoot ? -1 : undefined}
       >
-        <Contactless className="h-4 w-4" />
-        Try tap to pay
+        <Contactless className="h-4 w-4 shrink-0" />
+        <span
+          className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${small ? "max-w-0 opacity-0 group-hover:ml-2 group-hover:max-w-[8rem] group-hover:opacity-100 group-focus-visible:ml-2 group-focus-visible:max-w-[8rem] group-focus-visible:opacity-100" : "ml-2 max-w-[8rem]"}`}
+        >
+          Try tap to pay
+        </span>
       </button>
       <AnimatePresence>{open && <Dashboard onClose={() => setOpen(false)} />}</AnimatePresence>
     </>
@@ -275,7 +300,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
       aria-label="Tap to pay demo"
     >
       <motion.div
-        className="relative my-auto w-full max-w-[1240px] overflow-hidden rounded-[22px] bg-ace-bg shadow-[0_40px_120px_-30px_rgba(12,14,20,.7)] ring-1 ring-ace-line"
+        // overflow-clip, not -hidden: it rounds the corners the same, but isn't a scroll container,
+        // so the controls bar below can stick to the bottom of the screen on a phone
+        className="relative my-auto w-full max-w-[1240px] overflow-clip rounded-[22px] bg-ace-bg shadow-[0_40px_120px_-30px_rgba(12,14,20,.7)] ring-1 ring-ace-line"
         initial={{ y: 24, scale: 0.98 }}
         animate={{ y: 0, scale: 1 }}
         exit={{ y: 16, opacity: 0 }}
@@ -356,8 +383,9 @@ function Dashboard({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        {/* timeline + controls */}
-        <div className="flex flex-wrap items-center gap-3 border-t border-ace-line bg-ace-panel px-4 py-3">
+        {/* timeline + controls: pinned to the bottom of the screen on a phone, where the stage and the
+            step's note run taller than the screen and pushed Next, Pay and "Tap again" out of sight */}
+        <div className="sticky bottom-0 z-20 flex flex-wrap items-center gap-3 border-t border-ace-line bg-ace-panel px-4 py-3 max-lg:shadow-[0_-10px_24px_-16px_rgba(12,14,20,.35)] lg:static">
           <div className="flex items-center gap-1.5">
             {phase === -1 || paid ? (
               <button onClick={start} className="btn btn-primary btn-sm">
@@ -429,8 +457,9 @@ function Note({
         <div className={`flex items-baseline gap-2 ${right ? "justify-end" : ""}`}>
           <span className={`mono shrink-0 text-[11px] ${open ? "text-ace-ink" : "text-ace-gain"}`}>{open ? String(step + 1).padStart(2, "0") : "✓"}</span>
           <span className={`m-note leading-tight text-ace-ink ${open ? "text-[22px]" : "shrink-0 whitespace-nowrap text-[15px]"}`}>{title}</span>
-          {!open && summary && <span className="mono min-w-0 truncate text-[11px] text-ace-dim">· {summary}</span>}
         </div>
+        {/* its own line under the title: inline it was cut to "store code · 5411 · gro…" */}
+        {!open && summary && <div className="mono mt-0.5 text-[11px] leading-snug text-ace-dim">{summary}</div>}
         <AnimatePresence initial={false}>
           {open && (
             <motion.div

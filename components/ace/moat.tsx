@@ -19,6 +19,8 @@ const ROWS: [string, string, string, string][] = [
   ["Useful with one card, or with a balance", "yes", "not advertised", "sells a new card"],
   ["Finds double charges and price rises", "yes", "not advertised", "no"],
   ["Counts interest on a carried balance", "yes", "not advertised", "no"],
+  ["Online checkout (browser extension)", "yes", "not advertised", "no"],
+  ["Works without linking a bank", "yes", "not advertised", "yes"],
   ["Paid by card referrals", "no", "unknown", "yes"],
 ];
 
@@ -33,7 +35,24 @@ export function MoatSection() {
       readout={<>compared on what each one advertises, Oct 2026</>}
     >
       <TwoAnswers />
-      <div className="overflow-x-auto m-panel">
+      {/* on a phone the four columns don't fit (they scrolled sideways and broke words mid-way):
+          each question gets its own block with the three answers under it */}
+      <div className="space-y-3 md:hidden">
+        {ROWS.map((row) => (
+          <div key={row[0]} className="m-panel p-4">
+            <p className="font-medium">{row[0]}</p>
+            <dl className="mono mt-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-[12px]">
+              <dt className="text-ace-ink">{b.name}</dt>
+              <dd className="text-right font-medium text-ace-ink">{row[1]}</dd>
+              <dt className="text-ace-dim">Tap-time card pickers</dt>
+              <dd className="text-right text-ace-dim">{row[2]}</dd>
+              <dt className="text-ace-dim">Comparison sites</dt>
+              <dd className="text-right text-ace-dim">{row[3]}</dd>
+            </dl>
+          </div>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto m-panel md:block">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="mono text-[11px] uppercase tracking-[0.15em] text-ace-dim">
             <tr className="border-b border-ace-line">
@@ -214,9 +233,10 @@ function Proof() {
   ];
   return (
     <div className="mb-10">
-      <ol className="grid gap-px overflow-hidden rounded-[14px] bg-[var(--m-line)] sm:grid-cols-5">
+      {/* two across on a phone (the last, the net, across both), five in a row from sm up */}
+      <ol className="grid grid-cols-2 gap-px overflow-hidden rounded-[14px] bg-[var(--m-line)] sm:grid-cols-5">
         {steps.map(([n, l], k) => (
-          <li key={l} className="bg-ace-panel px-4 py-3">
+          <li key={l} className={`bg-ace-panel px-4 py-3 ${k === steps.length - 1 ? "col-span-2 sm:col-span-1" : ""}`}>
             <div className="m-num text-[11px]">{String(k + 1).padStart(2, "0")}</div>
             <div className="mt-1 text-xl" style={{ fontFamily: "var(--m-font-display)", fontWeight: 500 }}>
               {n}
@@ -295,7 +315,7 @@ export function HowSection() {
               <span className="text-white">$</span> {b.name.toLowerCase()} trace {t.id}
             </span>
           </div>
-          <motion.dl key={t.id} className="mono min-w-[640px] space-y-1.5 px-5 py-4" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.09 } } }}>
+          <motion.dl key={t.id} className="mono space-y-3 px-5 py-4 sm:space-y-1.5" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.09 } } }}>
             <Line k="purchase">
               {t.date} · {t.merchant} · {money(t.amount, { cents: true })}
             </Line>
@@ -342,8 +362,9 @@ function cents(id: string) {
 
 function Line({ k, children }: { k: string; children: ReactNode }) {
   return (
-    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex gap-4">
-      <dt className="w-24 shrink-0 text-white">{k}</dt>
+    // on a phone the key sits over its line, so the line wraps in the panel instead of scrolling sideways
+    <motion.div variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex flex-col gap-0.5 sm:flex-row sm:gap-4">
+      <dt className="shrink-0 text-white/60 sm:w-24 sm:text-white">{k}</dt>
       <dd className="min-w-0 break-words text-white">{children}</dd>
     </motion.div>
   );
@@ -355,7 +376,24 @@ export function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-5 text-sm text-ace-dim md:flex-row">
         <div className="flex flex-col gap-3">
           <Lockup size={28} state="resolved" />
-          <p>Built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with Claude Code.</p>
+          <p>
+            Built at ACM@USC TrojanHacks 2026 by Adrian Erlikhman and Michael Tarekegn, with Claude Code.{" "}
+            <span className="text-ace-ink">1st place, Finance track.</span>
+          </p>
+          <p className="flex flex-wrap gap-x-4 gap-y-1">
+            {[
+              ["Code", "https://github.com/michae6345-crypto/monte"],
+              ["Devpost", "https://devpost.com/software/monte-calygj"],
+              ["Launch film", "https://youtu.be/Tn4YrpoLjh8"],
+              ["The Monte card", "/card"],
+              ["Developers", "/developers"],
+              ["Under the hood", "/engine"],
+            ].map(([l, href]) => (
+              <a key={l} href={href} {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})} className="underline decoration-[var(--m-line-strong)] underline-offset-4 hover:text-ace-ink">
+                {l}
+              </a>
+            ))}
+          </p>
         </div>
         <p className="mono text-[11px] uppercase tracking-wider">Card terms checked 17 Oct 2026 · Demo people are synthetic · Not financial advice</p>
       </div>

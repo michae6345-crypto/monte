@@ -210,9 +210,10 @@ export default function BrandPage() {
         </Block>
 
         <Block n="05" title="Hand notes" note="Annotations explain a number the way a person would in the margin. Slate, slightly tilted, an arrow that draws in. Decorative: say it in real copy too.">
-          <div className="m-panel relative grid gap-10 p-10 md:grid-cols-2">
-            <div className="flex items-center gap-3">
-              <span className="m-num text-5xl m-loss">−$427</span>
+          {/* p-5 and a wrapping row on a phone: at p-10 the note was clipped and "−" sat alone on a line */}
+          <div className="m-panel relative grid gap-10 p-5 sm:p-10 md:grid-cols-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="m-num whitespace-nowrap text-5xl m-loss">−$427</span>
               <HandNote dir="left" width={180}>
                 that&apos;s after interest on the Apple Card balance
               </HandNote>

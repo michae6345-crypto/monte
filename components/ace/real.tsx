@@ -15,10 +15,12 @@ export function RealSection() {
       tone: "text-ace-ink",
       items: [
         ["Card terms", `${CARDS.length} cards, from each issuer's page, checked 17 Oct 2026.`],
-        ["Plaid code", "Built. Not connected: this deployment has no Plaid keys."],
-        ["The engine", "Every number on the page is arithmetic on those terms."],
+        ["The engine", "Every number on the page is arithmetic on those terms, counting interest as well as points."],
+        ["The app", `${b.name} at the register: your cards, the store you're at (search or near me), the card to use.`],
+        ["Online", "A Chrome extension names the card on any store's site, and at checkout if you turn it on."],
+        ["The card's brain", "Answers a card network's authorization request with the card to play, in a few milliseconds."],
         ["Monte Carlo", "1,000 simulated years from the person's own months."],
-        ["Solver check", "Proves no other card choice earns more. 36 tests pass."],
+        ["Solver check", "Proves no other card choice earns more. 76 tests pass."],
         ["Your statement", "CSV upload, read in your browser, never uploaded."],
       ],
     },
@@ -28,6 +30,7 @@ export function RealSection() {
       items: [
         ["Jordan, Maya, the Parks, Sam, Rosa", "Made-up people, real LA stores."],
         ["Tap", "A web demo, not a real wallet."],
+        ["The card network", "The card's requests come from a simulator until an issuer sandbox key is added."],
         ["Point values", "1¢ cash, or The Points Guy's travel values."],
       ],
     },
@@ -35,9 +38,9 @@ export function RealSection() {
       tag: "Next",
       tone: "text-ace-dim",
       items: [
-        ["Bank linking", "Live Plaid: purchases and balances, never card numbers."],
+        ["Bank linking", "Plaid Link is built: it goes live with keys. Purchases and balances, never card numbers."],
+        ["Moving the money", "A bank partner, so the Monte card can pay with the card it picks."],
         ["The store map", "Fix a store once, for everyone."],
-        ["At the register", `${b.name} in the phone's wallet, before you tap.`],
       ],
     },
   ];

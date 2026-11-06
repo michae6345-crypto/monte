@@ -13,8 +13,10 @@ import { CardArt, nick, shortName } from "./card-art";
 import { money } from "./store";
 import { Trace } from "./trace";
 import { creditProvenanceFor, feeProvenanceFor, interestProvenanceFor, type ProvenanceLine } from "@/lib/engine/provenance";
+import { apportion } from "@/lib/apportion";
 
 const c2 = (v: number) => (Math.abs(v) < 0.005 ? "$0.00" : money(v, { sign: true, cents: true }));
+
 
 function Row({ k, v, sub, i, strong, trace }: { k: string; v: number; sub?: string; i: number; strong?: boolean; trace?: ProvenanceLine[] }) {
   return (
@@ -75,6 +77,16 @@ export function PaperReceipt({
 }) {
   const seed = wallet.map((h) => `${h.cardId}:${h.balance ?? 0}`).join("|") + name;
   const carried = wallet.find((h) => h.balance && h.balance > 0);
+  // every figure printed is in cents, and the cents add up: per-card rewards and interest are
+  // rounded together, and each net is the sum of the lines printed above it
+  const rew = apportion(r.perCard.map((c) => c.rewards));
+  const int = apportion(r.perCard.map((c) => c.interest));
+  const cardNet = r.perCard.map((c, k) => Math.round((rew[k] + c.credits - c.fee - int[k]) * 100) / 100);
+  const total = {
+    in: Math.round((rew.reduce((a, b) => a + b, 0) + r.credits) * 100) / 100,
+    interest: int.reduce((a, b) => a + b, 0),
+    net: Math.round(cardNet.reduce((a, b) => a + b, 0) * 100) / 100,
+  };
   let i = 0;
 
   return (
@@ -99,7 +111,7 @@ export function PaperReceipt({
         {/* one block per card */}
         <div className="m-mono space-y-5">
           <AnimatePresence mode="popLayout" initial={false}>
-            {r.perCard.map((c) => {
+            {r.perCard.map((c, ci) => {
               const h = wallet.find((x) => x.cardId === c.cardId)!;
               const k = card(c.cardId);
               return (
@@ -117,20 +129,20 @@ export function PaperReceipt({
                     </div>
                   </div>
                   <div className="space-y-1 pl-[3.4rem]">
-                    <Row k="rewards earned" v={c.rewards} i={i++} />
+                    <Row k="rewards earned" v={rew[ci]} i={i++} />
                     {c.credits > 0 && <Row k="perks used" v={c.credits} i={i++} trace={creditProvenanceFor(h)} />}
                     {c.fee > 0 && <Row k="annual fee" v={-c.fee} i={i++} trace={[feeProvenanceFor(c.cardId)].filter((x): x is NonNullable<typeof x> => !!x)} />}
                     {c.interest > 0 && (
                       <Row
                         k="interest"
-                        v={-c.interest}
+                        v={-int[ci]}
                         sub={`$${(h.balance ?? 0).toLocaleString()} × ${h.apr}% APR`}
                         i={i++}
                         trace={[interestProvenanceFor(h)].filter((x): x is NonNullable<typeof x> => !!x)}
                       />
                     )}
                     <div className="border-t border-dotted border-ace-line pt-1">
-                      <Row k="card net" v={c.net} i={i++} strong />
+                      <Row k="card net" v={cardNet[ci]} i={i++} strong />
                     </div>
                   </div>
                   {c.interest > c.rewards && carried?.cardId === c.cardId && (
@@ -150,14 +162,14 @@ export function PaperReceipt({
 
         {/* totals */}
         <div className="m-mono space-y-1">
-          <Row k="rewards + perks" v={r.rewards + r.credits} i={i++} />
+          <Row k="rewards + perks" v={total.in} i={i++} />
           <Row k="fees" v={-r.fees} i={i++} />
-          <Row k="interest" v={-r.interest} i={i++} />
+          <Row k="interest" v={-total.interest} i={i++} />
         </div>
         <div id="receipt-net" className="mt-4 flex scroll-mt-40 items-end justify-between gap-3">
           <span className="m-label">net, last 12 months</span>
-          <span className={`text-[2.6rem] leading-none ${r.net < 0 ? "text-ace-loss" : "text-ace-gain"}`}>
-            <Bracketed>{c2(r.net)}</Bracketed>
+          <span className={`text-[2.6rem] leading-none ${total.net < 0 ? "text-ace-loss" : "text-ace-gain"}`}>
+            <Bracketed>{c2(total.net)}</Bracketed>
           </span>
         </div>
 
@@ -178,7 +190,7 @@ export function PaperReceipt({
 
         <div className="mt-6 text-ace-ink">
           <Barcode seed={seed} />
-          <div className="m-mono mt-3 text-center text-[11px] uppercase tracking-[0.22em] text-ace-dim">hover any line for its rule and source</div>
+          <div className="m-mono mt-3 text-center text-[11px] uppercase tracking-[0.22em] text-ace-dim">dotted figures show their rule and source</div>
         </div>
       </div>
     </div>
