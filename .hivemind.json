@@ -1,0 +1,9 @@
+{
+  "repo": "repo/monte",
+  "url": "https://hivemind-q17i.onrender.com",
+  "org": "aiml-li",
+  "agents": [
+    "claude-code",
+    "codex"
+  ]
+}

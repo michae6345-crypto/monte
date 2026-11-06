@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "hivemind": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "-e",
+        "const{spawn}=require('child_process'),{delimiter,dirname,join}=require('path'),win=process.platform=='win32',name=win?'hivemind.cmd':'hivemind';const bin=[...(process.env.PATH||'').split(delimiter),dirname(process.execPath),join(require('os').homedir(),'.local','bin')].filter(Boolean).map((d)=>join(d,name)).find((p)=>require('fs').existsSync(p));if(!bin){console.error(`hivemind wasn't found on the PATH this app was started with. Install it, or start this app from a terminal so it gets your PATH.`);process.exit(1)}spawn(win?'cmd':bin,[...(win?['/c',bin]:[]),...process.argv.slice(1)],{stdio:'inherit'}).on('exit',(c)=>process.exit(c??1))",
+        "mcp",
+        "--agent",
+        "claude-code",
+        "--repo",
+        "repo/monte"
+      ]
+    }
+  }
+}
