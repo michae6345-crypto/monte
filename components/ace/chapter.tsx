@@ -10,7 +10,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 const Bare = createContext(false);
 export const useBare = () => useContext(Bare);
 
-export type Tab = { key: string; label: string; node: ReactNode };
+export type Tab = { key: string; label: string; node: ReactNode; anchors?: string[] };
 
 export function Chapter({
   id,
@@ -41,6 +41,28 @@ export function Chapter({
     window.addEventListener("monte:tab", on);
     return () => window.removeEventListener("monte:tab", on);
   }, [id, tabs]);
+  // a link like /#checkout opens the tab that holds it, then scrolls there
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    const tab = tabs.find((t) => t.anchors?.includes(hash));
+    if (!tab) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setKey(tab.key);
+    // wait for the tab to render, and for the page to load so the browser's own scroll
+    // restoration can't put it back at the top
+    let tries = 0;
+    let timer = 0;
+    const go = () => {
+      const el = document.getElementById(hash);
+      // a beat after it appears: the pinned stage above it is still settling its height
+      if (el && document.readyState === "complete") timer = window.setTimeout(() => el.scrollIntoView(), 400);
+      else if (tries++ < 50) timer = window.setTimeout(go, 100);
+    };
+    timer = window.setTimeout(go, 100);
+    return () => clearTimeout(timer);
+    // once, for the address the page was opened on
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const cur = tabs.find((t) => t.key === key) ?? tabs[0];
 
   return (

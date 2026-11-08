@@ -60,7 +60,7 @@ export function Chapters({ sections: s }: { sections: S }) {
         }
         tabs={[
           { key: "replay", label: "Replay", node: s.replay },
-          ...(one ? [] : [{ key: "tap", label: "Tap", node: s.tap }]),
+          ...(one ? [] : [{ key: "tap", label: "Tap", node: s.tap, anchors: ["tap-view", "checkout"] }]),
           { key: "purchases", label: "Every purchase", node: s.history },
         ]}
       />

@@ -6,6 +6,8 @@ import { Bracketed, HandNote } from "@/components/brand";
 import { MerchantLogo } from "./merchant-logo";
 import { tap, type Holding } from "@/lib/engine";
 import { CARDS, card } from "@/lib/engine/catalog";
+import { DEMO_TAP_DATE } from "@/lib/paypal/plan";
+import { PayPalCheckout } from "./paypal-checkout";
 import { CardArt, nick, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { Stage } from "./stage";
@@ -28,7 +30,7 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 };
 
 export function TapSection() {
-  const { wallet: theirs, txns, valuation, persona } = useAce();
+  const { wallet: theirs, txns, valuation, persona, checkoutTxns: paid, addCheckoutTxn, clearCheckoutTxns } = useAce();
   // a judge's own cards, for Tap only: the rest of the page stays on the selected person
   const [own, setOwn] = useState<string[] | null>(null);
   const [ownFor, setOwnFor] = useState(persona.id);
@@ -62,14 +64,28 @@ export function TapSection() {
     window.addEventListener("monte:tap", on);
     return () => window.removeEventListener("monte:tap", on);
   }, [SPOTS]);
+  // a link straight to checkout starts at the grocery store, whose cap has room to show
+  useEffect(() => {
+    if (window.location.hash !== "#checkout") return;
+    const k = SPOTS.findIndex((s) => s.category === "groceries");
+    if (k < 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setManual(true);
+    choose(k);
+    // once, for the address the page was opened on
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const spot = SPOTS[Math.min(i, SPOTS.length - 1)];
   // caps already used this month come from the person's purchases, so a judge's own cards start fresh
-  const history = useMemo(() => (own && own.length ? [] : txns.filter((t) => t.date >= "2026-10-01")), [txns, own]);
+  const history = useMemo(() => [...(own && own.length ? [] : txns.filter((t) => t.date >= "2026-10-01")), ...paid], [txns, own, paid]);
   const res = useMemo(
-    () => tap(wallet, { date: "2026-10-18", merchant: spot.merchant, category: spot.category, amount: spot.amount }, history),
+    () => tap(wallet, { date: DEMO_TAP_DATE, merchant: spot.merchant, category: spot.category, amount: spot.amount }, history),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [wallet, spot, history, valuation],
   );
+  // checkout counts caps across the whole year: a yearly cap remembers January
+  const yearSoFar = useMemo(() => [...(own && own.length ? [] : txns.filter((t) => t.date.startsWith(DEMO_TAP_DATE.slice(0, 4)) && t.date <= DEMO_TAP_DATE)), ...paid], [txns, own, paid]);
+  const purchase = useMemo(() => ({ merchant: spot.merchant, category: spot.category, amount: spot.amount, date: DEMO_TAP_DATE }), [spot]);
   const pick = res.pick;
   const runner = res.ranked.find((x) => x.cardId !== pick.cardId && !x.blocked);
   const blocked = res.ranked.find((x) => x.blocked && x.reward > pick.reward);
@@ -240,12 +256,32 @@ export function TapSection() {
       </div>
         )}
       </Stage>
+      <PayPalCheckout
+        key={persona.id}
+        purchase={purchase}
+        wallet={wallet}
+        history={yearSoFar}
+        valuation={valuation}
+        stores={SPOTS.map((s) => s.merchant)}
+        selected={Math.min(i, SPOTS.length - 1)}
+        onSelect={(k) => {
+          setManual(true);
+          choose(k);
+        }}
+        onPaid={addCheckoutTxn}
+      />
       <div className="m-panel mt-8 p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <p className="text-lg font-medium">Try it with your own cards.</p>
           <span className="text-sm">
             {own && own.length ? (
-              <button onClick={() => setOwn(null)} className="underline">
+              <button
+                onClick={() => {
+                  setOwn(null);
+                  clearCheckoutTxns();
+                }}
+                className="underline"
+              >
                 back to {nameOf(persona).whose} cards
               </button>
             ) : (
@@ -261,6 +297,7 @@ export function TapSection() {
                 key={c.id}
                 onClick={() => {
                   setManual(true);
+                  clearCheckoutTxns();
                   setOwn((o) => {
                     const cur = o ?? [];
                     return cur.includes(c.id) ? cur.filter((x) => x !== c.id) : cur.length >= 5 ? cur : [...cur, c.id];
