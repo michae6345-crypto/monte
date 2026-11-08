@@ -111,8 +111,8 @@ Caps       for every cap pool and period: sum of a drawing on it <= cap amount
 Rule options come from the same `earnOptions()` the greedy uses, so the two cannot
 disagree about rules. The objective is reported as an upper bound, and the chosen plan is
 replayed through `evaluate()` in date order. When the two match, the plan is proven
-optimal. Result: the LP-vs-greedy gap is $0.00 on all three test wallets, so greedy is
-proven optimal there. On a constructed cap-trap case greedy gets $30.00 and the optimum is
+optimal. Result: the LP-vs-greedy gap is $0.00 on all five demo wallets, so greedy is
+proven optimal there (`scripts/lp-vs-greedy.ts`). On a constructed cap-trap case greedy gets $30.00 and the optimum is
 $33.00, which shows the LP catches the cases where greedy falls short.
 
 ### Provenance
@@ -130,7 +130,7 @@ badge.
   credits used.
 - The Plaid access token lives in an httpOnly cookie, so page scripts cannot read it.
 - CSV statements are parsed in the browser.
-- The only model call is merchant-name cleanup (in progress on another branch). It never
+- The only model call is merchant-name cleanup (`lib/model/categorize.ts`). It never
   sees rules or computes money.
 
 ## What's real vs simulated
