@@ -77,10 +77,83 @@ node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy on ev
 
 ## Tests
 
-`npm test` runs `tests/engine.test.ts` and `tests/provenance.test.ts`: hand-computed earn
-cases, caps crossed mid-purchase, shared cap pools, determinism, and a check that every
-receipt line traces to a source and adds up to the engine's total to the cent. On a clean
-`npm ci` all 36 tests pass.
+`npm test` runs `tests/engine.test.ts`, `tests/provenance.test.ts` and
+`tests/paypal.test.ts`: hand-computed earn cases, caps crossed mid-purchase, shared cap
+pools, determinism, a check that every receipt line traces to a source and adds up to the
+engine's total to the cent, and the checkout path with PayPal and Claude mocked. On a clean
+`npm ci` all 66 tests pass.
+
+## PayPal + AI (PayPal AI Hackathon, Nov 2026)
+
+### What we built during the hackathon
+
+Monte's engine and site were built at TrojanHacks on 17-18 Oct 2026. This work was added in
+November 2026, during the PayPal AI Hackathon's submission period:
+
+- **PayPal checkout on the Tap view.** After Monte ranks your cards for a purchase, it tells
+  you which card to choose in your PayPal wallet and why: the rewards on this purchase and
+  the cap room left. You pay through PayPal's window. The receipt shows the cap counter move.
+- **A checkout agent.** Type "I'm spending $84 on groceries at Trader Joe's." Claude calls
+  Monte's engine, explains the result in plain English and proposes the order. Nothing is
+  charged until you approve it in PayPal's window.
+- **Tests** for the path from purchase to ranked card to order amount to cap counter.
+
+Sandbox only. No real money moves: `lib/paypal/client.ts` has only the sandbox URL, and any
+other `PAYPAL_ENV` counts as not configured.
+
+### PayPal APIs
+
+| API | Call | Where |
+|---|---|---|
+| OAuth 2.0 client credentials | `POST /v1/oauth2/token` | `lib/paypal/client.ts` |
+| Orders v2, create | `POST /v2/checkout/orders` | `app/api/paypal/create-order`, and the agent's `create_paypal_order` tool |
+| Orders v2, capture | `POST /v2/checkout/orders/{id}/capture` | `app/api/paypal/capture-order` |
+| JavaScript SDK v6 | one-time payment session, `<paypal-button>` | `components/ace/paypal-checkout.tsx` |
+
+We tried `@paypal/agent-toolkit` 1.11.0 and don't use it. It has no adapter for the Anthropic
+SDK, it would add 88 packages, including the OpenAI SDK and LangChain, and its create-order tool
+takes item prices from the model, which this app doesn't allow. The agent's tool calls the
+same order code as the checkout button.
+
+### AI tools
+
+| Tool | How it's used |
+|---|---|
+| Claude Opus 5.5 (Anthropic SDK) | The checkout agent (`lib/paypal/agent.ts`): reads the typed purchase, calls `rank_cards` and `create_paypal_order`, and writes the explanation |
+| Claude Haiku 5.5 (Anthropic SDK) | Merchant labeling (`lib/model/categorize.ts`): cleans up bank descriptors and picks a category |
+| Claude Code | Development: wrote most of this integration, its tests and these docs, reviewed by us |
+
+### Keeping the math out of the model
+
+The engine is deterministic and the AI never does the math. For the agent, that's enforced in
+code:
+
+- `rank_cards` runs the engine. Claude only passes in the store, the category and the amount.
+- The amount has to appear in what the person typed, or the tool refuses it.
+- `create_paypal_order` takes no arguments, so the order can only be for the engine's amount.
+- Every number in Claude's reply has to appear in a tool result or in what the person typed,
+  and the reply has to name the engine's card. If not, the app shows a sentence built from the
+  engine's numbers instead.
+- A card carrying a balance is never recommended. If every card carries one, no order is made.
+
+The engine's result is always shown next to Claude's words, with its rule, math, issuer source
+and checked date.
+
+### Run it with sandbox keys
+
+1. Create a sandbox REST app at
+   [developer.paypal.com/dashboard](https://developer.paypal.com/dashboard/applications/sandbox).
+2. Copy `.env.example` to `.env.local` and fill in `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`,
+   `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (the same client ID), `PAYPAL_ENV=sandbox` and
+   `ANTHROPIC_API_KEY`.
+3. Run `npm ci` and `npm run dev`, then open
+   [localhost:3000/#checkout](http://localhost:3000/#checkout), which opens the Tap view at checkout.
+4. `curl localhost:3000/api/health` should say `"paypal":"sandbox","agent":"ready"`.
+5. Pay with a sandbox personal account from the dashboard's Testing Tools.
+
+Without keys, every `/api/paypal/*` route returns `503 {"error":"paypal_not_configured"}` and
+the app still runs, with the ranking and no button. The click-by-click demo is
+[`docs/PAYPAL-DEMO.md`](docs/PAYPAL-DEMO.md).
 
 ## Team
 

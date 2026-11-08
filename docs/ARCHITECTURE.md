@@ -50,6 +50,7 @@ your history. No AI model is in the pricing path.
 | Provenance | `lib/engine/provenance.ts` | Traces every line to a rule, URL, date and the purchases behind it |
 | Cap cache | `lib/db/cap-state.ts` | `capStateFrom` (sync) and `capMapFrom` (tap) |
 | API | `app/api/sync`, `app/api/tap`, `app/api/plaid/*` | Sync once, tap fast, Plaid link |
+| PayPal checkout | `lib/paypal/`, `app/api/paypal/*` | Sandbox order for the engine's plan; the checkout agent; cap counters after capture |
 | Database | Supabase Postgres | `profiles`, `bank_items`, `holdings`, `transactions`, `cap_state`, `merchant_overrides`, `card_terms` |
 
 Measured on a laptop: routing a whole year takes about 1 ms; a tap that replays history
@@ -130,8 +131,10 @@ badge.
   credits used.
 - The Plaid access token lives in an httpOnly cookie, so page scripts cannot read it.
 - CSV statements are parsed in the browser.
-- The only model call is merchant-name cleanup (`lib/model/categorize.ts`). It never
-  sees rules or computes money.
+- Two things call a model, and neither computes money. Merchant-name cleanup
+  (`lib/model/categorize.ts`) never sees rules. The checkout agent (`lib/paypal/agent.ts`)
+  explains the engine's output for a purchase the person typed; its reply is checked against
+  that output before it's shown.
 
 ## What's real vs simulated
 
