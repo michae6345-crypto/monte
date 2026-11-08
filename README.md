@@ -81,7 +81,7 @@ node --import ./scripts/_alias.mjs scripts/lp-vs-greedy.ts  # LP vs greedy on ev
 `tests/paypal.test.ts`: hand-computed earn cases, caps crossed mid-purchase, shared cap
 pools, determinism, a check that every receipt line traces to a source and adds up to the
 engine's total to the cent, and the checkout path with PayPal and Claude mocked. On a clean
-`npm ci` all 66 tests pass.
+`npm ci` all 73 tests pass.
 
 ## PayPal + AI (PayPal AI Hackathon, Nov 2026)
 

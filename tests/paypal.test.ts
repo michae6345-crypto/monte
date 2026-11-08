@@ -5,13 +5,14 @@ import { afterEach, beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Anthropic from "@anthropic-ai/sdk";
-import { tap, type Holding, type Txn } from "@/lib/engine";
+import { pointValue, tap, type Holding, type Txn } from "@/lib/engine";
+import { card } from "@/lib/engine/catalog";
 import { JORDAN, PERSONAS, yearOf } from "@/lib/data/personas";
 import { spotsFor } from "@/components/ace/spots";
 import { runCheckoutAgent, type CreateMessage } from "@/lib/paypal/agent";
 import { PAYPAL_API } from "@/lib/paypal/client";
 import { persistCapture } from "@/lib/paypal/persist";
-import { capMoveLine, capRoomLine, capturedTxn, decodeOrderRef, DEMO_TAP_DATE, encodeOrderRef, explainPlan, orderValue, planCheckout, type Purchase } from "@/lib/paypal/plan";
+import { capMoveLine, capRoomLine, capturedTxn, decodeOrderRef, DEMO_TAP_DATE, encodeOrderRef, explainPlan, orderValue, planAtValuation, planCheckout, type Purchase } from "@/lib/paypal/plan";
 import { POST as createOrderRoute } from "@/app/api/paypal/create-order/route";
 import { POST as captureOrderRoute } from "@/app/api/paypal/capture-order/route";
 import { POST as agentRoute } from "@/app/api/paypal/agent/route";
@@ -97,6 +98,20 @@ test("the panel and the phone in the Tap view agree for every demo person and st
       assert.equal(cents(plan.pick!.reward), cents(phone.pick.reward), `${p.id} at ${s.merchant}`);
     }
   }
+});
+
+test("a travel-valued checkout doesn't leave the engine on travel values for other routes", () => {
+  const gold = card("amex_gold");
+  const travel = planAtValuation("travel", [{ cardId: "amex_gold" }], TJ, []);
+  assert.equal(cents(travel.pick!.reward), cents((84 * 4 * gold.point_value_cents) / 100));
+  assert.equal(pointValue(gold), 1);
+  assert.equal(cents(planCheckout([{ cardId: "amex_gold" }], TJ, []).pick!.reward), 3.36);
+});
+
+test("the balance warning is the engine's own sentence", () => {
+  const phone = tap(JORDAN.wallet, TJ, []);
+  const plan = planCheckout(JORDAN.wallet, TJ, []);
+  assert.equal(plan.ranked.find((r) => r.cardId === "apple_card")?.blocked, phone.ranked.find((r) => r.cardId === "apple_card")?.blocked);
 });
 
 test("what an order remembers survives the trip, even with a | in the store's name", () => {
@@ -390,7 +405,7 @@ for (const [name, bad] of [
     const { create } = script(message([rankTJ()], "tool_use"), message([toolCall("create_paypal_order", {})], "tool_use"), message(bad ? [text(bad)] : []));
     const out = await runCheckoutAgent({ chat: askTJ, context: context(), createOrder: fakeOrder([]), createMessage: create });
     assert.equal(out.replyChecked, false);
-    assert.equal(out.reply, explainPlan(out.plan!));
+    assert.equal(out.reply, explainPlan(out.plan!, true));
     assert.ok(out.reply.includes("American Express Gold Card") && out.reply.includes("$3.36"));
   });
 }
@@ -403,6 +418,51 @@ test("agent: a refusal runs no tool and creates no order", async () => {
   assert.equal(out.plan, null);
   assert.deepEqual(made, []);
   assert.equal(out.replyChecked, false);
+});
+
+test("agent: if the order can't be made, the fallback doesn't promise a PayPal step", async () => {
+  const { create } = script(message([rankTJ()], "tool_use"), message([toolCall("create_paypal_order", {})], "tool_use"), message([text("")]));
+  const failing = async () => {
+    throw new Error("PayPal is down");
+  };
+  const out = await runCheckoutAgent({ chat: askTJ, context: context(), createOrder: failing, createMessage: create });
+  assert.equal(out.order, null);
+  assert.match(out.reply, /no PayPal order to approve/);
+  assert.doesNotMatch(out.reply, /approve it in the PayPal window/);
+});
+
+test("agent: a model failure after ranking still shows the engine's answer", async () => {
+  let calls = 0;
+  const create: CreateMessage = async () => {
+    if (calls++ === 0) return message([rankTJ()], "tool_use");
+    throw new Error("timed out");
+  };
+  const out = await runCheckoutAgent({ chat: askTJ, context: context(), createOrder: fakeOrder([]), createMessage: create });
+  assert.equal(out.plan?.pick?.cardId, "amex_gold");
+  assert.ok(out.reply.includes("$3.36"));
+});
+
+test("agent: a model failure before ranking is an error, not a made-up answer", async () => {
+  const create: CreateMessage = async () => {
+    throw new Error("timed out");
+  };
+  await assert.rejects(runCheckoutAgent({ chat: askTJ, context: context(), createOrder: fakeOrder([]), createMessage: create }));
+});
+
+test("agent: a cut-off reply doesn't ask for details the person already gave", async () => {
+  const { create } = script(message([], "max_tokens"));
+  const out = await runCheckoutAgent({ chat: askTJ, context: context(), createOrder: fakeOrder([]), createMessage: create });
+  assert.match(out.reply, /couldn't finish/);
+});
+
+test("agent route: one address can't keep asking", async () => {
+  setKeys();
+  process.env.ANTHROPIC_API_KEY = "test-key";
+  const ask = () => agentRoute(new Request("http://localhost/api/paypal/agent", { method: "POST", headers: { "x-forwarded-for": "203.0.113.7" }, body: "{}" }));
+  for (let i = 0; i < 15; i++) assert.equal((await ask()).status, 400);
+  const res = await ask();
+  assert.equal(res.status, 429);
+  assert.equal((await res.json()).error, "agent_busy");
 });
 
 test("agent: stops after a bounded number of turns", async () => {
