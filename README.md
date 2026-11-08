@@ -27,8 +27,8 @@ Rosa) are synthetic spending histories, and Plaid runs against its sandbox, not 
 ## How it works
 
 - **Card catalog** (`data/cards.json`): 29 cards with their earn rates, caps, rotating
-  categories, credits and fees. Each rule has the issuer's source URL and the date it was
-  checked. 11 cards are marked `UNVERIFIED` and badged in the UI.
+  categories, credits and fees. Each card lists the issuer's source URLs and the date they
+  were checked. 11 cards are marked `UNVERIFIED` and badged in the UI.
 - **Rules engine** (`lib/engine/index.ts`): plays purchases through a wallet in date order
   and tracks spending caps, including caps shared across categories. A card carrying a
   balance is left out of best-card routing unless every card carries one.
