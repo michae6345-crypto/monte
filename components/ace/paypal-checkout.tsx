@@ -52,11 +52,21 @@ function loadSdk(): Promise<PayPalSdk | null> {
 }
 
 /** PayPal's own button. `order` runs on the click, so the window opens from the person's tap. */
-function PayPalButton({ order, onApproved, onProblem }: { order: () => Promise<OrderHandle>; onApproved: (orderId: string) => Promise<void>; onProblem: (word: string) => void }) {
+function PayPalButton({
+  order,
+  onApproved,
+  onProblem,
+  busy,
+}: {
+  order: () => Promise<OrderHandle>;
+  onApproved: (orderId: string) => Promise<void>;
+  onProblem: (word: string) => void;
+  busy: boolean;
+}) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ order, onApproved, onProblem });
+  const latest = useRef({ order, onApproved, onProblem, busy });
   useEffect(() => {
-    latest.current = { order, onApproved, onProblem };
+    latest.current = { order, onApproved, onProblem, busy };
   });
   const [state, setState] = useState<"loading" | "ready" | "unavailable">("loading");
 
@@ -81,6 +91,7 @@ function PayPalButton({ order, onApproved, onProblem }: { order: () => Promise<O
       button.setAttribute("type", "pay");
       button.className = "paypal-gold";
       button.addEventListener("click", () => {
+        if (latest.current.busy) return; // a capture is still running
         session.start({ presentationMode: "auto" }, latest.current.order()).catch((e: Error) => latest.current.onProblem(e.message));
       });
       slot.replaceChildren(button);
@@ -94,7 +105,7 @@ function PayPalButton({ order, onApproved, onProblem }: { order: () => Promise<O
 
   return (
     <>
-      <div ref={host} className="max-w-[320px]" />
+      <div ref={host} className={`max-w-[320px] ${busy ? "pointer-events-none opacity-50" : ""}`} />
       {state === "unavailable" && <p className="mt-2 text-sm text-ace-dim">PayPal&apos;s button didn&apos;t load here. Check that the sandbox client ID is right.</p>}
     </>
   );
@@ -113,22 +124,30 @@ const WORDS: Record<string, string> = {
   instrument_declined: "PayPal declined that card. Nothing was charged.",
   not_completed: "PayPal didn't complete the payment, so no cap was updated.",
   no_card_without_balance: "Every card here carries a balance, so Monte won't recommend one.",
+  agent_error: "The assistant hit a problem. Try again.",
 };
 const say = (code: string) => WORDS[code] ?? "PayPal hit a problem. Nothing was charged. Try again.";
+// After approval the money may already have moved, so never claim it didn't.
+const CAPTURE_UNSURE = "You approved this, but Monte couldn't confirm the payment. Check your PayPal sandbox activity before paying again.";
 
 type Receipt = { merchant: string; value: string; captureId: string; card: string; reward: number; cap: string; store: string };
 
 /** Capture an approved order, write the receipt line and hand the purchase to the Tap view. */
-function useCapture(onPaid: (t: Txn) => void) {
+function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => CheckoutPlan) {
   const [note, setNote] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const capture = async (orderId: string, plan: CheckoutPlan) => {
+  const [capturing, setCapturing] = useState(false);
+  const capture = async (orderId: string, ordered: CheckoutPlan) => {
+    setCapturing(true);
     setNote("Capturing the payment…");
     try {
       const res = await fetch("/api/paypal/capture-order", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ orderId }) });
       const data = await res.json();
-      if (!res.ok) return setNote(say(data.error));
+      if (!res.ok) return setNote(WORDS[data.error] ?? CAPTURE_UNSURE);
       setNote(null);
+      // another payment may have used the cap since this order was made
+      const now = replan(ordered);
+      const plan = now.pick?.cardId === data.txn.cardUsed ? now : ordered;
       setReceipt({
         merchant: data.txn.merchant,
         value: data.value,
@@ -140,10 +159,12 @@ function useCapture(onPaid: (t: Txn) => void) {
       });
       onPaid(data.txn as Txn);
     } catch {
-      setNote(say("paypal_error"));
+      setNote(CAPTURE_UNSURE);
+    } finally {
+      setCapturing(false);
     }
   };
-  return { note, setNote, receipt, setReceipt, capture };
+  return { note, setNote, receipt, setReceipt, capture, capturing };
 }
 
 function ReceiptLine({ r }: { r: Receipt }) {
@@ -221,7 +242,8 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [wallet, purchase, history, valuation],
   );
-  const { note, setNote, receipt, setReceipt, capture } = useCapture(onPaid);
+  const replan = (p: CheckoutPlan) => (orderValue(p.purchase.amount) ? planCheckout(wallet, p.purchase, history) : p);
+  const { note, setNote, receipt, setReceipt, capture, capturing } = useCapture(onPaid, replan);
   const orders = useRef(new Map<string, CheckoutPlan>());
 
   const order = async (): Promise<OrderHandle> => {
@@ -262,6 +284,7 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
                 order={order}
                 onApproved={(id) => capture(id, orders.current.get(id) ?? plan)}
                 onProblem={(w) => setNote(say(w))}
+                busy={capturing}
               />
             </div>
           ) : (
@@ -275,7 +298,7 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
         {receipt && <ReceiptLine r={receipt} />}
         <p className="mt-4 text-[11px] leading-relaxed text-ace-dim">Monte assumes the store&apos;s category carries through PayPal. Some issuers code PayPal purchases differently.</p>
       </div>
-      <Agent context={context} onPaid={onPaid} />
+      <Agent context={context} onPaid={onPaid} replan={replan} />
     </div>
   );
 }
@@ -287,12 +310,12 @@ function Badge() {
 type Turn = { role: "user" | "assistant"; text: string };
 type AgentAnswer = { plan: CheckoutPlan | null; order: { id: string } | null };
 
-function Agent({ context, onPaid }: { context: object; onPaid: (t: Txn) => void }) {
+function Agent({ context, onPaid, replan }: { context: object; onPaid: (t: Txn) => void; replan: (p: CheckoutPlan) => CheckoutPlan }) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
   const [answer, setAnswer] = useState<AgentAnswer>({ plan: null, order: null });
-  const { note, setNote, receipt, setReceipt, capture } = useCapture(onPaid);
+  const { note, setNote, receipt, setReceipt, capture, capturing } = useCapture(onPaid, replan);
 
   const ask = async (e: FormEvent) => {
     e.preventDefault();
@@ -365,7 +388,7 @@ function Agent({ context, onPaid }: { context: object; onPaid: (t: Txn) => void 
       {plan && order && !receipt && (
         <div className="mt-4">
           <div className="mono mb-2 text-xs text-ace-dim">Approve {usd(Number(plan.orderValue))} in PayPal. Nothing is charged until you do.</div>
-          {CLIENT_ID ? <PayPalButton key={order.id} order={() => Promise.resolve({ orderId: order.id })} onApproved={(id) => capture(id, plan)} onProblem={(w) => setNote(say(w))} /> : <p className="text-sm text-ace-dim">{say("paypal_not_configured")}</p>}
+          {CLIENT_ID ? <PayPalButton key={order.id} order={() => Promise.resolve({ orderId: order.id })} onApproved={(id) => capture(id, plan)} onProblem={(w) => setNote(say(w))} busy={capturing} /> : <p className="text-sm text-ace-dim">{say("paypal_not_configured")}</p>}
         </div>
       )}
       {note && (

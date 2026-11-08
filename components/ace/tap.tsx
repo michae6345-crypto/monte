@@ -29,6 +29,9 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
   Uber: { cardId: "amex_gold", credit: "Uber Cash", note: "Pay with your $10 monthly Uber Cash first: it expires at month end." },
 };
 
+// The tab unmounts when you leave it, and the link should pick a store only the first time.
+let checkoutLinkUsed = false;
+
 export function TapSection() {
   const { wallet: theirs, txns, valuation, persona, checkoutTxns: paid, addCheckoutTxn, clearCheckoutTxns } = useAce();
   // a judge's own cards, for Tap only: the rest of the page stays on the selected person
@@ -66,7 +69,8 @@ export function TapSection() {
   }, [SPOTS]);
   // a link straight to checkout starts at the grocery store, whose cap has room to show
   useEffect(() => {
-    if (window.location.hash !== "#checkout") return;
+    if (checkoutLinkUsed || window.location.hash !== "#checkout") return;
+    checkoutLinkUsed = true;
     const k = SPOTS.findIndex((s) => s.category === "groceries");
     if (k < 0) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
