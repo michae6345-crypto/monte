@@ -6,9 +6,8 @@
 // The server re-runs the engine, so the order is for the engine's plan and not for anything
 // the browser asserts about it. 503 {"error":"paypal_not_configured"} without keys.
 
-import { setValuation } from "@/lib/engine";
 import { createOrderForPlan, failure, jsonBody, notConfigured, paypalConfigured, paypalFailure } from "@/lib/paypal/client";
-import { planCheckout } from "@/lib/paypal/plan";
+import { planAtValuation } from "@/lib/paypal/plan";
 import { isBad, parseContext, parsePurchase } from "@/lib/paypal/validate";
 
 export async function POST(req: Request) {
@@ -20,9 +19,7 @@ export async function POST(req: Request) {
   const purchase = parsePurchase(body.purchase, context.date);
   if (isBad(purchase)) return failure(400, "bad_request", { message: purchase.error });
 
-  // the valuation is module state in the engine; this block is synchronous, so requests can't mix
-  setValuation(context.valuation);
-  const plan = planCheckout(context.wallet, purchase, context.history);
+  const plan = planAtValuation(context.valuation, context.wallet, purchase, context.history);
   if (!plan.pick) return failure(409, "no_card_without_balance", { plan });
 
   try {

@@ -11,13 +11,22 @@ import { runCheckoutAgent, type ChatTurn } from "@/lib/paypal/agent";
 import { createOrderForPlan, failure, jsonBody, notConfigured, paypalConfigured } from "@/lib/paypal/client";
 import { isBad, parseContext, safeText } from "@/lib/paypal/validate";
 
-// Each question costs real model tokens and the URL is public.
+// The agent's own deadline stays inside this (lib/paypal/agent.ts).
+export const maxDuration = 60;
+
+// Each question costs real model tokens and the URL is public. The per-address limit keeps one
+// visitor from hogging it; the overall one holds even if someone rotates x-forwarded-for.
 const WINDOW_MS = 10 * 60 * 1000;
 const PER_WINDOW = 15;
+const ALL_PER_WINDOW = 120;
 const recent = new Map<string, number[]>();
+let everyone: number[] = [];
 
 function overLimit(ip: string): boolean {
   const now = Date.now();
+  everyone = everyone.filter((t) => t > now - WINDOW_MS);
+  if (everyone.length >= ALL_PER_WINDOW) return true;
+  everyone.push(now);
   for (const [key, times] of recent) if (times[times.length - 1] < now - WINDOW_MS) recent.delete(key);
   const times = (recent.get(ip) ?? []).filter((t) => t > now - WINDOW_MS);
   times.push(now);

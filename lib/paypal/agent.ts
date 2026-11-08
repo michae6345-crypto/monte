@@ -11,14 +11,17 @@
 // person still has to approve it in PayPal's window, and nothing is charged without that.
 
 import Anthropic from "@anthropic-ai/sdk";
-import { setValuation } from "@/lib/engine";
 import { CATEGORIES } from "@/lib/model/categorize";
 import type { CreatedOrder } from "@/lib/paypal/client";
-import { capRoomLine, explainPlan, orderValue, planCheckout, usd, type CheckoutPlan } from "@/lib/paypal/plan";
+import { capRoomLine, explainPlan, orderValue, planAtValuation, usd, type CheckoutPlan } from "@/lib/paypal/plan";
 import { isCategory, safeText, type CheckoutContext } from "@/lib/paypal/validate";
 
 export const AGENT_MODEL = "claude-opus-5-5";
 const MAX_TURNS = 5;
+// Stop starting turns after this long. With one call's timeout on top, the worst case stays
+// inside the route's 60-second maxDuration.
+const DEADLINE_MS = 30_000;
+const CALL_TIMEOUT_MS = 25_000;
 // A short reply on a public demo: this is a cost limit, and hitting it falls back to explainPlan().
 const MAX_TOKENS = 2048;
 
@@ -53,7 +56,6 @@ const TOOLS: Tool[] = [
     name: "create_paypal_order",
     description:
       "Creates a PayPal sandbox order for the purchase most recently ranked, for the engine's amount. It charges nothing: the person approves or cancels it in PayPal's window. Takes no arguments.",
-    strict: true,
     input_schema: { type: "object", properties: {}, required: [], additionalProperties: false },
   },
 ];
@@ -62,7 +64,7 @@ export type ChatTurn = { role: "user" | "assistant"; text: string };
 export type CreateMessage = (params: Anthropic.Beta.Messages.MessageCreateParamsNonStreaming) => Promise<Anthropic.Beta.Messages.BetaMessage>;
 export type AgentResult = { reply: string; plan: CheckoutPlan | null; order: CreatedOrder | null; replyChecked: boolean };
 
-const callClaude: CreateMessage = (params) => new Anthropic({ timeout: 30_000, maxRetries: 1 }).beta.messages.create(params);
+const callClaude: CreateMessage = (params) => new Anthropic({ timeout: CALL_TIMEOUT_MS, maxRetries: 0 }).beta.messages.create(params);
 
 const NUMBER = /\d[\d,]*(?:\.\d+)?/g;
 const numbersIn = (text: string) => (text.match(NUMBER) ?? []).map((n) => Number(n.replace(/,/g, "")));
@@ -103,9 +105,7 @@ export async function runCheckoutAgent(args: {
       if (!merchant || !isCategory(category)) return { out: { error: "A store and a known category are required." }, isError: true };
       if (!orderValue(amount)) return { out: { error: "The amount must be between $0.01 and $10,000, to the cent." }, isError: true };
       if (!typedNumbers.includes(amount as number)) return { out: { error: "That amount isn't in what the person typed. Ask them for the amount in digits." }, isError: true };
-      // synchronous from here to the plan, so concurrent requests can't mix valuations
-      setValuation(context.valuation);
-      plan = planCheckout(context.wallet, { merchant, category, amount: amount as number, date: context.date }, context.history);
+      plan = planAtValuation(context.valuation, context.wallet, { merchant, category, amount: amount as number, date: context.date }, context.history);
       order = null;
       return { out: toolView(plan) };
     }
@@ -121,17 +121,26 @@ export async function runCheckoutAgent(args: {
   const messages: Anthropic.Beta.Messages.BetaMessageParam[] = chat.map((t) => ({ role: t.role, content: t.text }));
   let reply = "";
 
-  for (let turn = 0; turn < MAX_TURNS; turn++) {
-    const res = await createMessage({
-      model: AGENT_MODEL,
-      max_tokens: MAX_TOKENS,
-      system: SYSTEM,
-      tools: TOOLS,
-      messages,
-      output_config: { effort: "low" },
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-    });
+  const started = Date.now();
+  for (let turn = 0; turn < MAX_TURNS && Date.now() - started < DEADLINE_MS; turn++) {
+    let res: Anthropic.Beta.Messages.BetaMessage;
+    try {
+      res = await createMessage({
+        model: AGENT_MODEL,
+        max_tokens: MAX_TOKENS,
+        system: SYSTEM,
+        tools: TOOLS,
+        messages,
+        output_config: { effort: "low" },
+        betas: ["server-side-fallback-2026-07-01"],
+        fallbacks: "default",
+      });
+    } catch (e) {
+      // once the engine has answered, its result is still worth showing
+      if (!plan) throw e;
+      console.warn("agent: model call failed after ranking:", (e as Error).message);
+      break;
+    }
     // a refusal or a cut-off can leave a half-written tool call: never run those
     if (res.stop_reason === "refusal" || res.stop_reason === "max_tokens") break;
     messages.push({ role: "assistant", content: res.content });
@@ -165,7 +174,13 @@ export async function runCheckoutAgent(args: {
     reply.length > 0 && numbersIn(reply).every((n) => allowed.has(n)) && (!finalPlan?.pick || reply.includes(finalPlan.pick.name));
 
   return {
-    reply: replyChecked ? reply : finalPlan ? explainPlan(finalPlan) : "Tell me the store and the dollar amount, like: I'm spending $84 on groceries at Trader Joe's.",
+    reply: replyChecked
+      ? reply
+      : finalPlan
+        ? explainPlan(finalPlan, Boolean(order))
+        : reply
+          ? "Tell me the store and the dollar amount, like: I'm spending $84 on groceries at Trader Joe's."
+          : "I couldn't finish that one. Try again, or use the checkout on the left.",
     plan: finalPlan,
     order,
     replyChecked,

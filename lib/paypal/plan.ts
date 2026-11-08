@@ -6,7 +6,7 @@
 // provenance. The Tap view and the server run this same function, so the panel and the order
 // can't disagree. Nothing in the engine imports this file.
 
-import { chooseOptions, earnOptions, evaluate, type Holding, type Txn } from "@/lib/engine";
+import { chooseOptions, earnOptions, evaluate, setValuation, tap, type Holding, type Txn, type Valuation } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { citation, provenanceFor } from "@/lib/engine/provenance";
 import { capMapFrom, capStateFrom } from "@/lib/db/cap-state";
@@ -79,6 +79,8 @@ export function planCheckout(wallet: Holding[], purchase: Purchase, history: Txn
   const quarter = history.filter((t) => t.date >= quarterStart(purchase.date));
   const used = capMapFrom(capStateFrom(wallet, year));
   const txn: Txn = { id: "checkout", cardUsed: "", ...purchase };
+  // the engine's own wording for a card carrying a balance, so the phone and this panel match
+  const balanceNotes = new Map(tap(wallet, purchase, []).ranked.map((r) => [r.cardId, r.blocked]));
 
   const rows = wallet
     .map((h) => {
@@ -92,10 +94,7 @@ export function planCheckout(wallet: Holding[], purchase: Purchase, history: Txn
         reward: ev.reward,
         mult: ev.mult,
         rule: ev.rule,
-        blocked:
-          h.balance && h.balance > 0
-            ? `Carries a $${Math.round(h.balance).toLocaleString("en-US")} balance at ${h.apr ?? c.purchase_apr_range[1]}% APR: new purchases start charging interest today.`
-            : undefined,
+        blocked: balanceNotes.get(h.cardId),
         math: line.math,
         citation: citation(line),
         sourceUrl: line.source.sourceUrls[0] ?? null,
@@ -139,6 +138,17 @@ export function planCheckout(wallet: Holding[], purchase: Purchase, history: Txn
   };
 }
 
+/** Server-side planCheckout. The valuation is module state in the engine, so it's set for
+ *  this synchronous call only: other routes, like /api/tap, expect the cash default. */
+export function planAtValuation(valuation: Valuation, wallet: Holding[], purchase: Purchase, history: Txn[]): CheckoutPlan {
+  setValuation(valuation);
+  try {
+    return planCheckout(wallet, purchase, history);
+  } finally {
+    setValuation("cash");
+  }
+}
+
 // ---------- words, for the panel and the agent's fallback ----------
 
 export const usd = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -165,14 +175,14 @@ export function capMoveLine(room: CapRoom): string {
 
 /** Plain English built only from the plan's own numbers. Shown when the agent's words can't
  *  be checked against the engine, so a wrong sentence never reaches the screen. */
-export function explainPlan(plan: CheckoutPlan): string {
+export function explainPlan(plan: CheckoutPlan, ordered = false): string {
   const { pick, capRoom, orderValue: value, purchase } = plan;
   const blocked = plan.ranked.filter((r) => r.blocked);
   if (!pick) return `Every card in this wallet carries a balance, so Monte won't recommend one for ${usd(Number(value))} at ${purchase.merchant}.`;
   const parts = [`Choose ${pick.name} in your PayPal wallet: ${pick.rule} earns ${usd(pick.reward)} on this ${usd(Number(value))} at ${purchase.merchant}.`];
   parts.push(capRoom ? `That leaves ${capRoomLine(capRoom)}.` : "That rule has no spending cap.");
   for (const b of blocked) parts.push(`Skip ${b.name}. ${b.blocked}`);
-  parts.push("Nothing is charged until you approve it in the PayPal window.");
+  parts.push(ordered ? "Nothing is charged until you approve it in the PayPal window." : "There's no PayPal order to approve yet, so nothing has been charged.");
   return parts.join(" ");
 }
 
