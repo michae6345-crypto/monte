@@ -1,4 +1,5 @@
-// Merchant labeling: the ONE place a model is used in Monte.
+// Merchant labeling. The only other place a model is used is the checkout agent
+// (lib/paypal/agent.ts), which explains the engine's result and doesn't price anything either.
 //
 // The model labels merchants; it never prices anything. It turns a messy bank string
 // ("SQ *BLUE BOTTLE COF 0417 LOS ANGELES CA") into a clean name and one of our 20

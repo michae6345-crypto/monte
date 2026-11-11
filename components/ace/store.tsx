@@ -27,6 +27,10 @@ type Store = {
   resetOverrides: () => void;
   /** Run everything on a linked bank's feed (Plaid sandbox): its purchases and its cards. */
   loadFeed: (txns: Txn[], wallet: Holding[], label: string) => void;
+  /** Purchases paid through PayPal this session. In memory: they use up caps until a reload. */
+  checkoutTxns: Txn[];
+  addCheckoutTxn: (t: Txn) => void;
+  clearCheckoutTxns: () => void;
   r: Receipt;
   version: number;
 };
@@ -49,6 +53,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
   const [valuation, setVal] = useState<Valuation>("cash");
   const base = personaId === "you" && custom ? custom : YEARS.get(personaId) ?? YEARS.get(PERSONAS[0].id)!;
   const [overrides, setOverrides] = useState<Record<string, string>>({});
+  const [checkoutTxns, setCheckoutTxns] = useState<Txn[]>([]);
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("monte-overrides") ?? "{}");
@@ -73,6 +78,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setPersonaId(id);
       setWallet(p.wallet);
       setTrials([]);
+      setCheckoutTxns([]);
       // Maya redeems for travel; everyone else takes cash
       setVal(id === "maya" ? "travel" : "cash");
     },
@@ -104,6 +110,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setCustomLabel("your own statement");
       setPersonaId("you");
       setTrials([]);
+      setCheckoutTxns([]);
       setWallet([{ cardId }]);
     },
     overrides,
@@ -129,8 +136,12 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setCustomLabel(label);
       setPersonaId("you");
       setTrials([]);
+      setCheckoutTxns([]);
       setWallet(w);
     },
+    checkoutTxns,
+    addCheckoutTxn: (t) => setCheckoutTxns((p) => [...p, t]),
+    clearCheckoutTxns: () => setCheckoutTxns([]),
     r,
     version: wallet.length * 100 + (valuation === "cash" ? 0 : 1),
   };

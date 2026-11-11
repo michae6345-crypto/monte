@@ -69,6 +69,31 @@ async function main() {
     add("plaid route degrades politely", false, (e as Error).message);
   }
 
+  // --- PayPal: polite without keys, a real sandbox order with them -----------
+  try {
+    const health = (await (await fetch(`${BASE}/api/health`)).json()) as { paypal?: string; agent?: string };
+    add("paypal state is known", typeof health.paypal === "string", `paypal: ${health.paypal}, agent: ${health.agent}`);
+    // Creates an order nobody approves, so it charges nothing and expires on its own.
+    const res = await fetch(`${BASE}/api/paypal/create-order`, {
+      method: "POST",
+      body: JSON.stringify({
+        purchase: { merchant: "Trader Joe's", category: "groceries", amount: 84 },
+        wallet: [{ cardId: "amex_gold" }, { cardId: "apple_card", balance: 2800, apr: 26.24 }],
+        history: [],
+        date: "2026-10-18",
+      }),
+    });
+    const body = (await res.json()) as { error?: string; id?: string; value?: string; plan?: { pick?: { cardId?: string } } };
+    if (health.paypal === "sandbox") {
+      add("paypal sandbox order", res.status === 200 && !!body.id, `HTTP ${res.status} ${body.error ?? body.id ?? ""}`);
+      add("order is the engine's amount and card", body.value === "84.00" && body.plan?.pick?.cardId === "amex_gold", `${body.value} on ${body.plan?.pick?.cardId}`);
+    } else {
+      add("paypal route degrades politely", res.status === 503 && body.error === "paypal_not_configured", `HTTP ${res.status} (no keys on this deployment)`);
+    }
+  } catch (e) {
+    add("paypal routes respond", false, (e as Error).message);
+  }
+
   report();
 }
 
