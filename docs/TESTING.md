@@ -8,6 +8,7 @@ For judges. Everything runs in PayPal's sandbox: no real money moves.
 - PayPal activity on its own: https://ace-eta-beryl.vercel.app/paypal
 - Health check: https://ace-eta-beryl.vercel.app/api/health. `"paypal":"sandbox"` and
   `"agent":"ready"` mean both are connected.
+- After a deploy: `npm run smoke:live` checks the live site (pages, PayPal routes, headers) in about 10 seconds.
 - Sandbox buyer login: (see Devpost testing notes). Allow pop-ups for the site, and sign out
   of any real PayPal account first.
 
