@@ -30,6 +30,8 @@ type Store = {
   /** Purchases paid through PayPal this session. In memory: they use up caps until a reload. */
   checkoutTxns: Txn[];
   addCheckoutTxn: (t: Txn) => void;
+  /** A PayPal refund: lower purchase `id` by `amount` dollars, removing it at zero. */
+  refundCheckoutTxn: (id: string, amount: number) => void;
   clearCheckoutTxns: () => void;
   r: Receipt;
   version: number;
@@ -141,6 +143,8 @@ export function AceProvider({ children }: { children: ReactNode }) {
     },
     checkoutTxns,
     addCheckoutTxn: (t) => setCheckoutTxns((p) => [...p, t]),
+    refundCheckoutTxn: (id, amount) =>
+      setCheckoutTxns((p) => p.flatMap((t) => (t.id !== id ? [t] : t.amount - amount > 0.004 ? [{ ...t, amount: Math.round((t.amount - amount) * 100) / 100 }] : []))),
     clearCheckoutTxns: () => setCheckoutTxns([]),
     r,
     version: wallet.length * 100 + (valuation === "cash" ? 0 : 1),

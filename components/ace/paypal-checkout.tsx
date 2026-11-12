@@ -131,7 +131,7 @@ const say = (code: string) => WORDS[code] ?? "PayPal hit a problem. Nothing was 
 // After approval the money may already have moved, so never claim it didn't.
 const CAPTURE_UNSURE = "You approved this, but Monte couldn't confirm the payment. Check your PayPal sandbox activity before paying again.";
 
-type Receipt = { merchant: string; value: string; captureId: string; card: string; reward: number; cap: string; store: string };
+type Receipt = { merchant: string; value: string; captureId: string; txnId: string; card: string; reward: number; cap: string; store: string };
 
 /** Capture an approved order, write the receipt line and hand the purchase to the Tap view. */
 function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => CheckoutPlan) {
@@ -153,6 +153,7 @@ function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => Check
         merchant: data.txn.merchant,
         value: data.value,
         captureId: data.captureId,
+        txnId: data.txn.id,
         card: shortName(data.txn.cardUsed),
         reward: plan.pick?.reward ?? 0,
         cap: plan.capRoom ? `Cap room ${capMoveLine(plan.capRoom)}` : "No cap on this rule",
@@ -168,7 +169,85 @@ function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => Check
   return { note, setNote, receipt, setReceipt, capture, capturing };
 }
 
-function ReceiptLine({ r }: { r: Receipt }) {
+const REFUND_WORDS: Record<string, string> = {
+  already_refunded: "That payment was already returned in full.",
+  not_refundable: "PayPal says this payment can't be returned right now.",
+  paypal_not_configured: "PayPal isn't connected on this deployment, so nothing was returned.",
+};
+// The money may have moved even when the answer didn't arrive, so never claim it didn't.
+const REFUND_UNSURE = "Monte couldn't confirm the return. Check your PayPal sandbox activity before trying again.";
+
+type Refund = { status: string; refunded: string; txnId: string; rollback: { capReleased: number; rewardReversed: number } | null; cap: { store: string } };
+
+/** The "Return it" control: refund all or part of a capture and give the cap room back. */
+function ReturnIt({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, amount: number) => void }) {
+  const [left, setLeft] = useState(Number(r.value));
+  const [amount, setAmount] = useState("");
+  const [pending, setPending] = useState(false);
+  const [lines, setLines] = useState<string[]>([]);
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const refund = async (e: FormEvent) => {
+    e.preventDefault();
+    if (pending) return;
+    const typed = amount.trim().replace(/^\$/, "");
+    if (typed && (!/^\d+(\.\d{1,2})?$/.test(typed) || Number(typed) <= 0 || Number(typed) > left + 0.004)) {
+      return setProblem(`Enter an amount up to ${usd(left)}, or leave it blank to return it all.`);
+    }
+    setPending(true);
+    setProblem(null);
+    try {
+      const body = { captureId: r.captureId, requestId: crypto.randomUUID(), ...(typed ? { amount: Number(typed).toFixed(2) } : {}) };
+      const res = await fetch("/api/paypal/refund", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return setProblem(REFUND_WORDS[data.error] ?? REFUND_UNSURE);
+      const d = data as Refund;
+      const back = Number(d.refunded);
+      if (d.status !== "COMPLETED") {
+        setLines((l) => [...l, `PayPal has the return of ${usd(back)} as ${d.status.toLowerCase()}. The cap moves once it completes.`]);
+        return;
+      }
+      const roll = d.rollback;
+      setLines((l) => [...l, `Refunded ${usd(back)}${roll ? ` · −${usd(roll.rewardReversed)} rewards · ${usd(roll.capReleased)} cap room back` : ""}`]);
+      setLeft((v) => Math.max(0, Math.round((v - back) * 100) / 100));
+      setAmount("");
+      if (d.cap.store === "memory") onRefunded(d.txnId || r.txnId, back);
+    } catch {
+      setProblem(REFUND_UNSURE);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <div className="mt-3">
+      {lines.map((l, k) => (
+        <div key={k} className="mono mt-1 text-xs">
+          {l}
+        </div>
+      ))}
+      {left > 0 && (
+        <form onSubmit={refund} className="mt-2 flex items-center gap-2">
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            inputMode="decimal"
+            placeholder={`${left.toFixed(2)} (all)`}
+            aria-label="Amount to return"
+            disabled={pending}
+            className="mono h-8 w-32 min-w-0 rounded-[10px] bg-ace-panel px-2 text-xs shadow-[0_0_0_1px_var(--m-line)] outline-none focus:shadow-[0_0_0_1.5px_var(--m-ink)]"
+          />
+          <button type="submit" disabled={pending} className="btn btn-sm btn-ghost">
+            {pending ? "Returning…" : "Return it"}
+          </button>
+        </form>
+      )}
+      {problem && <p className="mt-2 text-sm">{problem}</p>}
+    </div>
+  );
+}
+
+function ReceiptLine({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, amount: number) => void }) {
   return (
     <div className="mt-4 border-t border-dashed border-ace-line pt-3 text-sm" role="status">
       <div className="font-medium">
@@ -180,6 +259,7 @@ function ReceiptLine({ r }: { r: Receipt }) {
       <div className="mono mt-1 text-[11px] text-ace-dim">
         PayPal sandbox capture {r.captureId} · counted on the card Monte picked · cap saved {r.store === "supabase" ? "to your account" : "for this demo session"}
       </div>
+      <ReturnIt key={r.captureId} r={r} onRefunded={onRefunded} />
     </div>
   );
 }
@@ -255,9 +335,10 @@ type Props = {
   selected: number;
   onSelect: (k: number) => void;
   onPaid: (t: Txn) => void;
+  onRefunded: (txnId: string, amount: number) => void;
 };
 
-export function PayPalCheckout({ purchase, wallet, history, valuation, stores, selected, onSelect, onPaid }: Props) {
+export function PayPalCheckout({ purchase, wallet, history, valuation, stores, selected, onSelect, onPaid, onRefunded }: Props) {
   const context = useMemo(() => ({ wallet: wallet.map(({ cardId, balance, apr }) => ({ cardId, balance, apr })), history, date: purchase.date, valuation }), [wallet, history, purchase.date, valuation]);
   const plan = useMemo(
     () => (orderValue(purchase.amount) ? planCheckout(wallet, purchase, history) : null),
@@ -318,11 +399,11 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
             {note}
           </p>
         )}
-        {receipt && <ReceiptLine r={receipt} />}
+        {receipt && <ReceiptLine r={receipt} onRefunded={onRefunded} />}
         {plan && <PayLater purchase={purchase} wallet={wallet} />}
         <p className="mt-4 text-[11px] leading-relaxed text-ace-dim">Monte assumes the store&apos;s category carries through PayPal. Some issuers code PayPal purchases differently.</p>
       </div>
-      <Agent context={context} onPaid={onPaid} replan={replan} />
+      <Agent context={context} onPaid={onPaid} onRefunded={onRefunded} replan={replan} />
     </div>
   );
 }
@@ -334,7 +415,7 @@ function Badge() {
 type Turn = { role: "user" | "assistant"; text: string };
 type AgentAnswer = { plan: CheckoutPlan | null; order: { id: string } | null };
 
-function Agent({ context, onPaid, replan }: { context: object; onPaid: (t: Txn) => void; replan: (p: CheckoutPlan) => CheckoutPlan }) {
+function Agent({ context, onPaid, onRefunded, replan }: { context: object; onPaid: (t: Txn) => void; onRefunded: (txnId: string, amount: number) => void; replan: (p: CheckoutPlan) => CheckoutPlan }) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -420,7 +501,7 @@ function Agent({ context, onPaid, replan }: { context: object; onPaid: (t: Txn) 
           {note}
         </p>
       )}
-      {receipt && <ReceiptLine r={receipt} />}
+      {receipt && <ReceiptLine r={receipt} onRefunded={onRefunded} />}
     </div>
   );
 }
