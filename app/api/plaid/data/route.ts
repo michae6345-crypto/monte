@@ -8,10 +8,12 @@
 
 import { cookies } from "next/headers";
 import { buildFeed } from "@/lib/data/plaid";
-import { PLAID_COOKIE, notConfigured, notLinked, plaidClient, plaidFailure } from "@/lib/data/plaid-server";
+import { PLAID_COOKIE, notConfigured, notLinked, plaidClient, plaidFailure, sandboxOnly } from "@/lib/data/plaid-server";
 import { fetchCreditLiabilities, syncAllTransactions } from "@/lib/data/plaid-sync";
 
 export async function GET() {
+  const outside = sandboxOnly();
+  if (outside) return outside;
   const client = plaidClient();
   if (!client) return notConfigured();
 

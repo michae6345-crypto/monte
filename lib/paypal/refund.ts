@@ -50,7 +50,8 @@ export function rollbackRefund(rows: CapRow[], txn: Txn, refund: number): Rollba
     let released = 0;
     const out = base.map((r) => {
       if (r.card_id !== txn.cardUsed || !pools.includes(`${r.pool_key}|${r.period_key}`)) return { ...r };
-      const back = Math.min(dollars, Number(r.consumed));
+      // A counter that is already at or below zero has nothing to give back (and must not grow).
+      const back = Math.max(0, Math.min(dollars, Number(r.consumed)));
       released += back;
       return { ...r, consumed: round2(Number(r.consumed) - back) };
     });
@@ -70,4 +71,24 @@ export function rollbackRefund(rows: CapRow[], txn: Txn, refund: number): Rollba
     rewardReversed: round2((rewardOriginal * refund) / txn.amount),
     rows: after.rows,
   };
+}
+
+// ---------- replay guard ----------
+
+/** Refund ids whose cap rollback has already been applied in this process. PayPal answers a
+ *  retried PayPal-Request-Id with the SAME refund, so without this a double click would roll the
+ *  cap back twice. In memory, like the webhook de-dupe: a cold start forgets it. */
+const MAX_APPLIED = 1000;
+const applied = new Set<string>();
+
+/** true the first time a refund id is seen; false for a replay of one already applied. */
+export function claimRefund(refundId: string): boolean {
+  if (applied.has(refundId)) return false;
+  applied.add(refundId);
+  if (applied.size > MAX_APPLIED) applied.delete(applied.values().next().value as string);
+  return true;
+}
+/** Release a claim whose rollback failed, so a retry can apply it. */
+export function releaseRefund(refundId: string): void {
+  applied.delete(refundId);
 }

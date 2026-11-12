@@ -15,7 +15,14 @@ import { fetchRecurringStreams } from "@/lib/data/plaid-sync";
 function accessTokenFrom(req: Request): string | undefined {
   for (const part of (req.headers.get("cookie") ?? "").split(";")) {
     const i = part.indexOf("=");
-    if (i > 0 && part.slice(0, i).trim() === PLAID_COOKIE) return decodeURIComponent(part.slice(i + 1).trim());
+    if (i > 0 && part.slice(0, i).trim() === PLAID_COOKIE) {
+      // A malformed %-escape reads as not linked, not as a 500.
+      try {
+        return decodeURIComponent(part.slice(i + 1).trim()) || undefined;
+      } catch {
+        return undefined;
+      }
+    }
   }
   return undefined;
 }

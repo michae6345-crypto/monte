@@ -2,9 +2,11 @@
 // 503 {"error":"plaid_not_configured"} when PLAID_CLIENT_ID / PLAID_SECRET are unset.
 
 import { CountryCode, Products } from "plaid";
-import { jsonBody, notConfigured, plaidClient, plaidEnvName, plaidFailure } from "@/lib/data/plaid-server";
+import { jsonBody, notConfigured, plaidClient, plaidEnvName, plaidFailure, sandboxOnly } from "@/lib/data/plaid-server";
 
 export async function POST(req: Request) {
+  const outside = sandboxOnly();
+  if (outside) return outside;
   const client = plaidClient();
   if (!client) return notConfigured();
 

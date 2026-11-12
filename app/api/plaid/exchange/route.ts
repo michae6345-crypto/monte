@@ -6,9 +6,11 @@
 // access tokens server-side, encrypted, keyed by a user id.
 
 import { cookies } from "next/headers";
-import { accessTokenCookie, badRequest, jsonBody, notConfigured, plaidClient, plaidFailure } from "@/lib/data/plaid-server";
+import { accessTokenCookie, badRequest, jsonBody, notConfigured, plaidClient, plaidFailure, sandboxOnly } from "@/lib/data/plaid-server";
 
 export async function POST(req: Request) {
+  const outside = sandboxOnly();
+  if (outside) return outside;
   const client = plaidClient();
   if (!client) return notConfigured();
 
