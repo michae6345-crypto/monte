@@ -8,3 +8,4 @@ import "@/tests/paylater.test";
 import "@/tests/plaid-recurring.test";
 import "@/tests/paypal-transactions.test";
 import "@/tests/paypal-refund.test";
+import "@/tests/paypal-order-detail.test";
