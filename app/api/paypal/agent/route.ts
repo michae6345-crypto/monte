@@ -7,6 +7,8 @@
 // a refund: `proposal` is { captureId, merchant, amount, full, cardId, card, category, capBack,
 // rewardsReversed }. Nothing is refunded here; the browser confirms by POSTing captureId and
 // amount to /api/paypal/refund. Card, store and captured amount come from PayPal's record.
+// A refund can only be proposed for a capture in this browser's signed `monte_captures` cookie;
+// asking for one that isn't answers 403 {"error":"not_your_capture"}.
 //
 // 503 {"error":"paypal_not_configured"} without PayPal keys, 503 {"error":"agent_not_configured"}
 // without an Anthropic key. It can create an order but can't charge one.
@@ -14,6 +16,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { runCheckoutAgent, type ChatTurn, type LookupCapture, type SessionCapture } from "@/lib/paypal/agent";
 import { createOrderForPlan, failure, getCapture, jsonBody, notConfigured, paypalConfigured } from "@/lib/paypal/client";
+import { ownedCaptures } from "@/lib/paypal/owner";
 import { capturedTxn, decodeOrderRef } from "@/lib/paypal/plan";
 import { refundValue } from "@/lib/paypal/refund";
 import { isBad, parseContext, safeText } from "@/lib/paypal/validate";
@@ -88,8 +91,21 @@ export async function POST(req: Request) {
   const captures = parseCaptures(body.captures);
   if (!captures) return failure(400, "bad_request", { message: "captures must be up to 10 of { captureId, merchant, amount }" });
 
+  // Only this browser's own captures can be looked up for a refund.
+  const owned = new Set(ownedCaptures(req));
+  const denied = { any: false };
+  const ownLookup: LookupCapture = async (captureId) => {
+    if (!owned.has(captureId)) {
+      denied.any = true;
+      return null;
+    }
+    return lookupCapture(captureId);
+  };
+
   try {
-    const result = await runCheckoutAgent({ chat, context, createOrder: createOrderForPlan, captures, lookupCapture });
+    const result = await runCheckoutAgent({ chat, context, createOrder: createOrderForPlan, captures, lookupCapture: ownLookup });
+    // A refund turn that only hit someone else's capture; a purchase in the same turn still answers.
+    if (denied.any && !result.proposal && !result.plan && !result.order) return failure(403, "not_your_capture");
     return Response.json(result, { headers: { "cache-control": "no-store" } });
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) return failure(429, "agent_busy");

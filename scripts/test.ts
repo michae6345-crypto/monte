@@ -8,6 +8,7 @@ import "@/tests/paylater.test";
 import "@/tests/plaid-recurring.test";
 import "@/tests/paypal-transactions.test";
 import "@/tests/paypal-refund.test";
+import "@/tests/paypal-owner.test";
 import "@/tests/paypal-order-detail.test";
 import "@/tests/paypal-webhook.test";
 import "@/tests/paypal-agent-refund.test";

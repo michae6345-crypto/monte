@@ -11,6 +11,7 @@ import { PAYPAL_API, refundCapture } from "@/lib/paypal/client";
 import { persistRefund } from "@/lib/paypal/persist";
 import { DEMO_TAP_DATE, encodeOrderRef, planCheckout } from "@/lib/paypal/plan";
 import { refundValue, rollbackRefund } from "@/lib/paypal/refund";
+import { OWNER_COOKIE, signCaptures } from "@/lib/paypal/owner";
 import { POST as refundRoute } from "@/app/api/paypal/refund/route";
 
 const POOL = "amex_gold|groceries||25000|year";
@@ -102,7 +103,12 @@ function setKeys() {
   process.env.PAYPAL_ENV = "sandbox";
 }
 
-const request = (body: unknown) => new Request("http://localhost/api/paypal/refund", { method: "POST", body: JSON.stringify(body) });
+// The browser that paid for CAPTURE9 carries it in its signed monte_captures cookie.
+const owner = () => {
+  const signed = signCaptures(["CAPTURE9"]);
+  return signed ? { cookie: `${OWNER_COOKIE}=${signed}` } : undefined;
+};
+const request = (body: unknown) => new Request("http://localhost/api/paypal/refund", { method: "POST", headers: owner(), body: JSON.stringify(body) });
 const ref = () => encodeOrderRef(planCheckout(JORDAN.wallet, { merchant: "Trader Joe's", category: "groceries", amount: 84, date: DEMO_TAP_DATE }, []));
 const captureRecord = (status = "COMPLETED") => ({ id: "CAPTURE9", status, custom_id: ref(), amount: { currency_code: "USD", value: "84.00" } });
 /** GET capture answers with the record; POST refund answers with `refund`. */

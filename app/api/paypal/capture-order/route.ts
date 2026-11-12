@@ -6,9 +6,12 @@
 // The card and store come from what Monte stored in the order when it was created. A signed-in
 // person's cap counters are updated in Supabase; for the demo people `cap.store` is "memory" and
 // the browser adds `txn` to the person's purchases. Only a COMPLETED capture counts toward a cap.
+// A completed capture also sets the signed `monte_captures` cookie (lib/paypal/owner.ts): only
+// the browser that paid can refund it.
 
 import { serviceDb, requestUser } from "@/lib/db/client";
 import { captureOrder, failure, jsonBody, notConfigured, paypalConfigured, paypalFailure } from "@/lib/paypal/client";
+import { ownerSetCookie } from "@/lib/paypal/owner";
 import { persistCapture } from "@/lib/paypal/persist";
 import { capturedTxn, decodeOrderRef } from "@/lib/paypal/plan";
 
@@ -45,6 +48,10 @@ export async function POST(req: Request) {
     console.warn("paypal: cap counter not written:", (e as Error).message);
   }
 
+  const headers = new Headers({ "cache-control": "no-store" });
+  const owner = ownerSetCookie(req, captured.captureId);
+  if (owner) headers.append("set-cookie", owner);
+
   return Response.json(
     {
       status: captured.status,
@@ -55,6 +62,6 @@ export async function POST(req: Request) {
       txn,
       cap: { store },
     },
-    { headers: { "cache-control": "no-store" } },
+    { headers },
   );
 }
