@@ -80,6 +80,135 @@ random generator is seeded. The model never computes a dollar amount:
 The engine's result is always shown next to Claude's words. More detail is in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+## How it works
+
+For a checkout, the browser sends the purchase, wallet and history to a Next.js route. The
+route checks every field, runs the engine again on the server and only then calls PayPal, so
+the browser never sets the order amount or the card. Capture and refund read the card back
+from PayPal's own record of the order. Claude Opus runs in one route, the agent, and only
+reads the sentence and writes the reply. (Claude Haiku cleans merchant names in
+`/api/categorize`, which is not shown.)
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    TAP["Tap view"]
+    CHK["PayPal checkout panel"]
+    AGT["Agent panel"]
+    ACT["/paypal activity page"]
+  end
+  subgraph API["Next.js API routes"]
+    CO["POST create-order"]
+    CAP["POST capture-order"]
+    REF["POST refund"]
+    AG["POST agent"]
+    TX["GET transactions"]
+    ORD["GET order/{id}"]
+    WH["POST webhook"]
+    PL["/api/plaid/*"]
+    TS["POST /api/tap and /api/sync"]
+  end
+  ENG["Engine: lib/engine, lib/paypal/plan.ts, refund.ts"]
+  CL["Claude Opus 5.5, agent tools only"]
+  PP["PayPal sandbox"]
+  PD["Plaid sandbox"]
+  SB[("Supabase, optional")]
+
+  TAP --> CHK
+  CHK --> CO
+  CHK --> CAP
+  CHK --> REF
+  AGT --> AG
+  AGT -->|"Confirm"| REF
+  ACT --> TX
+  TAP --> TS
+  AG -->|"tool calls"| CL
+  AG --> ENG
+  CO --> ENG
+  REF --> ENG
+  TS --> ENG
+  AG --> PP
+  CO --> PP
+  CAP --> PP
+  REF --> PP
+  TX --> PP
+  ORD --> PP
+  PP -->|"signed events"| WH
+  WH --> PP
+  WH --> ENG
+  PL --> PD
+  TS --> SB
+  CAP -.-> SB
+  REF -.-> SB
+  WH -.-> SB
+```
+
+A purchase made through the agent goes like this. The red notes are where code rejects
+something before money moves.
+
+```mermaid
+sequenceDiagram
+  actor U as Person
+  participant B as Browser
+  participant A as /api/paypal/agent
+  participant C as Claude
+  participant E as Engine
+  participant P as PayPal sandbox
+  participant K as capture-order
+  participant R as refund
+
+  U->>B: types $84 on groceries at Trader Joe's
+  B->>A: chat, wallet, history, date
+  A->>C: chat and 3 tools
+  C->>A: rank_cards with store, category, amount
+  rect rgb(255, 228, 228)
+    Note over A: amount must be in the typed text, else tool error
+  end
+  A->>E: planCheckout
+  E-->>A: ranked cards, pick, cap room
+  C->>A: create_paypal_order with no arguments
+  A->>P: create order for the engine amount and card
+  P-->>A: order id
+  C-->>A: reply text
+  rect rgb(255, 228, 228)
+    Note over A: number check. Every number must come from a tool result or the typed text, and the engine card must be named. If not, explainPlan replaces the reply
+  end
+  A-->>B: reply, plan, order
+  U->>P: approves in the PayPal popup
+  B->>K: orderId
+  K->>P: capture
+  P-->>K: COMPLETED, custom_id holds card and store
+  rect rgb(255, 228, 228)
+    Note over K: 402 not_completed unless the capture is COMPLETED
+  end
+  K-->>B: txn
+  Note over B: cap counter moves
+  alt Return it button
+    U->>B: Return it
+  else Agent refund
+    U->>B: return the Trader Joe's purchase
+    B->>A: chat and this session's captures
+    C->>A: propose_refund with a listed capture_id
+    A->>P: get capture
+    A->>E: rollbackRefund prices the refund
+    A-->>B: proposal, nothing refunded yet
+    U->>B: Confirm
+  end
+  B->>R: captureId, amount, requestId
+  R->>P: get capture
+  rect rgb(255, 228, 228)
+    Note over R: 409 unless refundable and a Monte order, 400 if more than captured
+  end
+  R->>P: refund with PayPal-Request-Id
+  P-->>R: COMPLETED
+  R->>E: rollbackRefund
+  R-->>B: refunded, cap room back, rewards reversed
+  Note over B: cap counter rolls back
+```
+
+Every route, its failure codes and every guardrail with its file and function are in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#5-api-routes).
+
 ## Run it locally
 
 You need Node 24.
