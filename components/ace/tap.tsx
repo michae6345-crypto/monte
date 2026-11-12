@@ -8,6 +8,7 @@ import { tap, type Holding } from "@/lib/engine";
 import { CARDS, card } from "@/lib/engine/catalog";
 import { DEMO_TAP_DATE } from "@/lib/paypal/plan";
 import { PayPalCheckout } from "./paypal-checkout";
+import { PayPalActivity } from "./paypal-activity";
 import { CardArt, nick, shortName } from "./card-art";
 import { R, Section } from "./section";
 import { Stage } from "./stage";
@@ -275,6 +276,7 @@ export function TapSection() {
         onPaid={addCheckoutTxn}
         onRefunded={refundCheckoutTxn}
       />
+      <PayPalActivity key={persona.id} />
       <div className="m-panel mt-8 p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <p className="text-lg font-medium">Try it with your own cards.</p>
