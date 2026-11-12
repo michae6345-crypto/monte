@@ -39,6 +39,11 @@ Everything below was added during the submission period:
 - Pay Later vs. card interest. If a card carries a balance, Monte compares Pay in 4 with what the same purchase would cost at that card's APR.
 - PayPal purchase import, so PayPal spending counts toward the year.
 - Plaid recurring charges in Leaks, from the bank's own recurring detection when a sandbox bank is linked.
+- The agent handles returns too. "Return the Trader Joe's purchase" gets a refund proposal priced by the engine, and nothing is refunded until you press Confirm.
+- Itemized orders. PayPal's review page shows what is being bought and which card Monte picked, and `/api/paypal/order/{id}` reads back PayPal's record of the order, captures and refunds.
+- Webhooks. `/api/paypal/webhook` checks every event with PayPal before trusting it, so a refund made in the PayPal dashboard still reaches Monte.
+- A PayPal activity page at `/paypal`: checkouts, the card Monte played, rewards, refunds and imported PayPal history, with totals.
+- Venmo and Pay Later buttons, off by default behind `NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING=1` until we test them in the sandbox.
 
 PayPal APIs we call (all in `lib/paypal/`):
 
@@ -47,6 +52,7 @@ PayPal APIs we call (all in `lib/paypal/`):
 | OAuth 2.0 (`/v1/oauth2/token`) | access tokens |
 | Orders v2 (`/v2/checkout/orders`, `.../capture`) | creating and capturing the order |
 | Payments v2 refunds (`/v2/payments/captures/{id}/refund`) | refunds |
+| Webhooks (`/v1/notifications/verify-webhook-signature`) | checking webhook events |
 | Transaction Search (`/v1/reporting/transactions`) | importing PayPal purchases |
 | JavaScript SDK v6 | the PayPal button (`components/ace/paypal-checkout.tsx`) |
 
@@ -82,7 +88,7 @@ You need Node 24.
 npm install
 cp .env.example .env.local   # optional, see below
 npm run dev                  # http://localhost:3000
-npm test                     # 117 tests, Node's built-in runner
+npm test                     # 149 tests, Node's built-in runner
 ```
 
 The app runs with no keys on the demo people. Keys turn on the live parts:
@@ -90,6 +96,7 @@ The app runs with no keys on the demo people. Keys turn on the live parts:
 | Variable | Where to get it |
 |---|---|
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (same ID), `PAYPAL_ENV=sandbox` | a sandbox REST app at [developer.paypal.com](https://developer.paypal.com/dashboard/applications/sandbox) |
+| `PAYPAL_WEBHOOK_ID` (optional) | the sandbox app's Webhooks section, pointing at `/api/paypal/webhook` |
 | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
 | `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV=sandbox` | [dashboard.plaid.com](https://dashboard.plaid.com/developers/keys) |
 | `SUPABASE_SECRET_KEY` | your Supabase project's API settings (the public URL and key are already in `.env.example`) |
