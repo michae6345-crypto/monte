@@ -13,6 +13,7 @@ import { Sampler } from "@/components/brand";
 import { chooseOptions, evaluate, setValuation, type Txn } from "@/lib/engine";
 import { card } from "@/lib/engine/catalog";
 import { capMoveLine, DEMO_TAP_DATE, planAtValuation, usd } from "@/lib/paypal/plan";
+import { activityCsv } from "@/lib/paypal/csv";
 import { loadPayPalPurchases, PayPalImportError } from "@/lib/paypal/transactions-feed";
 import { shortName } from "./card-art";
 import { useAce } from "./store";
@@ -129,6 +130,19 @@ export function PayPalActivity() {
     { spent: 0, rewards: 0, refunded: 0 },
   );
 
+  /** The table as it stands, as a CSV file the browser saves. Built from the same rows. */
+  const downloadCsv = () => {
+    const csv = activityCsv(rows.map((r) => ({ ...r, card: safeName(r.cardId) })));
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `monte-paypal-activity-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   const loadHistory = async () => {
     setLoad({ k: "loading" });
     try {
@@ -148,9 +162,16 @@ export function PayPalActivity() {
           </h3>
           <p className="text-sm text-ace-dim">Every purchase paid through PayPal this session, and the card Monte played on it.</p>
         </div>
-        <button onClick={loadHistory} disabled={load.k === "loading"} className="btn btn-ghost btn-sm">
-          {load.k === "done" ? "Reload PayPal history" : "Load PayPal history"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={loadHistory} disabled={load.k === "loading"} className="btn btn-ghost btn-sm">
+            {load.k === "done" ? "Reload PayPal history" : "Load PayPal history"}
+          </button>
+          {rows.length > 0 && (
+            <button onClick={downloadCsv} className="btn btn-ghost btn-sm">
+              Download CSV
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mt-3 min-h-5 text-xs text-ace-dim" aria-live="polite">
