@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { Bracketed, Sampler } from "@/components/brand";
 import { loadPlaidSandbox, PlaidUnavailable } from "@/lib/data/plaid-feed";
+import { ImportPayPal } from "./import-paypal";
 import { useAce } from "./store";
 
 type State = { k: "idle" } | { k: "linking" } | { k: "done"; n: number; cards: number } | { k: "error"; code: string };
@@ -43,7 +44,8 @@ export function LinkBank() {
   };
 
   // no keys on this deploy: Real vs simulated says so, so the first view doesn't open on a missing-keys note
-  if (configured !== true) return null;
+  // ...but the PayPal import stays: it has its own route and says so if PayPal isn't set up
+  if (configured !== true) return <ImportPayPal />;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <button
@@ -69,7 +71,7 @@ export function LinkBank() {
             : "Plaid didn't answer. Upload a statement CSV instead."}
         </span>
       )}
-
+      <ImportPayPal />
     </div>
   );
 }

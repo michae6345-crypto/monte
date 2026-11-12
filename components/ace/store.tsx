@@ -31,6 +31,9 @@ type Store = {
   checkoutTxns: Txn[];
   addCheckoutTxn: (t: Txn) => void;
   clearCheckoutTxns: () => void;
+  /** Add imported purchases (PayPal sandbox) to the current person's year. Deduped by id;
+   *  returns how many were new. Cleared when the person or feed changes. */
+  importTxns: (t: Txn[]) => { added: number; duplicates: number };
   r: Receipt;
   version: number;
 };
@@ -54,6 +57,8 @@ export function AceProvider({ children }: { children: ReactNode }) {
   const base = personaId === "you" && custom ? custom : YEARS.get(personaId) ?? YEARS.get(PERSONAS[0].id)!;
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [checkoutTxns, setCheckoutTxns] = useState<Txn[]>([]);
+  const [imported, setImported] = useState<Txn[]>([]);
+  const withImported = useMemo(() => (imported.length ? [...base, ...imported] : base), [base, imported]);
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("monte-overrides") ?? "{}");
@@ -62,8 +67,11 @@ export function AceProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, []);
   const txns = useMemo(
-    () => (Object.keys(overrides).length ? base.map((t) => (overrides[t.merchant] ? { ...t, category: overrides[t.merchant] } : t)) : base),
-    [base, overrides],
+    () =>
+      Object.keys(overrides).length
+        ? withImported.map((t) => (overrides[t.merchant] ? { ...t, category: overrides[t.merchant] } : t))
+        : withImported,
+    [withImported, overrides],
   );
 
   setValuation(valuation);
@@ -79,6 +87,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setWallet(p.wallet);
       setTrials([]);
       setCheckoutTxns([]);
+      setImported([]);
       // Maya redeems for travel; everyone else takes cash
       setVal(id === "maya" ? "travel" : "cash");
     },
@@ -111,6 +120,7 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setPersonaId("you");
       setTrials([]);
       setCheckoutTxns([]);
+      setImported([]);
       setWallet([{ cardId }]);
     },
     overrides,
@@ -137,11 +147,18 @@ export function AceProvider({ children }: { children: ReactNode }) {
       setPersonaId("you");
       setTrials([]);
       setCheckoutTxns([]);
+      setImported([]);
       setWallet(w);
     },
     checkoutTxns,
     addCheckoutTxn: (t) => setCheckoutTxns((p) => [...p, t]),
     clearCheckoutTxns: () => setCheckoutTxns([]),
+    importTxns: (t) => {
+      const seen = new Set(withImported.map((x) => x.id));
+      const fresh = t.filter((x) => !seen.has(x.id) && seen.add(x.id));
+      if (fresh.length) setImported((p) => [...p, ...fresh]);
+      return { added: fresh.length, duplicates: t.length - fresh.length };
+    },
     r,
     version: wallet.length * 100 + (valuation === "cash" ? 0 : 1),
   };
