@@ -4,3 +4,4 @@
 import "@/tests/engine.test";
 import "@/tests/provenance.test";
 import "@/tests/paypal.test";
+import "@/tests/plaid-recurring.test";
