@@ -113,7 +113,6 @@ async function main() {
 
   // --- PayPal and agent state, from /api/health ----------------------------
   let paypalState = "unknown";
-  let agentState = "unknown";
   try {
     const h = (await (await fetch(`${BASE}/api/health`, { headers: { "cache-control": "no-store" } })).json()) as {
       paypal?: string;
@@ -121,7 +120,6 @@ async function main() {
       commit?: string | null;
     };
     paypalState = String(h.paypal);
-    agentState = String(h.agent);
     const detail = `paypal: ${h.paypal}, agent: ${h.agent}, commit: ${h.commit ?? "n/a"}`;
     if (REQUIRE_PAYPAL) {
       add("paypal is sandbox (required)", h.paypal === "sandbox", detail);
