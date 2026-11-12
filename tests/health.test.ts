@@ -56,6 +56,12 @@ test("health: sandbox keys, webhook and commit show, and no secret leaks", async
   });
 });
 
+test("health: an empty commit sha (Vercel CLI deploys) reads as null, not \"\"", async () => {
+  await withEnv({ VERCEL_GIT_COMMIT_SHA: "" }, async () => {
+    assert.equal((await (await GET()).json()).commit, null);
+  });
+});
+
 test("health: live PayPal env never counts as configured", async () => {
   await withEnv({ PAYPAL_CLIENT_ID: "x", PAYPAL_CLIENT_SECRET: "y", PAYPAL_WEBHOOK_ID: "z", PAYPAL_ENV: "live" }, async () => {
     const body = await (await GET()).json();

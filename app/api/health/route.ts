@@ -18,8 +18,9 @@ export async function GET() {
       // whether the Venmo and Pay Later buttons are switched on for this build.
       paypal_webhook: webhookConfigured() ? "verified" : "not_configured",
       paypal_extra_funding: process.env.NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING === "1",
-      // Which commit is live, so "is the judges' URL on the latest build?" has an answer.
-      commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+      // Which commit is live, so "is the judges' URL on the latest build?" has an answer. CLI
+      // deploys set the variable to an empty string, which reads as unknown (null).
+      commit: process.env.VERCEL_GIT_COMMIT_SHA?.trim().slice(0, 7) || null,
       time: new Date().toISOString(),
     },
     { headers: { "cache-control": "no-store" } },
