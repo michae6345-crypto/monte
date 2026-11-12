@@ -518,7 +518,22 @@ function Badge() {
   return <span className="m-mono rounded-full px-2.5 py-1 text-[11px] shadow-[0_0_0_1px_var(--m-line-strong)]">PayPal sandbox, no real money</span>;
 }
 
-type Turn = { role: "user" | "assistant"; text: string };
+/** Says whether Claude's wording was kept: every number in it had to come from the engine or
+ *  the person's own sentence, and it had to name the engine's card. */
+function EngineCheck({ turn }: { turn: Turn | undefined }) {
+  if (turn?.role !== "assistant" || turn.checked == null) return null;
+  return (
+    <p className="mono text-[11px] text-ace-dim">
+      {turn.checked
+        ? "✓ Checked: every number in Claude's reply comes from Monte's engine."
+        : "Claude's wording didn't match the engine, so Monte shows the engine's own summary instead."}
+    </p>
+  );
+}
+
+/** checked: for an answer that priced a purchase or a refund, whether Claude's own sentence
+ *  passed the engine check (true) or was replaced by the engine's summary (false). */
+type Turn = { role: "user" | "assistant"; text: string; checked?: boolean | null };
 type AgentAnswer = { plan: CheckoutPlan | null; order: { id: string } | null; proposal: RefundProposal | null };
 
 /** The agent's refund proposal. Nothing is refunded until Confirm; one requestId per proposal makes a double click safe. */
@@ -611,7 +626,7 @@ function Agent({
         setInput(text);
         return setNote(say(data.error));
       }
-      setTurns([...next, { role: "assistant", text: data.reply }]);
+      setTurns([...next, { role: "assistant", text: data.reply, checked: data.plan || data.proposal ? data.replyChecked === true : null }]);
       setAnswer({ plan: data.plan, order: data.order, proposal: data.proposal ?? null });
     } catch {
       setTurns(turns);
@@ -663,6 +678,7 @@ function Agent({
             {t.text}
           </p>
         ))}
+        <EngineCheck turn={turns[turns.length - 1]} />
       </div>
       {plan?.pick && (
         <div className="mt-4 border-t border-ace-line pt-4">
