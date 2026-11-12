@@ -6,6 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { Holding, Txn, Valuation } from "@/lib/engine";
+import { withPayPalRef } from "@/lib/paypal/messages";
 import { capMoveLine, capRoomLine, orderValue, planCheckout, usd, type CheckoutPlan, type Purchase } from "@/lib/paypal/plan";
 import { comparePayLater, PAY_LATER_FINE_PRINT, payLaterLine } from "@/lib/paypal/paylater";
 import { confirmAgentRefund, refundProposalLine, rememberCapture, type RefundProposal, type SessionCapture } from "@/lib/paypal/agent-refund-client";
@@ -231,7 +232,7 @@ function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => Check
     try {
       const res = await fetch("/api/paypal/capture-order", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ orderId }) });
       const data = await res.json();
-      if (!res.ok) return setNote(WORDS[data.error] ?? CAPTURE_UNSURE);
+      if (!res.ok) return setNote(withPayPalRef(WORDS[data.error] ?? CAPTURE_UNSURE, data));
       setNote(null);
       // another payment may have used the cap since this order was made
       const now = replan(ordered);
@@ -289,7 +290,7 @@ function ReturnIt({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, a
       const body = { captureId: r.captureId, requestId: crypto.randomUUID(), ...(typed ? { amount: Number(typed).toFixed(2) } : {}) };
       const res = await fetch("/api/paypal/refund", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) return setProblem(REFUND_WORDS[data.error] ?? REFUND_UNSURE);
+      if (!res.ok) return setProblem(withPayPalRef(REFUND_WORDS[data.error] ?? REFUND_UNSURE, data));
       const d = data as Refund;
       const back = Number(d.refunded);
       if (d.status !== "COMPLETED") {
@@ -626,7 +627,7 @@ function Agent({
       if (!res.ok) {
         setTurns(turns); // the question didn't land: let it be asked again
         setInput(text);
-        return setNote(say(data.error));
+        return setNote(withPayPalRef(say(data.error), data));
       }
       setTurns([...next, { role: "assistant", text: data.reply, checked: data.plan || data.proposal ? data.replyChecked === true : null }]);
       setAnswer({ plan: data.plan, order: data.order, proposal: data.proposal ?? null });
