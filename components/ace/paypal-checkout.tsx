@@ -16,8 +16,9 @@ const SDK_URL = "https://www.sandbox.paypal.com/web-sdk/v6/core";
 const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 const EXAMPLE = "I'm spending $84 on groceries at Trader Joe's.";
 const RETURN_EXAMPLE = "return the Trader Joe's purchase.";
-// A second store in another category, so the first two tries show the pick changing with the purchase.
-const DINING_EXAMPLE = "I'm paying $23.40 for dinner at Sweetgreen.";
+// A second purchase where the engine picks a different card: for Jordan, groceries go on the
+// Amex Gold (4x) and gas on the Chase Freedom Unlimited (1.5%), so the two tries don't agree.
+const GAS_EXAMPLE = "I'm buying $45 of gas at Shell.";
 
 /** Claude sometimes marks the card name with **…**; show it bold instead of raw asterisks. */
 function withBold(text: string) {
@@ -669,7 +670,7 @@ function Agent({
       {(!turns.length || captures.length > 0) && (
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
           {!turns.length &&
-            [EXAMPLE, DINING_EXAMPLE].map((example) => (
+            [EXAMPLE, GAS_EXAMPLE].map((example) => (
               <button key={example} type="button" onClick={() => setInput(example)} className="text-left text-xs text-ace-dim underline">
                 Try: {example}
               </button>
