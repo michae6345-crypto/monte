@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { AceProvider } from "@/components/ace/store";
 import { PayPalActivity } from "@/components/ace/paypal-activity";
+import { PayPalStatus } from "@/components/ace/paypal-status";
 
 export const metadata = {
   title: "Monte: PayPal activity",
@@ -27,6 +28,7 @@ export default function PayPalPage() {
           made in the walkthrough&apos;s register appear under its PayPal panel; here, load the sandbox
           account&apos;s history from PayPal Transaction Search.
         </p>
+        <PayPalStatus />
       </header>
       <AceProvider>
         <PayPalActivity />
