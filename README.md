@@ -9,7 +9,8 @@
 
 <p align="center">
   <a href="https://ace-eta-beryl.vercel.app">Live demo</a> ·
-  <a href="https://youtu.be/Tn4YrpoLjh8">Video</a> ·
+  <a href="https://youtu.be/zp0jLHAZkMM">PayPal demo (2:15)</a> ·
+  <a href="https://youtu.be/Tn4YrpoLjh8">Launch film</a> ·
   <a href="https://devpost.com/software/monte-calygj">Devpost</a>
 </p>
 
