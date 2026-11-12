@@ -79,6 +79,7 @@ Then hold on the line that appears: **Refunded $64.20 · −$2.57 rewards · $64
 2. Optional: open `/paypal` and click **Load PayPal history** to show the sandbox account's
    history from Transaction Search. That page starts a fresh session, so this take's checkout
    only shows on the home page table.
+3. Optional: click **Download CSV** to save the table as a spreadsheet.
 
 > **VO:** Every PayPal purchase, the card Monte played on it, what it earned and what came back.
 > PayPal moves the money. Claude explains it. The math stays deterministic.
@@ -92,3 +93,6 @@ Then hold on the line that appears: **Refunded $64.20 · −$2.57 rewards · $64
 | "Your browser blocked PayPal's window" | Allow pop-ups for the site. |
 | "That payment wasn't made through Monte, so Monte can't return it." | Returns only work on checkouts made in this page session. Pay first, then return. |
 | The cap doesn't start at $25,000.00 | An earlier take is still in memory. Reload. |
+| A note ending "PayPal reference: …" | PayPal itself refused the call. Look the reference up in the sandbox dashboard, or send it to PayPal support. |
+| No "Checked" line under the agent's answer | Claude's wording didn't pass the engine check, so the panel shows the engine's own summary. The numbers are still the engine's. |
+| Not sure the URL is on the latest build | `/api/health` shows `commit` (on Vercel), and whether `paypal`, `paypal_webhook` and `agent` are connected. |
