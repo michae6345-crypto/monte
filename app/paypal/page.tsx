@@ -8,7 +8,11 @@ import Link from "next/link";
 import { AceProvider } from "@/components/ace/store";
 import { PayPalActivity } from "@/components/ace/paypal-activity";
 
-export const metadata = { title: "Monte: PayPal activity" };
+export const metadata = {
+  title: "Monte: PayPal activity",
+  description:
+    "Every purchase paid through PayPal (sandbox), the card Monte played on it, what it earned and what was refunded, plus PayPal Transaction Search history. Downloadable as CSV.",
+};
 
 export default function PayPalPage() {
   return (
