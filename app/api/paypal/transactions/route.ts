@@ -5,7 +5,7 @@
 // 503 {"error":"paypal_not_configured"} without sandbox keys; PayPal failures map through
 // paypalFailure like the other /api/paypal routes.
 
-import { failure, notConfigured, paypalConfigured, paypalFailure } from "@/lib/paypal/client";
+import { failure, notConfigured, PayPalError, paypalConfigured, paypalFailure } from "@/lib/paypal/client";
 import { importPayPalPurchases } from "@/lib/paypal/transactions";
 import { CARDS } from "@/lib/engine/catalog";
 
@@ -34,6 +34,13 @@ export async function GET(req: Request) {
       { headers: { "cache-control": "no-store" } },
     );
   } catch (e) {
+    // PayPal answers 403 NOT_AUTHORIZED when the sandbox app doesn't have the Transaction
+    // Search feature turned on. Say that plainly instead of a generic PayPal error.
+    if (e instanceof PayPalError && e.status === 403) {
+      return failure(503, "transaction_search_not_enabled", {
+        message: "Turn on Transaction search for this app in the PayPal developer dashboard.",
+      });
+    }
     return paypalFailure(e);
   }
 }

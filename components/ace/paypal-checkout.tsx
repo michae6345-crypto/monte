@@ -268,6 +268,7 @@ const REFUND_WORDS: Record<string, string> = {
   not_refundable: "PayPal says this payment can't be returned right now.",
   paypal_not_configured: "PayPal isn't connected on this deployment, so nothing was returned.",
   not_a_monte_order: "That payment wasn't made through Monte, so Monte can't return it.",
+  not_your_capture: "Only the browser that paid can return this payment, so nothing was returned.",
 };
 // The money may have moved even when the answer didn't arrive, so never claim it didn't.
 const REFUND_UNSURE = "Monte couldn't confirm the return. Check your PayPal sandbox activity before trying again.";

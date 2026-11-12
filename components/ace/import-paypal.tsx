@@ -73,6 +73,8 @@ export function ImportPayPal() {
           </span>{" "}
           {s.code === "paypal_not_configured"
             ? "PayPal sandbox isn't set up on this deployment"
+            : s.code === "transaction_search_not_enabled"
+              ? "Transaction Search isn't turned on for this PayPal sandbox app yet."
             : "PayPal didn't answer. Try again in a moment."}
         </span>
       )}
