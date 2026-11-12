@@ -64,7 +64,9 @@ export function paypalFailure(e: unknown): Response {
 
 let token: { clientId: string; value: string; expires: number } | null = null;
 
-async function accessToken(): Promise<string> {
+/** OAuth client-credentials token, cached until a minute before it expires. Exported for
+ *  other server-side PayPal calls; it never leaves the server. */
+export async function accessToken(): Promise<string> {
   const clientId = process.env.PAYPAL_CLIENT_ID!;
   if (token && token.clientId === clientId && token.expires > Date.now()) return token.value;
   const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
@@ -151,4 +153,46 @@ export async function captureOrder(orderId: string): Promise<CapturedOrder> {
     currency: capture?.amount?.currency_code ?? null,
     customId: capture?.custom_id ?? unit?.custom_id ?? null,
   };
+}
+
+// ---------- refunds ----------
+
+export type CaptureDetails = { captureId: string; status: string; value: string | null; currency: string | null; customId: string | null };
+
+/** What PayPal itself says a capture was for: the refund route trusts this, not the browser. */
+export async function getCapture(captureId: string): Promise<CaptureDetails> {
+  const res = await fetch(`${PAYPAL_API}/v2/payments/captures/${encodeURIComponent(captureId)}`, {
+    method: "GET",
+    headers: { authorization: `Bearer ${await accessToken()}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  const data = (await res.json().catch(() => ({}))) as ErrorBody & {
+    id?: string;
+    status?: string;
+    custom_id?: string;
+    amount?: { currency_code: string; value: string };
+  };
+  if (!res.ok) throw new PayPalError(res.status, data);
+  return {
+    captureId: data.id ?? captureId,
+    status: data.status ?? "UNKNOWN",
+    value: data.amount?.value ?? null,
+    currency: data.amount?.currency_code ?? null,
+    customId: data.custom_id ?? null,
+  };
+}
+
+export type RefundResult = { refundId: string; status: string; value: string | null; currency: string | null; requestId: string };
+
+/** Refund a capture, in full (no amount) or in part ("12.34" USD). The PayPal-Request-Id makes
+ *  a retry with the same id return the first refund instead of refunding twice. */
+export async function refundCapture(captureId: string, amount?: string, requestId: string = crypto.randomUUID()): Promise<RefundResult> {
+  const body = amount ? { amount: { currency_code: "USD", value: amount } } : {};
+  const r = await post<{ id: string; status: string; amount?: { currency_code: string; value: string } }>(
+    `/v2/payments/captures/${encodeURIComponent(captureId)}/refund`,
+    body,
+    { prefer: "return=representation", "paypal-request-id": requestId },
+  );
+  return { refundId: r.id, status: r.status, value: r.amount?.value ?? amount ?? null, currency: r.amount?.currency_code ?? null, requestId };
 }
