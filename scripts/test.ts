@@ -6,3 +6,4 @@ import "@/tests/provenance.test";
 import "@/tests/paypal.test";
 import "@/tests/paylater.test";
 import "@/tests/plaid-recurring.test";
+import "@/tests/paypal-transactions.test";
