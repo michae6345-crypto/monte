@@ -43,6 +43,13 @@ export function plaidClient(): PlaidApi | null {
   );
 }
 
+/** 503 outside the sandbox, null in it. The access token lives in a cookie (see
+ *  PLAID_COOKIE), which is only acceptable for sandbox items, so every route that touches a
+ *  token checks this first. */
+export function sandboxOnly(): Response | null {
+  return plaidEnvName() === "sandbox" ? null : notConfigured();
+}
+
 /** The one documented failure mode when no keys exist. */
 export function notConfigured(): Response {
   return Response.json(

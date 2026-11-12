@@ -7,13 +7,14 @@
 // custom_id Monte wrote when it created the order), never from the browser. Only a COMPLETED
 // refund moves a cap counter. For the demo people `cap.store` is "memory": the browser lowers
 // the amount of the purchase `txnId` by `refunded`, and the engine recounts the cap from that.
-// `requestId` is sent as PayPal-Request-Id, so a retry with the same id can't refund twice.
+// `requestId` is sent as PayPal-Request-Id, so a retry with the same id can't refund twice; the
+// retry answers `replayed: true` and does not roll the cap back a second time.
 
 import { serviceDb, requestUser } from "@/lib/db/client";
 import { PayPalError, failure, getCapture, jsonBody, notConfigured, paypalConfigured, paypalFailure, refundCapture } from "@/lib/paypal/client";
 import { persistRefund } from "@/lib/paypal/persist";
 import { capturedTxn, decodeOrderRef } from "@/lib/paypal/plan";
-import { refundValue, rollbackRefund, type Rollback } from "@/lib/paypal/refund";
+import { claimRefund, refundValue, releaseRefund, rollbackRefund, type Rollback } from "@/lib/paypal/refund";
 
 const CAPTURE_ID = /^[A-Za-z0-9]{5,64}$/;
 const REQUEST_ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -68,17 +69,35 @@ export async function POST(req: Request) {
   let store: "supabase" | "memory" = "memory";
   let rollback: ReturnType<typeof summary> | null = null;
 
+  let replayed = false;
+
   if (refund.status === "COMPLETED") {
-    // The money is back by now, so a counter that can't be written must not lose the receipt.
-    try {
-      const db = serviceDb();
-      const userId = db ? await requestUser(req, db) : null;
-      const saved = db && userId ? await persistRefund(db, userId, txn, refunded) : null;
-      if (saved) store = "supabase";
-      rollback = summary(saved ?? rollbackRefund([], txn, refunded));
-    } catch (e) {
-      console.warn("paypal: cap rollback not written:", (e as Error).message);
-      rollback = summary(rollbackRefund([], txn, refunded));
+    // Rewards to reverse, for the receipt. Never throws: the money is already back.
+    const estimate = () => {
+      try {
+        return summary(rollbackRefund([], txn, refunded));
+      } catch (e) {
+        console.warn("paypal: refund rollback not computed:", (e as Error).message);
+        return null;
+      }
+    };
+    // A retried requestId comes back as the same refund: its cap was already put back once.
+    replayed = !claimRefund(refund.refundId);
+    if (replayed) {
+      rollback = estimate();
+    } else {
+      // The money is back by now, so a counter that can't be written must not lose the receipt.
+      try {
+        const db = serviceDb();
+        const userId = db ? await requestUser(req, db) : null;
+        const saved = db && userId ? await persistRefund(db, userId, txn, refunded) : null;
+        if (saved) store = "supabase";
+        rollback = saved ? summary(saved) : estimate();
+      } catch (e) {
+        console.warn("paypal: cap rollback not written:", (e as Error).message);
+        releaseRefund(refund.refundId); // nothing was written, so a retry may still apply it
+        rollback = estimate();
+      }
     }
   }
 
@@ -93,6 +112,7 @@ export async function POST(req: Request) {
       txnId: txn.id,
       rollback,
       cap: { store },
+      replayed,
     },
     { headers: { "cache-control": "no-store" } },
   );
