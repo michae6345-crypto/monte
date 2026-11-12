@@ -15,6 +15,8 @@ const SDK_URL = "https://www.sandbox.paypal.com/web-sdk/v6/core";
 const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 const EXAMPLE = "I'm spending $84 on groceries at Trader Joe's.";
 const RETURN_EXAMPLE = "return the Trader Joe's purchase.";
+// A second store in another category, so the first two tries show the pick changing with the purchase.
+const DINING_EXAMPLE = "I'm paying $23.40 for dinner at Sweetgreen.";
 // Venmo and Pay Later buttons. Off unless NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING=1 at build time, so the
 // PayPal button loads exactly as before when it's off.
 const EXTRA_FUNDING = process.env.NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING === "1";
@@ -660,11 +662,12 @@ function Agent({
       </form>
       {(!turns.length || captures.length > 0) && (
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-          {!turns.length && (
-            <button type="button" onClick={() => setInput(EXAMPLE)} className="text-left text-xs text-ace-dim underline">
-              Try: {EXAMPLE}
-            </button>
-          )}
+          {!turns.length &&
+            [EXAMPLE, DINING_EXAMPLE].map((example) => (
+              <button key={example} type="button" onClick={() => setInput(example)} className="text-left text-xs text-ace-dim underline">
+                Try: {example}
+              </button>
+            ))}
           {captures.length > 0 && (
             <button type="button" onClick={() => setInput(RETURN_EXAMPLE)} className="text-left text-xs text-ace-dim underline">
               Try: {RETURN_EXAMPLE}
