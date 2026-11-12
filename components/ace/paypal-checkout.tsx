@@ -7,6 +7,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { Holding, Txn, Valuation } from "@/lib/engine";
 import { capMoveLine, capRoomLine, orderValue, planCheckout, usd, type CheckoutPlan, type Purchase } from "@/lib/paypal/plan";
+import { comparePayLater, PAY_LATER_FINE_PRINT, payLaterLine } from "@/lib/paypal/paylater";
 import { shortName } from "./card-art";
 
 const SDK_URL = "https://www.sandbox.paypal.com/web-sdk/v6/core";
@@ -221,6 +222,28 @@ function Recommendation({ plan }: { plan: CheckoutPlan }) {
   );
 }
 
+/** Pay in 4 next to the card that carries a balance. Every number is lib/paypal/paylater.ts. */
+function PayLater({ purchase, wallet }: { purchase: Purchase; wallet: Holding[] }) {
+  const c = comparePayLater(purchase.amount, purchase.date, wallet);
+  const date = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  return (
+    <div className="mt-4 border-t border-ace-line pt-3">
+      <div className="m-label">Pay Later vs. your card&apos;s interest</div>
+      <p className="mt-2 text-sm leading-relaxed">{payLaterLine(c)}</p>
+      {c.eligible && (
+        <ol className="mono mt-2 grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-4">
+          {c.schedule.map((i) => (
+            <li key={i.n}>
+              {date(i.date)} <span className="text-ace-dim">·</span> {usd(i.amount)}
+            </li>
+          ))}
+        </ol>
+      )}
+      <p className="mt-2 text-[11px] leading-relaxed text-ace-dim">{PAY_LATER_FINE_PRINT}</p>
+    </div>
+  );
+}
+
 // ---------- the section ----------
 
 type Props = {
@@ -296,6 +319,7 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
           </p>
         )}
         {receipt && <ReceiptLine r={receipt} />}
+        {plan && <PayLater purchase={purchase} wallet={wallet} />}
         <p className="mt-4 text-[11px] leading-relaxed text-ace-dim">Monte assumes the store&apos;s category carries through PayPal. Some issuers code PayPal purchases differently.</p>
       </div>
       <Agent context={context} onPaid={onPaid} replan={replan} />
