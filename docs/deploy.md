@@ -74,20 +74,48 @@ because `package.json` is shared and we are not editing its `start` script.
 
 ## Environment variables
 
-| Key | Value | Secret? | Notes |
-|---|---|---|---|
-| `NODE_VERSION` | `24` | no | matches local dev (Node 24.x) |
-| `NEXT_TELEMETRY_DISABLED` | `1` | no | |
-| `PLAID_CLIENT_ID` | from the Plaid dashboard | **yes** | `sync: false` - never in the repo |
-| `PLAID_SECRET` | sandbox secret | **yes** | `sync: false`; sandbox only |
-| `PLAID_ENV` | `sandbox` | no-ish | `sync: false` so it is set alongside the keys; defaults to `sandbox` if unset |
+The same list applies on Vercel (Project Settings, Environment Variables) and Render
+(`render.yaml` declares each one with `sync: false`, so Render asks for the value on Apply
+and the file never holds it). Every var is optional: with none set, the app builds and runs
+on the demo people. The template is [`.env.example`](../.env.example).
 
-With the three Plaid vars unset, the build succeeds, the app runs on the personas, and
-every `/api/plaid/*` route returns `503 {"error":"plaid_not_configured"}`. Nothing else is
-required to serve the demo.
+| Key | Needed for | Secret? | Unset means |
+|---|---|---|---|
+| `NODE_VERSION` | Render only: `24` | no | Render's default Node |
+| `NEXT_TELEMETRY_DISABLED` | `1` | no | Next sends telemetry |
+| `PLAID_CLIENT_ID` | Plaid sandbox | yes | `/api/plaid/*` answers 503 `plaid_not_configured` |
+| `PLAID_SECRET` | Plaid sandbox | yes | same |
+| `PLAID_ENV` | `sandbox` | no | defaults to `sandbox` |
+| `PAYPAL_CLIENT_ID` | PayPal sandbox, server side | no, but keep it out of the repo | `/api/paypal/*` answers 503 `paypal_not_configured` |
+| `PAYPAL_CLIENT_SECRET` | PayPal sandbox | yes | same |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | the PayPal button in the browser | no | the page says "PayPal isn't connected on this deployment" |
+| `PAYPAL_ENV` | must be `sandbox` | no | defaults to `sandbox`; any other value counts as not configured |
+| `PAYPAL_WEBHOOK_ID` | optional: `/api/paypal/webhook` | no | the webhook route answers 503; checkout and returns still work |
+| `NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING` | optional: `1` adds Venmo and Pay Later buttons | no | off. Leave it off for the demo |
+| `ANTHROPIC_API_KEY` | the checkout agent and merchant-name cleanup | yes | `/api/paypal/agent` answers 503 `agent_not_configured`; categorize falls back to rules |
+| `NEXT_PUBLIC_SUPABASE_URL` | per-user saved cap state | no | demo people only, caps kept in memory |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | same | no (public by design, RLS applies) | same |
+| `SUPABASE_SECRET_KEY` | server-side writes | yes, never `NEXT_PUBLIC_` | same |
+
+**`NEXT_PUBLIC_*` vars are read at build time.** After setting or changing one, redeploy.
+On Vercel, setting a var doesn't rebuild; on Render, `PUT .../env-vars` doesn't redeploy
+either (see below).
+
+`PAYPAL_WEBHOOK_ID`: developer.paypal.com, your sandbox app, Webhooks, Add webhook. URL
+`https://<site>/api/paypal/webhook`, events `PAYMENT.CAPTURE.COMPLETED` and
+`PAYMENT.CAPTURE.REFUNDED`. Copy the Webhook ID it shows.
+
+Check what landed with `curl https://<site>/api/health`. It reports `plaid`, `paypal` and
+`agent` as configured or `not_configured` without printing any key.
 
 **The repo is public: no keys, tokens or card numbers in it, ever.** Local values go in
-`.env.local` (gitignored); the template is [`.env.example`](../.env.example).
+`.env.local` (gitignored).
+
+### Render sponsor prize
+
+`render.yaml` is a working Blueprint, so the app can also run on Render (Dashboard, New,
+Blueprint, pick the repo, fill the `sync: false` values, Apply). That makes it eligible
+for Render's sponsor prize if we enter it. The live demo URL in the README is the Vercel one.
 
 ## Using the Render API
 
@@ -175,13 +203,16 @@ curl -s -X PUT -H "$AUTH" -H "$JSON" -d '{"value":"<CLIENT_ID>"}' $API/services/
 curl -s -X PUT -H "$AUTH" -H "$JSON" -d '{"value":"<SECRET>"}'    $API/services/$SRV/env-vars/PLAID_SECRET
 curl -s -X PUT -H "$AUTH" -H "$JSON" -d '{"value":"sandbox"}'     $API/services/$SRV/env-vars/PLAID_ENV
 
+# 3b. For PayPal and the agent, also PUT PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET,
+#     NEXT_PUBLIC_PAYPAL_CLIENT_ID, PAYPAL_ENV=sandbox and ANTHROPIC_API_KEY the same way.
+
 # 4. Deploy (env var changes do not redeploy on their own)
 curl -s -X POST -H "$AUTH" -H "$JSON" -d '{"clearCache":"do_not_clear"}' $API/services/$SRV/deploys
 
 # 5. Wait for live, then check health
 curl -s -H "$AUTH" "$API/services/$SRV/deploys?limit=1"   # until "status":"live"
 curl -s https://monte-rm86.onrender.com/api/health
-# -> {"ok":true,"app":"monte","plaid":"sandbox","time":"..."}
+# -> {"ok":true,"app":"monte","plaid":"sandbox","paypal":"sandbox","agent":"ready","time":"..."}
 #    "plaid":"not_configured" means the keys did not land.
 ```
 

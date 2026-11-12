@@ -36,3 +36,29 @@ services:
         sync: false
       - key: PLAID_ENV
         sync: false
+      # PayPal sandbox. Unset: every /api/paypal/* route answers 503 paypal_not_configured.
+      # NEXT_PUBLIC_* vars are read at build time, so redeploy after changing one.
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_ENV
+        sync: false
+      # Optional: only /api/paypal/webhook needs it.
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      # Optional: "1" shows Venmo and Pay Later buttons. Leave unset for the demo.
+      - key: NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING
+        sync: false
+      # Anthropic: the checkout agent's words and merchant-name cleanup.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Supabase: per-user cap state. Optional; the app runs on demo people without it.
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
