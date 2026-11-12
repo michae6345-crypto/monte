@@ -14,6 +14,7 @@ export type { RefundProposal, SessionCapture };
 
 /** /api/paypal/refund's answer (see app/api/paypal/refund/route.ts). */
 export type AgentRefundResult = {
+  replayed?: boolean;
   status: string;
   refundId: string;
   captureId: string;

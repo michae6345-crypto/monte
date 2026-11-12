@@ -264,7 +264,7 @@ const REFUND_WORDS: Record<string, string> = {
 // The money may have moved even when the answer didn't arrive, so never claim it didn't.
 const REFUND_UNSURE = "Monte couldn't confirm the return. Check your PayPal sandbox activity before trying again.";
 
-type Refund = { status: string; refunded: string; txnId: string; rollback: { capReleased: number; rewardReversed: number } | null; cap: { store: string } };
+type Refund = { status: string; refunded: string; txnId: string; rollback: { capReleased: number; rewardReversed: number } | null; cap: { store: string }; replayed?: boolean };
 
 /** The "Return it" control: refund all or part of a capture and give the cap room back. */
 function ReturnIt({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, amount: number) => void }) {
@@ -298,7 +298,7 @@ function ReturnIt({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, a
       setLines((l) => [...l, `Refunded ${usd(back)}${roll ? ` · −${usd(roll.rewardReversed)} rewards · ${usd(roll.capReleased)} cap room back` : ""}`]);
       setLeft((v) => Math.max(0, Math.round((v - back) * 100) / 100));
       setAmount("");
-      if (d.cap.store === "memory") onRefunded(d.txnId || r.txnId, back);
+      if (d.cap.store === "memory" && !d.replayed) onRefunded(d.txnId || r.txnId, back);
     } catch {
       setProblem(REFUND_UNSURE);
     } finally {
@@ -556,7 +556,7 @@ function RefundConfirm({ proposal, onRefunded, onDone }: { proposal: RefundPropo
       }
       const roll = d.rollback;
       setLine(`Refunded ${usd(back)}${roll ? ` · −${usd(roll.rewardReversed)} rewards · ${usd(roll.capReleased)} cap room back` : ""}`);
-      if (d.cap.store === "memory") onRefunded(d.txnId || `paypal-${proposal.captureId}`, back);
+      if (d.cap.store === "memory" && !d.replayed) onRefunded(d.txnId || `paypal-${proposal.captureId}`, back);
     } catch (e) {
       const msg = e instanceof TypeError ? "" : (e as Error).message;
       setProblem(REFUND_WORDS[msg] ?? (!msg || msg.startsWith("refund failed") || msg === "paypal_error" ? REFUND_UNSURE : `PayPal didn't return it: ${msg}.`));
