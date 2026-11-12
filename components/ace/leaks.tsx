@@ -8,7 +8,9 @@ import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { creditsUsed, interestFor, marginalValue } from "@/lib/engine";
 import { card, creditPerYear } from "@/lib/engine/catalog";
-import { subscriptions } from "@/lib/engine/insights";
+import { subscriptions, type Subscription } from "@/lib/engine/insights";
+import type { RecurringCharge } from "@/lib/data/plaid-recurring";
+import { useRecurring } from "@/lib/data/use-recurring";
 import { Bracketed } from "@/components/brand";
 import { CardArt, shortName } from "./card-art";
 import { MerchantLogo } from "./merchant-logo";
@@ -25,6 +27,7 @@ type Leak = {
   why: string;
   fix: { label: string; chapter: string; tab?: string };
   art?: { card?: string; merchant?: string };
+  tag?: string; // a small label beside the title
 };
 
 const go = (chapter: string, tab?: string) => {
@@ -36,6 +39,11 @@ export function LeaksSection() {
   const { held: wallet, txns, r, persona, valuation } = useAce();
   const nm = nameOf(persona);
   const who = nm.who;
+  // a linked bank: use its own recurring-charge detection; demo people and failures use the engine's
+  const bank = useRecurring(persona.id === "you" && /plaid/i.test(persona.blurb), txns);
+  // the card a bank stream bills to, and whether the bank has only just spotted it
+  const onCard = (s: Subscription) => ("cardId" in s ? ` on the ${shortName((s as RecurringCharge).cardId)}` : "");
+  const isNew = (s: Subscription) => "status" in s && (s as RecurringCharge).status === "early_detection";
 
   const leaks = useMemo<Leak[]>(() => {
     const out: Leak[] = [];
@@ -108,16 +116,19 @@ export function LeaksSection() {
           art: { card: best.id },
         });
     }
+    const subs: Subscription[] = bank ?? subscriptions(txns);
+    const tag = bank ? "From your bank" : undefined;
     // subscriptions that went up
-    for (const s of subscriptions(txns).filter((x) => x.priceHike))
+    for (const s of subs.filter((x) => x.priceHike))
       out.push({
         key: `rise-${s.merchant}`,
         amount: ((s.amount - s.first) * 365) / s.cadenceDays,
         counts: true,
         title: `${s.merchant} went up`,
-        why: `${money(s.first, { cents: true })} a charge, now ${money(s.amount, { cents: true })}: ${money(s.perYear)} a year at the new price.`,
+        why: `${money(s.first, { cents: true })} a charge, now ${money(s.amount, { cents: true })}${onCard(s)}: ${money(s.perYear)} a year at the new price.`,
         fix: { label: "Odd charges", chapter: "leaks", tab: "odd" },
         art: { merchant: s.merchant },
+        tag,
       });
     // odd charges: doubles and card tests are money out
     for (const f of findOddCharges(txns).filter((f) => f.kind === "double" || f.kind === "test"))
@@ -131,20 +142,20 @@ export function LeaksSection() {
         art: { merchant: f.txns[0].merchant },
       });
     // everything still billing, as a check-in (not added)
-    const subs = subscriptions(txns);
     if (subs.length)
       out.push({
         key: "subs",
         amount: subs.reduce((a, s) => a + s.perYear, 0),
         counts: false,
         title: `${subs.length} recurring charges`,
-        why: `${subs.map((s) => s.merchant).slice(0, 5).join(", ")}${subs.length > 5 ? "…" : ""}.`,
+        why: `${subs.map((s) => `${s.merchant}${isNew(s) ? " (new)" : ""}${onCard(s)}`).slice(0, 5).join(", ")}${subs.length > 5 ? "…" : ""}.`,
         fix: { label: "Where it went", chapter: "see", tab: "stores" },
         art: { merchant: subs[0].merchant },
+        tag,
       });
     return out.sort((a, b) => Number(b.counts) - Number(a.counts) || b.amount - a.amount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallet, txns, r, valuation, who]);
+  }, [wallet, txns, r, valuation, who, bank]);
 
   const total = leaks.filter((l) => l.counts).reduce((a, l) => a + l.amount, 0);
 
@@ -197,7 +208,10 @@ export function LeaksSection() {
                 )}
               </span>
               <div className="min-w-0">
-                <div className="text-lg font-medium">{l.title}</div>
+                <div className="text-lg font-medium">
+                  {l.title}
+                  {l.tag && <span className="m-mono ml-2 align-middle text-[11px] font-normal text-ace-dim">{l.tag}</span>}
+                </div>
                 <p className="text-sm leading-relaxed">{l.why}</p>
               </div>
             </div>
