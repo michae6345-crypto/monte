@@ -29,8 +29,9 @@ The card catalog (`data/cards.json`) has 29 cards. 11 are marked unverified and 
 
 ## PayPal AI Hackathon
 
-Monte already existed. We built it at ACM@USC TrojanHacks on Oct 17-18, 2026, where it won
-Best Project in Finance. During the PayPal AI Hackathon submission period we added:
+We built Monte on Oct 17-18, 2026, after the PayPal AI Hackathon opened on Oct 1, and it
+won Best Project in Finance at ACM@USC TrojanHacks that weekend. Monte had no PayPal code then.
+Everything below was added during the submission period:
 
 - PayPal checkout from the Tap view. Monte says which card to pick in your PayPal wallet and why, and the receipt shows the cap counter move.
 - A checkout agent. You type something like "I'm spending $84 on groceries at Trader Joe's". Claude asks Monte's engine, explains the pick and sets up the order. Nothing is charged until you approve it in PayPal's window.
@@ -97,6 +98,13 @@ Without PayPal keys, every `/api/paypal/*` route returns `503 paypal_not_configu
 Tap view shows the ranking with no button. `curl localhost:3000/api/health` shows what is
 connected. The click-by-click demo is in [`docs/PAYPAL-DEMO.md`](docs/PAYPAL-DEMO.md), and
 deploy steps are in [`docs/deploy.md`](docs/deploy.md).
+
+## Trying it as a judge
+
+Open the [live demo](https://ace-eta-beryl.vercel.app/#tap-view), pick Jordan and a store in
+the Tap view, and use the PayPal button under the ranking. PayPal's window asks for a sandbox
+buyer login. Make one for free under Sandbox → Accounts at developer.paypal.com, or use the
+test login in our Devpost testing notes. After paying, try "Return it" on the receipt.
 
 ## Real vs. simulated
 
