@@ -202,7 +202,8 @@ test("purchase -> ranked card -> order for exactly that amount, on the sandbox",
   assert.equal((calls[1].init.headers as Record<string, string>).authorization, "Bearer sandbox-token");
   const body = JSON.parse(String(calls[1].init.body));
   assert.equal(body.intent, "CAPTURE");
-  assert.deepEqual(body.purchase_units[0].amount, { currency_code: "USD", value: "84.00" });
+  assert.equal(body.purchase_units[0].amount.currency_code, "USD");
+  assert.equal(body.purchase_units[0].amount.value, "84.00");
   assert.equal(decodeOrderRef(body.purchase_units[0].custom_id)?.cardId, "amex_gold");
 });
 

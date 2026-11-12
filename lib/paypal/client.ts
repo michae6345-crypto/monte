@@ -100,22 +100,134 @@ async function post<T>(path: string, body: unknown, headers: Record<string, stri
 
 export type CreatedOrder = { id: string; status: string; value: string };
 
+/** Categories that never ship anything. Orders v2 has no "service" item type, so everything
+ *  else is PHYSICAL_GOODS; this only labels the line on PayPal's review page. */
+const DIGITAL = new Set(["streaming", "phone", "utilities"]);
+
+export function itemCategory(category: string): "DIGITAL_GOODS" | "PHYSICAL_GOODS" {
+  return DIGITAL.has(category) ? "DIGITAL_GOODS" : "PHYSICAL_GOODS";
+}
+
+/** What shows on the buyer's statement: PayPal allows 22 characters of letters, digits,
+ *  spaces and . * - ; anything else is dropped. null when nothing usable is left. */
+export function softDescriptor(merchant: string): string | null {
+  const cleaned = `MONTE ${merchant}`.replace(/[^A-Za-z0-9 .*-]/g, "").replace(/\s+/g, " ").trim().slice(0, 22).trim();
+  return cleaned.length > "MONTE".length ? cleaned : null;
+}
+
+/** The Orders v2 purchase unit for a plan: one line item for the engine's purchase, and an
+ *  item_total that is the order amount to the cent, so PayPal's review page shows what is
+ *  being bought and which card Monte picked. custom_id is unchanged: capture and refunds
+ *  read it. */
+export function purchaseUnitForPlan(plan: CheckoutPlan) {
+  const { merchant, category } = plan.purchase;
+  const label = category.replace(/_/g, " ");
+  const money = { currency_code: "USD", value: plan.orderValue };
+  const pick = plan.pick ? `Monte pick: ${plan.pick.name}. ` : "";
+  const soft = softDescriptor(merchant);
+  return {
+    reference_id: "monte",
+    custom_id: encodeOrderRef(plan),
+    description: `${pick}${merchant} (${label}), Monte sandbox demo`.slice(0, 127),
+    ...(soft ? { soft_descriptor: soft } : {}),
+    amount: { ...money, breakdown: { item_total: money } },
+    items: [
+      {
+        name: `${merchant} - ${label}`.slice(0, 127),
+        quantity: "1",
+        unit_amount: money,
+        category: itemCategory(category),
+      },
+    ],
+  };
+}
+
 /** Create the order for a plan. The amount and the remembered card come from the plan, which
  *  came from the engine: no caller, the agent included, can set either one. */
 export async function createOrderForPlan(plan: CheckoutPlan): Promise<CreatedOrder> {
-  const { merchant, category } = plan.purchase;
   const order = await post<{ id: string; status: string }>("/v2/checkout/orders", {
     intent: "CAPTURE",
-    purchase_units: [
-      {
-        reference_id: "monte",
-        custom_id: encodeOrderRef(plan),
-        description: `${merchant} (${category.replace(/_/g, " ")}), Monte sandbox demo`.slice(0, 127),
-        amount: { currency_code: "USD", value: plan.orderValue },
-      },
-    ],
+    purchase_units: [purchaseUnitForPlan(plan)],
   });
   return { id: order.id, status: order.status, value: plan.orderValue };
+}
+
+// ---------- reading an order back ----------
+
+type Money = { currency_code: string; value: string };
+
+type OrderBody = {
+  id?: string;
+  status?: string;
+  create_time?: string;
+  update_time?: string;
+  purchase_units?: {
+    custom_id?: string;
+    description?: string;
+    amount?: Money;
+    items?: { name?: string; quantity?: string; unit_amount?: Money; category?: string }[];
+    payments?: {
+      captures?: { id: string; status: string; amount?: Money }[];
+      refunds?: { id: string; status: string; amount?: Money }[];
+    };
+  }[];
+};
+
+export type OrderDetail = {
+  orderId: string;
+  status: string;
+  createTime: string | null;
+  updateTime: string | null;
+  value: string | null;
+  currency: string | null;
+  description: string | null;
+  customId: string | null;
+  items: { name: string; quantity: string; value: string | null; currency: string | null; category: string | null }[];
+  captures: { id: string; status: string; value: string | null }[];
+  refunds: { id: string; status: string; value: string | null }[];
+  /** NONE until a refund lands; PARTIAL or FULL from PayPal's own capture statuses. */
+  refundStatus: "NONE" | "PARTIAL" | "FULL";
+  refunded: string;
+};
+
+/** What PayPal says an order is now: GET /v2/checkout/orders/{id}, trimmed to what an audit
+ *  needs. The amounts are PayPal's, not the browser's. */
+export async function getOrder(orderId: string): Promise<OrderDetail> {
+  const res = await fetch(`${PAYPAL_API}/v2/checkout/orders/${encodeURIComponent(orderId)}`, {
+    method: "GET",
+    headers: { authorization: `Bearer ${await accessToken()}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  const data = (await res.json().catch(() => ({}))) as ErrorBody & OrderBody;
+  if (!res.ok) throw new PayPalError(res.status, data);
+  const unit = data.purchase_units?.[0];
+  const captures = (unit?.payments?.captures ?? []).map((c) => ({ id: c.id, status: c.status, value: c.amount?.value ?? null }));
+  const refunds = (unit?.payments?.refunds ?? []).map((r) => ({ id: r.id, status: r.status, value: r.amount?.value ?? null }));
+  const refundedCents = refunds.filter((r) => r.status === "COMPLETED").reduce((sum, r) => sum + Math.round(Number(r.value ?? 0) * 100), 0);
+  const full = captures.length > 0 && captures.every((c) => c.status === "REFUNDED");
+  const partial = captures.some((c) => c.status === "PARTIALLY_REFUNDED" || c.status === "REFUNDED") || refundedCents > 0;
+  return {
+    orderId: data.id ?? orderId,
+    status: data.status ?? "UNKNOWN",
+    createTime: data.create_time ?? null,
+    updateTime: data.update_time ?? null,
+    value: unit?.amount?.value ?? null,
+    currency: unit?.amount?.currency_code ?? null,
+    description: unit?.description ?? null,
+    customId: unit?.custom_id ?? null,
+    items: (unit?.items ?? []).map((i) => ({
+      name: i.name ?? "",
+      quantity: i.quantity ?? "1",
+      value: i.unit_amount?.value ?? null,
+      currency: i.unit_amount?.currency_code ?? null,
+      category: i.category ?? null,
+    })),
+    captures,
+    refunds,
+    refundStatus: full ? "FULL" : partial ? "PARTIAL" : "NONE",
+    refunded: (refundedCents / 100).toFixed(2),
+  };
 }
 
 type CaptureBody = {
