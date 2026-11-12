@@ -12,13 +12,13 @@ export const metadata = { title: "Monte: PayPal activity" };
 
 export default function PayPalPage() {
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-14">
+    <main className="mx-auto max-w-6xl overflow-x-clip px-4 sm:px-5 py-10 md:px-8 md:py-14">
       <header className="mb-6">
-        <Link href="/" className="mono text-[11px] uppercase tracking-wider text-[var(--ace-dim)] hover:text-[var(--ace-ink)]">
+        <Link href="/" className="mono inline-flex min-h-10 items-center text-[11px] uppercase tracking-wider text-[var(--ace-dim)] underline-offset-4 hover:text-[var(--ace-ink)] hover:underline">
           ← back to the walkthrough
         </Link>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">PayPal activity</h1>
-        <p className="mt-3 max-w-2xl text-lg text-[var(--ace-dim)]">
+        <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight md:text-5xl">PayPal activity</h1>
+        <p className="mt-3 max-w-2xl text-base sm:text-lg text-[var(--ace-dim)]">
           What went through PayPal, which card Monte played, what it earned and what came back. Checkouts
           made in the walkthrough&apos;s register appear under its PayPal panel; here, load the sandbox
           account&apos;s history from PayPal Transaction Search.
