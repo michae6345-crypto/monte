@@ -13,18 +13,29 @@ import { shortName } from "./card-art";
 const SDK_URL = "https://www.sandbox.paypal.com/web-sdk/v6/core";
 const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 const EXAMPLE = "I'm spending $84 on groceries at Trader Joe's.";
+// Venmo and Pay Later buttons. Off unless NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING=1 at build time, so the
+// PayPal button loads exactly as before when it's off.
+const EXTRA_FUNDING = process.env.NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING === "1";
 
 // ---------- PayPal's JS SDK v6 ----------
 
 type OrderHandle = { orderId: string };
 type PayPalSession = { start(options: { presentationMode: "auto" }, order: Promise<OrderHandle>): Promise<void> };
+type SessionCallbacks = {
+  onApprove(data: OrderHandle): Promise<void> | void;
+  onCancel(): void;
+  onError(error: { code?: string; message?: string }): void;
+};
+type EligibleMethods = {
+  isEligible(method: string): boolean;
+  getDetails?(method: string): { productCode?: string; countryCode?: string } | undefined;
+};
 type PayPalSdk = {
-  findEligibleMethods(options: { currencyCode: string }): Promise<{ isEligible(method: string): boolean }>;
-  createPayPalOneTimePaymentSession(callbacks: {
-    onApprove(data: OrderHandle): Promise<void> | void;
-    onCancel(): void;
-    onError(error: { code?: string; message?: string }): void;
-  }): PayPalSession;
+  findEligibleMethods(options: { currencyCode: string }): Promise<EligibleMethods>;
+  createPayPalOneTimePaymentSession(callbacks: SessionCallbacks): PayPalSession;
+  // only with EXTRA_FUNDING; optional because we never assume the loaded SDK has them
+  createVenmoOneTimePaymentSession?(callbacks: SessionCallbacks): PayPalSession;
+  createPayLaterOneTimePaymentSession?(callbacks: SessionCallbacks): PayPalSession;
 };
 declare global {
   interface Window {
@@ -43,7 +54,7 @@ function loadSdk(): Promise<PayPalSdk | null> {
     script.onerror = () => reject(new Error("PayPal's script didn't load"));
     document.head.appendChild(script);
   })
-    .then(() => window.paypal!.createInstance({ clientId: CLIENT_ID, components: ["paypal-payments"], pageType: "checkout" }))
+    .then(() => window.paypal!.createInstance({ clientId: CLIENT_ID, components: EXTRA_FUNDING ? ["paypal-payments", "venmo-payments"] : ["paypal-payments"], pageType: "checkout" }))
     .catch((e: Error) => {
       console.warn("paypal:", e.message);
       sdk = null; // a later mount can try again
@@ -110,6 +121,78 @@ function PayPalButton({
       {state === "unavailable" && <p className="mt-2 text-sm text-ace-dim">PayPal&apos;s button didn&apos;t load here. Check that the sandbox client ID is right.</p>}
     </>
   );
+}
+
+/**
+ * Venmo or Pay Later, from the same SDK instance and the same server order as the PayPal button.
+ * Shown only when PayPal's findEligibleMethods says yes; if eligibility can't be read, or the SDK
+ * lacks the session for it, it renders nothing rather than a button that can't work.
+ */
+function ExtraFundingButton({
+  method,
+  order,
+  onApproved,
+  onProblem,
+  busy,
+}: {
+  method: "venmo" | "paylater";
+  order: () => Promise<OrderHandle>;
+  onApproved: (orderId: string) => Promise<void>;
+  onProblem: (word: string) => void;
+  busy: boolean;
+}) {
+  const host = useRef<HTMLDivElement>(null);
+  const latest = useRef({ order, onApproved, onProblem, busy });
+  useEffect(() => {
+    latest.current = { order, onApproved, onProblem, busy };
+  });
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    const slot = host.current;
+    void loadSdk().then(async (paypal) => {
+      if (!live || !slot || !paypal) return;
+      try {
+        const methods = await paypal.findEligibleMethods({ currencyCode: "USD" });
+        if (!live || !methods.isEligible(method)) return;
+        const callbacks: SessionCallbacks = {
+          onApprove: (data) => latest.current.onApproved(data.orderId),
+          onCancel: () => latest.current.onProblem("cancelled"),
+          onError: (e) => latest.current.onProblem(e.code === "ERR_DEV_UNABLE_TO_OPEN_POPUP" ? "popup_blocked" : e.message || "paypal_error"),
+        };
+        let session: PayPalSession | undefined;
+        let button: HTMLElement;
+        if (method === "venmo") {
+          session = paypal.createVenmoOneTimePaymentSession?.(callbacks);
+          button = document.createElement("venmo-button");
+          button.setAttribute("type", "pay");
+        } else {
+          const details = methods.getDetails?.("paylater");
+          if (!details?.productCode || !details.countryCode) return;
+          session = paypal.createPayLaterOneTimePaymentSession?.(callbacks);
+          button = document.createElement("paypal-pay-later-button");
+          Object.assign(button, { productCode: details.productCode, countryCode: details.countryCode });
+        }
+        if (!session || !live) return;
+        const s = session;
+        button.addEventListener("click", () => {
+          if (latest.current.busy) return;
+          s.start({ presentationMode: "auto" }, latest.current.order()).catch((e: Error) => latest.current.onProblem(e.message));
+        });
+        slot.replaceChildren(button);
+        setReady(true);
+      } catch (e) {
+        console.warn(`paypal ${method}:`, (e as Error).message); // hide it, leave PayPal's button alone
+      }
+    });
+    return () => {
+      live = false;
+      slot?.replaceChildren();
+    };
+  }, [method]);
+
+  return <div ref={host} hidden={!ready} className={`mt-2 max-w-[320px] ${busy ? "pointer-events-none opacity-50" : ""}`} />;
 }
 
 // ---------- paying ----------
@@ -390,6 +473,23 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
                 onProblem={(w) => setNote(say(w))}
                 busy={capturing}
               />
+              {EXTRA_FUNDING && (
+                <>
+                  {(["venmo", "paylater"] as const).map((m) => (
+                    <ExtraFundingButton
+                      key={m}
+                      method={m}
+                      order={order}
+                      onApproved={(id) => capture(id, orders.current.get(id) ?? plan)}
+                      onProblem={(w) => setNote(say(w))}
+                      busy={capturing}
+                    />
+                  ))}
+                  <p className="mt-2 text-[11px] leading-relaxed text-ace-dim">
+                    Venmo and Pay Later appear only when PayPal says they&apos;re available here. Sandbox: Venmo/Pay Later approval is simulated by PayPal&apos;s sandbox.
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <p className="mt-4 text-sm text-ace-dim">{say("paypal_not_configured")}</p>
