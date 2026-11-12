@@ -33,7 +33,7 @@ const CREDIT_HINTS: Record<string, { cardId: string; credit: string; note: strin
 let checkoutLinkUsed = false;
 
 export function TapSection() {
-  const { wallet: theirs, txns, valuation, persona, checkoutTxns: paid, addCheckoutTxn, clearCheckoutTxns } = useAce();
+  const { wallet: theirs, txns, valuation, persona, checkoutTxns: paid, addCheckoutTxn, refundCheckoutTxn, clearCheckoutTxns } = useAce();
   // a judge's own cards, for Tap only: the rest of the page stays on the selected person
   const [own, setOwn] = useState<string[] | null>(null);
   const [ownFor, setOwnFor] = useState(persona.id);
@@ -273,6 +273,7 @@ export function TapSection() {
           choose(k);
         }}
         onPaid={addCheckoutTxn}
+        onRefunded={refundCheckoutTxn}
       />
       <div className="m-panel mt-8 p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
