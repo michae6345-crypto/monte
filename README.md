@@ -220,7 +220,7 @@ You need Node 24.
 npm install
 cp .env.example .env.local   # optional, see below
 npm run dev                  # http://localhost:3000
-npm test                     # 167 tests, Node's built-in runner
+npm test                     # 174 tests, Node's built-in runner
 ```
 
 The app runs with no keys on the demo people. Keys turn on the live parts:
