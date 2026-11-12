@@ -35,14 +35,14 @@ export function ImportPayPal() {
 
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
-      <button onClick={go} disabled={s.k === "loading"} className="btn btn-ghost btn-sm">
-        Import PayPal purchases (sandbox)
+      <button type="button" onClick={go} disabled={s.k === "loading"} aria-busy={s.k === "loading"} className="btn btn-ghost btn-sm h-10">
+        {s.k === "loading" ? "Importing PayPal purchases…" : "Import PayPal purchases (sandbox)"}
       </button>
       {held.length > 0 && (
         <select
           value={funding}
           onChange={(e) => setCard(e.target.value)}
-          className="btn-sm h-9 rounded-full bg-ace-panel px-3 text-xs text-ace-dim shadow-[0_0_0_1px_var(--m-line-strong)]"
+          className="btn-sm h-10 max-w-full min-w-0 rounded-full bg-ace-panel px-3 text-xs text-ace-dim shadow-[0_0_0_1px_var(--m-line-strong)]"
           aria-label="Which card funds PayPal purchases"
         >
           <option value="">paid with: default card</option>
@@ -54,21 +54,20 @@ export function ImportPayPal() {
         </select>
       )}
       {s.k === "loading" && <Sampler label="Reading PayPal sandbox" />}
-      {s.k === "done" && (
-        <span className="text-xs text-ace-dim">
-          {s.found === 0 ? (
+      <span role="status" className={s.k === "done" ? "text-xs tabular-nums text-ace-dim" : "sr-only"}>
+        {s.k === "done" &&
+          (s.found === 0 ? (
             <>No PayPal purchases in the last 12 months{s.skipped ? ` (${s.skipped} skipped)` : ""}. Nothing changed.</>
           ) : (
             <>
               Imported <Bracketed>{s.added}</Bracketed> PayPal purchase{s.added === 1 ? "" : "s"} (
               <Bracketed>{s.skipped}</Bracketed> skipped).
             </>
-          )}
-        </span>
-      )}
+          ))}
+      </span>
       {s.k === "error" && (
-        <span className="text-xs text-ace-dim">
-          <span className="m-num">
+        <span role="alert" className="text-xs text-ace-dim">
+          <span className="m-num" aria-hidden>
             [<span className="text-ace-loss">?</span>]
           </span>{" "}
           {s.code === "paypal_not_configured"

@@ -163,35 +163,41 @@ export function PayPalActivity() {
           <p className="text-sm text-ace-dim">Every purchase paid through PayPal this session, and the card Monte played on it.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={loadHistory} disabled={load.k === "loading"} className="btn btn-ghost btn-sm">
-            {load.k === "done" ? "Reload PayPal history" : "Load PayPal history"}
+          <button type="button" onClick={loadHistory} disabled={load.k === "loading"} aria-busy={load.k === "loading"} className="btn btn-ghost btn-sm h-10">
+            {load.k === "loading" ? "Loading PayPal history…" : load.k === "done" ? "Reload PayPal history" : "Load PayPal history"}
           </button>
           {rows.length > 0 && (
-            <button onClick={downloadCsv} className="btn btn-ghost btn-sm">
+            <button type="button" onClick={downloadCsv} aria-label="Download PayPal activity as CSV" className="btn btn-ghost btn-sm h-10">
               Download CSV
             </button>
           )}
         </div>
       </div>
 
-      <div className="mt-3 min-h-5 text-xs text-ace-dim" aria-live="polite">
+      <div className="mt-3 min-h-5 text-xs text-ace-dim">
         {load.k === "loading" && <Sampler label="Reading PayPal sandbox" />}
-        {load.k === "error" &&
-          (load.code === "paypal_not_configured"
-            ? "PayPal sandbox isn't connected on this deployment."
-            : load.code === "transaction_search_not_enabled"
-              ? "Transaction Search isn't turned on for this PayPal sandbox app yet."
-            : "PayPal didn't answer. Try again in a moment.")}
-        {load.k === "done" &&
+        {load.k === "error" && (
+          <span role="alert">
+            {load.code === "paypal_not_configured"
+              ? "PayPal sandbox isn't connected on this deployment."
+              : load.code === "transaction_search_not_enabled"
+                ? "Transaction Search isn't turned on for this PayPal sandbox app yet."
+                : "PayPal didn't answer. Try again in a moment."}
+          </span>
+        )}
+        <span role="status" className="tabular-nums">
+          {load.k === "done" &&
           (load.txns.length
             ? `${load.txns.length} purchase${load.txns.length === 1 ? "" : "s"} from PayPal Transaction Search (sandbox), last 12 months.`
-            : "PayPal Transaction Search (sandbox) has no purchases in the last 12 months.")}
+              : "PayPal Transaction Search (sandbox) has no purchases in the last 12 months.")}
+        </span>
       </div>
 
       {rows.length === 0 ? (
         <p className="mt-4 text-sm text-ace-dim">No PayPal purchases yet. Pay for one at the register in the walkthrough, or load the sandbox history.</p>
       ) : (
-        <div className="mt-4 overflow-x-auto">
+        // scrolls inside its own box on a phone; focusable so keyboard users can scroll it too
+        <div className="mt-4 overflow-x-auto overscroll-x-contain rounded-[6px] outline-none focus-visible:shadow-[0_0_0_1.5px_var(--m-accent)]" role="region" aria-labelledby="paypal-activity-title" tabIndex={0}>
           <table className="w-full min-w-[720px] text-left text-sm">
             <caption className="sr-only">
               PayPal purchases: this session&apos;s checkouts and any history loaded from PayPal Transaction Search (sandbox)
@@ -211,7 +217,7 @@ export function PayPalActivity() {
                 <tr key={`${r.source}:${r.id}`} className="border-b border-ace-line align-top">
                   <th scope="row" className="py-2 pr-3 font-normal">
                     {r.merchant}
-                    <div className="mono text-[11px] text-ace-dim">
+                    <div className="mono text-[11px] tabular-nums text-ace-dim">
                       {r.date} · {r.source === "session" ? "Monte checkout, this session" : "from PayPal Transaction Search (sandbox)"}
                     </div>
                   </th>
@@ -221,8 +227,8 @@ export function PayPalActivity() {
                     {r.source === "paypal" && <div className="text-[11px] text-ace-dim">funding card (PayPal doesn&apos;t say which)</div>}
                   </td>
                   <td className="mono py-2 pr-3 text-right tabular-nums text-ace-gain">+{usd(r.reward)}</td>
-                  <td className="mono py-2 pr-3 text-xs text-ace-dim">{r.cap}</td>
-                  <td className={`py-2 text-xs ${r.refunded > 0 ? "text-ace-loss" : "text-ace-dim"}`}>{r.refund}</td>
+                  <td className="mono py-2 pr-3 text-xs tabular-nums text-ace-dim">{r.cap}</td>
+                  <td className={`py-2 text-xs tabular-nums ${r.refunded > 0 ? "text-ace-loss" : "text-ace-dim"}`}>{r.refund}</td>
                 </tr>
               ))}
             </tbody>

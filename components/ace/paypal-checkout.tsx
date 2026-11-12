@@ -4,7 +4,7 @@
 // number here is the engine's (lib/paypal/plan.ts). Nothing is charged until the person
 // approves it in PayPal's window. Sandbox only.
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import type { Holding, Txn, Valuation } from "@/lib/engine";
 import { withPayPalRef } from "@/lib/paypal/messages";
 import { capMoveLine, capRoomLine, orderValue, planCheckout, usd, type CheckoutPlan, type Purchase } from "@/lib/paypal/plan";
@@ -128,7 +128,7 @@ function PayPalButton({
 
   return (
     <>
-      <div ref={host} className={`max-w-[320px] ${busy ? "pointer-events-none opacity-50" : ""}`} />
+      <div ref={host} aria-busy={busy || undefined} className={`max-w-[320px] ${busy ? "pointer-events-none opacity-50" : ""}`} />
       {state === "unavailable" && <p className="mt-2 text-sm text-ace-dim">PayPal&apos;s button didn&apos;t load here. Check that the sandbox client ID is right.</p>}
     </>
   );
@@ -203,7 +203,7 @@ function ExtraFundingButton({
     };
   }, [method]);
 
-  return <div ref={host} hidden={!ready} className={`mt-2 max-w-[320px] ${busy ? "pointer-events-none opacity-50" : ""}`} />;
+  return <div ref={host} hidden={!ready} aria-busy={busy || undefined} className={`mt-2 max-w-[320px] ${busy ? "pointer-events-none opacity-50" : ""}`} />;
 }
 
 // ---------- paying ----------
@@ -225,6 +225,25 @@ const say = (code: string) => WORDS[code] ?? "PayPal hit a problem. Nothing was 
 // After approval the money may already have moved, so never claim it didn't.
 const CAPTURE_UNSURE = "You approved this, but Monte couldn't confirm the payment. Check your PayPal sandbox activity before paying again.";
 
+const CAPTURING = "Capturing the payment…";
+
+/** A progress note is a polite status; anything else from useCapture/say() is a problem, so an alert. */
+function Note({ note }: { note: string | null }) {
+  const problem = note != null && note !== CAPTURING;
+  return (
+    <>
+      <p className={note === CAPTURING ? "mt-3 text-sm" : "sr-only"} role="status">
+        {note === CAPTURING ? note : ""}
+      </p>
+      {problem && (
+        <p className="mt-3 text-sm" role="alert">
+          {note}
+        </p>
+      )}
+    </>
+  );
+}
+
 type Receipt = { merchant: string; value: string; captureId: string; txnId: string; card: string; reward: number; cap: string; store: string };
 
 /** Capture an approved order, write the receipt line and hand the purchase to the Tap view. */
@@ -234,7 +253,7 @@ function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => Check
   const [capturing, setCapturing] = useState(false);
   const capture = async (orderId: string, ordered: CheckoutPlan) => {
     setCapturing(true);
-    setNote("Capturing the payment…");
+    setNote(CAPTURING);
     try {
       const res = await fetch("/api/paypal/capture-order", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ orderId }) });
       const data = await res.json();
@@ -283,6 +302,12 @@ function ReturnIt({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, a
   const [pending, setPending] = useState(false);
   const [lines, setLines] = useState<string[]>([]);
   const [problem, setProblem] = useState<string | null>(null);
+  const inputId = useId();
+  const result = useRef<HTMLDivElement>(null);
+  // after a return, put focus on the result line: the form may have just disappeared
+  useEffect(() => {
+    if (lines.length) result.current?.focus();
+  }, [lines.length]);
 
   const refund = async (e: FormEvent) => {
     e.preventDefault();
@@ -318,42 +343,53 @@ function ReturnIt({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, a
 
   return (
     <div className="mt-3">
-      {lines.map((l, k) => (
-        <div key={k} className="mono mt-1 text-xs">
-          {l}
-        </div>
-      ))}
+      <div ref={result} tabIndex={-1} role="status" className="rounded-[6px] outline-none focus-visible:shadow-[0_0_0_1.5px_var(--m-accent)]">
+        {lines.map((l, k) => (
+          <div key={k} className="mono mt-1 text-xs tabular-nums">
+            {l}
+          </div>
+        ))}
+      </div>
       {left > 0 && (
-        <form onSubmit={refund} className="mt-2 flex items-center gap-2">
+        <form onSubmit={refund} className="mt-2 flex flex-wrap items-center gap-2" aria-busy={pending}>
+          <label htmlFor={inputId} className="sr-only">
+            Amount to return, in dollars. Leave blank to return all {usd(left)}.
+          </label>
           <input
+            id={inputId}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             inputMode="decimal"
             placeholder={`${left.toFixed(2)} (all)`}
-            aria-label="Amount to return"
+            aria-invalid={problem ? true : undefined}
+            aria-describedby={problem ? `${inputId}-problem` : undefined}
             disabled={pending}
-            className="mono h-8 w-32 min-w-0 rounded-[10px] bg-ace-panel px-2 text-xs shadow-[0_0_0_1px_var(--m-line)] outline-none focus:shadow-[0_0_0_1.5px_var(--m-ink)]"
+            className="mono h-10 w-32 min-w-0 tabular-nums rounded-[10px] bg-ace-panel px-2 text-xs shadow-[0_0_0_1px_var(--m-line)] outline-none focus:shadow-[0_0_0_1.5px_var(--m-ink)]"
           />
-          <button type="submit" disabled={pending} className="btn btn-sm btn-ghost">
+          <button type="submit" disabled={pending} aria-busy={pending} aria-label={pending ? "Returning the payment" : `Return ${r.merchant} payment`} className="btn btn-sm btn-ghost h-10">
             {pending ? "Returning…" : "Return it"}
           </button>
         </form>
       )}
-      {problem && <p className="mt-2 text-sm">{problem}</p>}
+      {problem && (
+        <p id={`${inputId}-problem`} role="alert" className="mt-2 text-sm">
+          {problem}
+        </p>
+      )}
     </div>
   );
 }
 
 function ReceiptLine({ r, onRefunded }: { r: Receipt; onRefunded: (txnId: string, amount: number) => void }) {
   return (
-    <div className="mt-4 border-t border-dashed border-ace-line pt-3 text-sm" role="status">
-      <div className="font-medium">
+    <div className="mt-4 border-t border-dashed border-ace-line pt-3 text-sm">
+      <div className="font-medium tabular-nums" role="status">
         Paid {usd(Number(r.value))} at {r.merchant}
       </div>
-      <div className="mono mt-1 text-xs">
+      <div className="mono mt-1 text-xs tabular-nums">
         {r.card} <span className="text-ace-gain">+{usd(r.reward)}</span> · {r.cap}
       </div>
-      <div className="mono mt-1 text-[11px] text-ace-dim">
+      <div className="mono mt-1 break-all text-[11px] text-ace-dim">
         PayPal sandbox capture {r.captureId} · counted on the card Monte picked · cap saved {r.store === "supabase" ? "to your account" : "for this demo session"}
       </div>
       <ReturnIt key={r.captureId} r={r} onRefunded={onRefunded} />
@@ -373,22 +409,23 @@ function Recommendation({ plan }: { plan: CheckoutPlan }) {
     <div>
       <div className="m-label">In your PayPal wallet, choose</div>
       <div className="mt-1 text-xl font-medium">{shortName(pick.cardId)}</div>
-      <div className="mono mt-2 text-sm">
+      <div className="mono mt-2 text-sm tabular-nums">
         <span className="text-ace-gain">+{usd(pick.reward)}</span> on this {usd(Number(value))} · {pick.rule}
       </div>
-      <div className="mono mt-1 text-sm text-ace-dim">{capRoom ? capRoomLine(capRoom) : "No spending cap on this rule"}</div>
+      <div className="mono mt-1 text-sm tabular-nums text-ace-dim">{capRoom ? capRoomLine(capRoom) : "No spending cap on this rule"}</div>
       {blocked.map((b) => (
         <p key={b.cardId} className="mt-2 text-sm leading-relaxed text-ace-dim">
           Not {shortName(b.cardId)}: {b.blocked}
         </p>
       ))}
-      <p className="mono mt-3 text-[11px] leading-relaxed text-ace-dim">
+      <p className="mono mt-3 break-words text-[11px] leading-relaxed tabular-nums text-ace-dim">
         {pick.math}
         {pick.sourceUrl ? (
           <>
             {" · "}
             <a className="underline" href={pick.sourceUrl} target="_blank" rel="noreferrer">
               {host}
+              <span className="sr-only"> (card terms, opens in a new tab)</span>
             </a>
           </>
         ) : null}
@@ -408,7 +445,7 @@ function PayLater({ purchase, wallet }: { purchase: Purchase; wallet: Holding[] 
       <div className="m-label">Pay Later vs. your card&apos;s interest</div>
       <p className="mt-2 text-sm leading-relaxed">{payLaterLine(c)}</p>
       {c.eligible && (
-        <ol className="mono mt-2 grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-4">
+        <ol className="mono mt-2 grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs tabular-nums sm:grid-cols-4" aria-label="Pay in 4 schedule">
           {c.schedule.map((i) => (
             <li key={i.n}>
               {date(i.date)} <span className="text-ace-dim">·</span> {usd(i.amount)}
@@ -468,17 +505,19 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
           <div className="m-label">Pay with PayPal</div>
           <Badge />
         </div>
-        <label className="mt-4 flex items-center gap-2 text-sm">
-          <span className="text-ace-dim">At</span>
-          <select value={selected} onChange={(e) => onSelect(Number(e.target.value))} className="h-9 rounded-[10px] bg-ace-panel px-2 font-medium shadow-[0_0_0_1px_var(--m-line)]">
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+          <label htmlFor="checkout-store" className="text-ace-dim">
+            At<span className="sr-only"> store</span>
+          </label>
+          <select id="checkout-store" value={selected} onChange={(e) => onSelect(Number(e.target.value))} className="h-10 min-w-0 max-w-full rounded-[10px] bg-ace-panel px-2 font-medium shadow-[0_0_0_1px_var(--m-line)]">
             {stores.map((s, k) => (
               <option key={s} value={k}>
                 {s}
               </option>
             ))}
           </select>
-          {plan && <span className="mono">{usd(Number(plan.orderValue))}</span>}
-        </label>
+          {plan && <span className="mono tabular-nums">{usd(Number(plan.orderValue))}</span>}
+        </div>
         <div className="mt-4">{plan ? <Recommendation plan={plan} /> : <p className="text-sm text-ace-dim">PayPal can&apos;t take this amount.</p>}</div>
         {plan?.pick &&
           (CLIENT_ID ? (
@@ -510,11 +549,7 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
           ) : (
             <p className="mt-4 text-sm text-ace-dim">{say("paypal_not_configured")}</p>
           ))}
-        {note && (
-          <p className="mt-3 text-sm" role="status">
-            {note}
-          </p>
-        )}
+        <Note note={note} />
         {receipt && <ReceiptLine r={receipt} onRefunded={onRefunded} />}
         {plan && <PayLater purchase={purchase} wallet={wallet} />}
         <p className="mt-4 text-[11px] leading-relaxed text-ace-dim">Monte assumes the store&apos;s category carries through PayPal. Some issuers code PayPal purchases differently.</p>
@@ -552,6 +587,12 @@ function RefundConfirm({ proposal, onRefunded, onDone }: { proposal: RefundPropo
   const [pending, setPending] = useState(false);
   const [line, setLine] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const id = useId();
+  const result = useRef<HTMLDivElement>(null);
+  // Confirm unmounts the buttons, so move focus to the result line instead of losing it
+  useEffect(() => {
+    if (line) result.current?.focus();
+  }, [line]);
 
   const confirm = async () => {
     if (pending || line) return;
@@ -576,22 +617,31 @@ function RefundConfirm({ proposal, onRefunded, onDone }: { proposal: RefundPropo
   };
 
   return (
-    <div className="mt-4 rounded-[10px] p-3 text-sm shadow-[0_0_0_1px_var(--m-line)]" role="status">
-      <div className="m-label">Confirm the return</div>
-      <p className="mono mt-2 text-xs leading-relaxed">{refundProposalLine(proposal)}</p>
-      {line ? (
-        <div className="mono mt-2 text-xs">{line}</div>
-      ) : (
-        <div className="mt-3 flex items-center gap-2">
-          <button type="button" onClick={confirm} disabled={pending} className="btn btn-sm btn-primary">
+    <div className="mt-4 rounded-[10px] p-3 text-sm shadow-[0_0_0_1px_var(--m-line)]" role="group" aria-labelledby={`${id}-title`} aria-describedby={`${id}-line`}>
+      <div id={`${id}-title`} className="m-label">
+        Confirm the return
+      </div>
+      <p id={`${id}-line`} className="mono mt-2 text-xs leading-relaxed tabular-nums" role="status">
+        {refundProposalLine(proposal)}
+      </p>
+      <div ref={result} tabIndex={-1} role="status" className="rounded-[6px] outline-none focus-visible:shadow-[0_0_0_1.5px_var(--m-accent)]">
+        {line && <div className="mono mt-2 text-xs tabular-nums">{line}</div>}
+      </div>
+      {!line && (
+        <div className="mt-3 flex flex-wrap items-center gap-2" aria-busy={pending}>
+          <button type="button" onClick={confirm} disabled={pending} aria-busy={pending} aria-label={pending ? "Returning the payment" : "Confirm the return"} className="btn btn-sm btn-primary h-10">
             {pending ? "Returning…" : "Confirm"}
           </button>
-          <button type="button" onClick={onDone} disabled={pending} className="btn btn-sm btn-ghost">
+          <button type="button" onClick={onDone} disabled={pending} aria-label="Cancel the return" className="btn btn-sm btn-ghost h-10">
             Cancel
           </button>
         </div>
       )}
-      {problem && <p className="mt-2 text-sm">{problem}</p>}
+      {problem && (
+        <p role="alert" className="mt-2 text-sm">
+          {problem}
+        </p>
+      )}
     </div>
   );
 }
@@ -616,6 +666,7 @@ function Agent({
   const [busy, setBusy] = useState(false);
   const [answer, setAnswer] = useState<AgentAnswer>({ plan: null, order: null, proposal: null });
   const { note, setNote, receipt, setReceipt, capture, capturing } = useCapture(onPaid, replan, remember);
+  const field = useRef<HTMLInputElement>(null);
 
   const ask = async (e: FormEvent) => {
     e.preventDefault();
@@ -655,16 +706,20 @@ function Agent({
         <Badge />
       </div>
       <p className="mt-3 text-sm leading-relaxed text-ace-dim">Claude reads your sentence and explains the result. The rules engine picks the card and does the math, and you approve the payment yourself.</p>
-      <form onSubmit={ask} className="mt-4 flex gap-2">
+      <form onSubmit={ask} className="mt-4 flex gap-2" aria-busy={busy}>
+        <label htmlFor="agent-ask" className="sr-only">
+          Describe your purchase or a return
+        </label>
         <input
+          ref={field}
+          id="agent-ask"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           maxLength={500}
           placeholder={EXAMPLE}
-          aria-label="Describe your purchase"
-          className="h-9 min-w-0 flex-1 rounded-[10px] bg-ace-panel px-3 text-sm shadow-[0_0_0_1px_var(--m-line)] outline-none focus:shadow-[0_0_0_1.5px_var(--m-ink)]"
+          className="h-10 min-w-0 flex-1 rounded-[10px] bg-ace-panel px-3 text-sm shadow-[0_0_0_1px_var(--m-line)] outline-none focus:shadow-[0_0_0_1.5px_var(--m-ink)]"
         />
-        <button type="submit" disabled={busy || !input.trim()} className="btn btn-sm btn-primary">
+        <button type="submit" disabled={busy || !input.trim()} aria-busy={busy} className="btn btn-sm btn-primary h-10">
           {busy ? "Asking…" : "Ask"}
         </button>
       </form>
@@ -672,12 +727,12 @@ function Agent({
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
           {!turns.length &&
             [EXAMPLE, GAS_EXAMPLE].map((example) => (
-              <button key={example} type="button" onClick={() => setInput(example)} className="text-left text-xs text-ace-dim underline">
+              <button key={example} type="button" onClick={() => setInput(example)} className="inline-flex min-h-10 items-center text-left text-xs text-ace-dim underline">
                 Try: {example}
               </button>
             ))}
           {captures.length > 0 && (
-            <button type="button" onClick={() => setInput(RETURN_EXAMPLE)} className="text-left text-xs text-ace-dim underline">
+            <button type="button" onClick={() => setInput(RETURN_EXAMPLE)} className="inline-flex min-h-10 items-center text-left text-xs text-ace-dim underline">
               Try: {RETURN_EXAMPLE}
             </button>
           )}
@@ -698,16 +753,18 @@ function Agent({
       )}
       {plan && order && !receipt && (
         <div className="mt-4">
-          <div className="mono mb-2 text-xs text-ace-dim">Approve {usd(Number(plan.orderValue))} in PayPal. Nothing is charged until you do.</div>
+          <div className="mono mb-2 text-xs tabular-nums text-ace-dim">Approve {usd(Number(plan.orderValue))} in PayPal. Nothing is charged until you do.</div>
           {CLIENT_ID ? <PayPalButton key={order.id} order={() => Promise.resolve({ orderId: order.id })} onApproved={(id) => capture(id, plan)} onProblem={(w) => setNote(say(w))} busy={capturing} /> : <p className="text-sm text-ace-dim">{say("paypal_not_configured")}</p>}
         </div>
       )}
-      {proposal && <RefundConfirm key={`${proposal.captureId}:${proposal.amount}:${turns.length}`} proposal={proposal} onRefunded={onRefunded} onDone={() => setAnswer((a) => ({ ...a, proposal: null }))} />}
-      {note && (
-        <p className="mt-3 text-sm" role="status">
-          {note}
-        </p>
+      {proposal && (
+        <RefundConfirm key={`${proposal.captureId}:${proposal.amount}:${turns.length}`} proposal={proposal} onRefunded={onRefunded} onDone={() => {
+            setAnswer((a) => ({ ...a, proposal: null }));
+            field.current?.focus(); // the card is gone: send focus back to the question box
+          }}
+        />
       )}
+      <Note note={note} />
       {receipt && <ReceiptLine r={receipt} onRefunded={onRefunded} />}
     </div>
   );
