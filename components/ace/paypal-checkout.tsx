@@ -8,11 +8,13 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { Holding, Txn, Valuation } from "@/lib/engine";
 import { capMoveLine, capRoomLine, orderValue, planCheckout, usd, type CheckoutPlan, type Purchase } from "@/lib/paypal/plan";
 import { comparePayLater, PAY_LATER_FINE_PRINT, payLaterLine } from "@/lib/paypal/paylater";
+import { confirmAgentRefund, refundProposalLine, rememberCapture, type RefundProposal, type SessionCapture } from "@/lib/paypal/agent-refund-client";
 import { shortName } from "./card-art";
 
 const SDK_URL = "https://www.sandbox.paypal.com/web-sdk/v6/core";
 const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 const EXAMPLE = "I'm spending $84 on groceries at Trader Joe's.";
+const RETURN_EXAMPLE = "return the Trader Joe's purchase.";
 // Venmo and Pay Later buttons. Off unless NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING=1 at build time, so the
 // PayPal button loads exactly as before when it's off.
 const EXTRA_FUNDING = process.env.NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING === "1";
@@ -217,7 +219,7 @@ const CAPTURE_UNSURE = "You approved this, but Monte couldn't confirm the paymen
 type Receipt = { merchant: string; value: string; captureId: string; txnId: string; card: string; reward: number; cap: string; store: string };
 
 /** Capture an approved order, write the receipt line and hand the purchase to the Tap view. */
-function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => CheckoutPlan) {
+function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => CheckoutPlan, onCaptured: (c: SessionCapture) => void) {
   const [note, setNote] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [capturing, setCapturing] = useState(false);
@@ -243,6 +245,7 @@ function useCapture(onPaid: (t: Txn) => void, replan: (p: CheckoutPlan) => Check
         store: data.cap.store,
       });
       onPaid(data.txn as Txn);
+      onCaptured({ captureId: data.captureId, merchant: ordered.purchase.merchant, amount: data.value });
     } catch {
       setNote(CAPTURE_UNSURE);
     } finally {
@@ -256,6 +259,7 @@ const REFUND_WORDS: Record<string, string> = {
   already_refunded: "That payment was already returned in full.",
   not_refundable: "PayPal says this payment can't be returned right now.",
   paypal_not_configured: "PayPal isn't connected on this deployment, so nothing was returned.",
+  not_a_monte_order: "That payment wasn't made through Monte, so Monte can't return it.",
 };
 // The money may have moved even when the answer didn't arrive, so never claim it didn't.
 const REFUND_UNSURE = "Monte couldn't confirm the return. Check your PayPal sandbox activity before trying again.";
@@ -430,7 +434,9 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
     [wallet, purchase, history, valuation],
   );
   const replan = (p: CheckoutPlan) => (orderValue(p.purchase.amount) ? planCheckout(wallet, p.purchase, history) : p);
-  const { note, setNote, receipt, setReceipt, capture, capturing } = useCapture(onPaid, replan);
+  const [captures, setCaptures] = useState<SessionCapture[]>([]);
+  const remember = (c: SessionCapture) => setCaptures((list) => rememberCapture(list, c));
+  const { note, setNote, receipt, setReceipt, capture, capturing } = useCapture(onPaid, replan, remember);
   const orders = useRef(new Map<string, CheckoutPlan>());
 
   const order = async (): Promise<OrderHandle> => {
@@ -503,7 +509,7 @@ export function PayPalCheckout({ purchase, wallet, history, valuation, stores, s
         {plan && <PayLater purchase={purchase} wallet={wallet} />}
         <p className="mt-4 text-[11px] leading-relaxed text-ace-dim">Monte assumes the store&apos;s category carries through PayPal. Some issuers code PayPal purchases differently.</p>
       </div>
-      <Agent context={context} onPaid={onPaid} onRefunded={onRefunded} replan={replan} />
+      <Agent context={context} onPaid={onPaid} onRefunded={onRefunded} replan={replan} captures={captures} remember={remember} />
     </div>
   );
 }
@@ -513,14 +519,78 @@ function Badge() {
 }
 
 type Turn = { role: "user" | "assistant"; text: string };
-type AgentAnswer = { plan: CheckoutPlan | null; order: { id: string } | null };
+type AgentAnswer = { plan: CheckoutPlan | null; order: { id: string } | null; proposal: RefundProposal | null };
 
-function Agent({ context, onPaid, onRefunded, replan }: { context: object; onPaid: (t: Txn) => void; onRefunded: (txnId: string, amount: number) => void; replan: (p: CheckoutPlan) => CheckoutPlan }) {
+/** The agent's refund proposal. Nothing is refunded until Confirm; one requestId per proposal makes a double click safe. */
+function RefundConfirm({ proposal, onRefunded, onDone }: { proposal: RefundProposal; onRefunded: (txnId: string, amount: number) => void; onDone: () => void }) {
+  const requestId = useMemo(() => crypto.randomUUID(), []);
+  const [pending, setPending] = useState(false);
+  const [line, setLine] = useState<string | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const confirm = async () => {
+    if (pending || line) return;
+    setPending(true);
+    setProblem(null);
+    try {
+      const d = await confirmAgentRefund(proposal, { requestId });
+      const back = Number(d.refunded);
+      if (d.status !== "COMPLETED") {
+        setLine(`PayPal has the return of ${usd(back)} as ${d.status.toLowerCase()}. The cap moves once it completes.`);
+        return;
+      }
+      const roll = d.rollback;
+      setLine(`Refunded ${usd(back)}${roll ? ` · −${usd(roll.rewardReversed)} rewards · ${usd(roll.capReleased)} cap room back` : ""}`);
+      if (d.cap.store === "memory") onRefunded(d.txnId || `paypal-${proposal.captureId}`, back);
+    } catch (e) {
+      const msg = e instanceof TypeError ? "" : (e as Error).message;
+      setProblem(REFUND_WORDS[msg] ?? (!msg || msg.startsWith("refund failed") || msg === "paypal_error" ? REFUND_UNSURE : `PayPal didn't return it: ${msg}.`));
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-[10px] p-3 text-sm shadow-[0_0_0_1px_var(--m-line)]" role="status">
+      <div className="m-label">Confirm the return</div>
+      <p className="mono mt-2 text-xs leading-relaxed">{refundProposalLine(proposal)}</p>
+      {line ? (
+        <div className="mono mt-2 text-xs">{line}</div>
+      ) : (
+        <div className="mt-3 flex items-center gap-2">
+          <button type="button" onClick={confirm} disabled={pending} className="btn btn-sm btn-primary">
+            {pending ? "Returning…" : "Confirm"}
+          </button>
+          <button type="button" onClick={onDone} disabled={pending} className="btn btn-sm btn-ghost">
+            Cancel
+          </button>
+        </div>
+      )}
+      {problem && <p className="mt-2 text-sm">{problem}</p>}
+    </div>
+  );
+}
+
+function Agent({
+  context,
+  onPaid,
+  onRefunded,
+  replan,
+  captures,
+  remember,
+}: {
+  context: object;
+  onPaid: (t: Txn) => void;
+  onRefunded: (txnId: string, amount: number) => void;
+  replan: (p: CheckoutPlan) => CheckoutPlan;
+  captures: SessionCapture[];
+  remember: (c: SessionCapture) => void;
+}) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
-  const [answer, setAnswer] = useState<AgentAnswer>({ plan: null, order: null });
-  const { note, setNote, receipt, setReceipt, capture, capturing } = useCapture(onPaid, replan);
+  const [answer, setAnswer] = useState<AgentAnswer>({ plan: null, order: null, proposal: null });
+  const { note, setNote, receipt, setReceipt, capture, capturing } = useCapture(onPaid, replan, remember);
 
   const ask = async (e: FormEvent) => {
     e.preventDefault();
@@ -532,9 +602,9 @@ function Agent({ context, onPaid, onRefunded, replan }: { context: object; onPai
     setBusy(true);
     setNote(null);
     setReceipt(null);
-    setAnswer({ plan: null, order: null });
+    setAnswer({ plan: null, order: null, proposal: null });
     try {
-      const res = await fetch("/api/paypal/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: next.slice(-7), ...context }) });
+      const res = await fetch("/api/paypal/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: next.slice(-7), ...context, captures }) });
       const data = await res.json();
       if (!res.ok) {
         setTurns(turns); // the question didn't land: let it be asked again
@@ -542,7 +612,7 @@ function Agent({ context, onPaid, onRefunded, replan }: { context: object; onPai
         return setNote(say(data.error));
       }
       setTurns([...next, { role: "assistant", text: data.reply }]);
-      setAnswer({ plan: data.plan, order: data.order });
+      setAnswer({ plan: data.plan, order: data.order, proposal: data.proposal ?? null });
     } catch {
       setTurns(turns);
       setInput(text);
@@ -552,7 +622,7 @@ function Agent({ context, onPaid, onRefunded, replan }: { context: object; onPai
     }
   };
 
-  const { plan, order } = answer;
+  const { plan, order, proposal } = answer;
   return (
     <div className="m-panel p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -573,10 +643,19 @@ function Agent({ context, onPaid, onRefunded, replan }: { context: object; onPai
           {busy ? "Asking…" : "Ask"}
         </button>
       </form>
-      {!turns.length && (
-        <button type="button" onClick={() => setInput(EXAMPLE)} className="mt-2 text-left text-xs text-ace-dim underline">
-          Try: {EXAMPLE}
-        </button>
+      {(!turns.length || captures.length > 0) && (
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+          {!turns.length && (
+            <button type="button" onClick={() => setInput(EXAMPLE)} className="text-left text-xs text-ace-dim underline">
+              Try: {EXAMPLE}
+            </button>
+          )}
+          {captures.length > 0 && (
+            <button type="button" onClick={() => setInput(RETURN_EXAMPLE)} className="text-left text-xs text-ace-dim underline">
+              Try: {RETURN_EXAMPLE}
+            </button>
+          )}
+        </div>
       )}
       <div className="mt-4 space-y-2 text-sm leading-relaxed" aria-live="polite">
         {turns.slice(-2).map((t, k) => (
@@ -596,6 +675,7 @@ function Agent({ context, onPaid, onRefunded, replan }: { context: object; onPai
           {CLIENT_ID ? <PayPalButton key={order.id} order={() => Promise.resolve({ orderId: order.id })} onApproved={(id) => capture(id, plan)} onProblem={(w) => setNote(say(w))} busy={capturing} /> : <p className="text-sm text-ace-dim">{say("paypal_not_configured")}</p>}
         </div>
       )}
+      {proposal && <RefundConfirm key={`${proposal.captureId}:${proposal.amount}:${turns.length}`} proposal={proposal} onRefunded={onRefunded} onDone={() => setAnswer((a) => ({ ...a, proposal: null }))} />}
       {note && (
         <p className="mt-3 text-sm" role="status">
           {note}
