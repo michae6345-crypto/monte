@@ -5,9 +5,16 @@
 //   node --import ./scripts/_alias.mjs scripts/smoke.ts
 //   node --import ./scripts/_alias.mjs scripts/smoke.ts https://monte-rm86.onrender.com
 //
+//   ... scripts/smoke.ts https://ace-eta-beryl.vercel.app --require-paypal
+//
+// --require-paypal (or SMOKE_REQUIRE_PAYPAL=1) fails unless /api/health says
+// paypal "sandbox" and agent "ready". Without it, those states are only reported.
+//
 // Exits 0 if the demo is safe to present, 1 if it is not.
 
-const BASE = (process.argv[2] ?? process.env.MONTE_URL ?? "https://ace-eta-beryl.vercel.app").replace(/\/$/, "");
+const ARGS = process.argv.slice(2);
+const REQUIRE_PAYPAL = ARGS.includes("--require-paypal") || process.env.SMOKE_REQUIRE_PAYPAL === "1";
+const BASE = (ARGS.find((a) => !a.startsWith("--")) ?? process.env.MONTE_URL ?? "https://ace-eta-beryl.vercel.app").replace(/\/$/, "");
 
 type Check = { name: string; ok: boolean; detail: string };
 const checks: Check[] = [];
@@ -18,11 +25,13 @@ async function main() {
   let html = "";
   let status = 0;
   let ms = 0;
+  let pageHeaders: Headers | null = null;
   try {
     const t0 = Date.now();
     const res = await fetch(BASE, { headers: { "user-agent": "monte-smoke" } });
     ms = Date.now() - t0;
     status = res.status;
+    pageHeaders = res.headers;
     html = await res.text();
   } catch (e) {
     add("page loads", false, `fetch failed: ${(e as Error).message}`);
@@ -93,6 +102,85 @@ async function main() {
   } catch (e) {
     add("paypal routes respond", false, (e as Error).message);
   }
+
+  // --- security headers (next.config.ts) ----------------------------------
+  if (pageHeaders) {
+    const nosniff = pageHeaders.get("x-content-type-options") ?? "";
+    const csp = pageHeaders.get("content-security-policy") ?? "";
+    add("header: X-Content-Type-Options nosniff", nosniff.toLowerCase() === "nosniff", nosniff || "missing");
+    add("header: CSP frame-ancestors", /frame-ancestors/i.test(csp), csp || "missing");
+  }
+
+  // --- PayPal and agent state, from /api/health ----------------------------
+  let paypalState = "unknown";
+  let agentState = "unknown";
+  try {
+    const h = (await (await fetch(`${BASE}/api/health`, { headers: { "cache-control": "no-store" } })).json()) as {
+      paypal?: string;
+      agent?: string;
+      commit?: string | null;
+    };
+    paypalState = String(h.paypal);
+    agentState = String(h.agent);
+    const detail = `paypal: ${h.paypal}, agent: ${h.agent}, commit: ${h.commit ?? "n/a"}`;
+    if (REQUIRE_PAYPAL) {
+      add("paypal is sandbox (required)", h.paypal === "sandbox", detail);
+      add("agent is ready (required)", h.agent === "ready", detail);
+    } else {
+      add("paypal/agent state reported", typeof h.paypal === "string" && typeof h.agent === "string", `${detail} (pass --require-paypal to enforce)`);
+    }
+  } catch (e) {
+    add("paypal/agent state reported", false, (e as Error).message);
+  }
+
+  // --- the checkout panel ships on the home page when PayPal is configured --
+  // "Pay with PayPal" is the panel's heading in components/ace/paypal-checkout.tsx. The Tap
+  // tab renders client-side, so the string is in the page's JS chunks, not its server HTML.
+  const MARKER = "Pay with PayPal";
+  let panel = html.includes(MARKER);
+  let where = panel ? "server HTML" : "";
+  if (!panel) {
+    const srcs = [...new Set([...html.matchAll(/<script[^>]+src="([^"]+\.js[^"]*)"/g)].map((m) => m[1]))];
+    const hits = await Promise.all(
+      srcs.map(async (src) => {
+        try {
+          return (await (await fetch(new URL(src, BASE + "/"))).text()).includes(MARKER);
+        } catch {
+          return false;
+        }
+      }),
+    );
+    panel = hits.some(Boolean);
+    where = panel ? `JS chunk (searched ${srcs.length})` : `not in HTML or ${srcs.length} JS chunks`;
+  }
+  if (paypalState === "sandbox") add("home page has PayPal checkout panel", panel, `"${MARKER}" in ${where}`);
+  else add("home page PayPal panel (not required: paypal not configured)", true, panel ? `present (${where})` : "absent");
+
+  // --- /paypal activity page -----------------------------------------------
+  try {
+    const res = await fetch(`${BASE}/paypal`);
+    const text = await res.text();
+    add("/paypal page", res.status === 200 && text.includes("PayPal activity"), `HTTP ${res.status}${text.includes("PayPal activity") ? "" : ', missing "PayPal activity"'}`);
+  } catch (e) {
+    add("/paypal page", false, (e as Error).message);
+  }
+
+  // --- PayPal routes reject bad input politely, never 500 -------------------
+  const probe = async (name: string, path: string, init: RequestInit | undefined, allowed: number[]) => {
+    try {
+      const res = await fetch(`${BASE}${path}`, init);
+      const body = (await res.text()).slice(0, 80).replace(/\s+/g, " ");
+      add(name, allowed.includes(res.status), `HTTP ${res.status} (want ${allowed.join("/")}) ${body}`);
+    } catch (e) {
+      add(name, false, (e as Error).message);
+    }
+  };
+  const post = { method: "POST", headers: { "content-type": "application/json" }, body: "{}" };
+  // The route checks keys before the id, so without keys a bad id answers 503.
+  await probe("order/BAD!! rejected", "/api/paypal/order/BAD!!", undefined, paypalState === "sandbox" ? [400] : [400, 503]);
+  await probe("transactions responds", "/api/paypal/transactions", undefined, [200, 503]);
+  await probe("refund {} rejected", "/api/paypal/refund", post, [400, 403, 503]);
+  await probe("webhook {} rejected", "/api/paypal/webhook", post, [400, 503]);
 
   report();
 }
