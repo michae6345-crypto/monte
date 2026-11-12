@@ -14,4 +14,5 @@ import "@/tests/paypal-agent-refund.test";
 import "@/tests/paypal-csv.test";
 import "@/tests/health.test";
 import "@/tests/paypal-messages.test";
+import "@/tests/security-headers.test";
 import "@/tests/review-fixes.test";
