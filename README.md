@@ -103,7 +103,14 @@ The app runs with no keys on the demo people. Keys turn on the live parts:
 
 Without PayPal keys, every `/api/paypal/*` route returns `503 paypal_not_configured` and the
 Tap view shows the ranking with no button. `curl localhost:3000/api/health` shows what is
-connected. The click-by-click demo is in [`docs/PAYPAL-DEMO.md`](docs/PAYPAL-DEMO.md), and
+connected.
+
+**Check your sandbox keys.** `npm run sandbox:check` reads `.env.local` and makes real sandbox
+calls through the app's own code (PayPal order and Transaction Search, Plaid link and sync, one
+tiny Claude call). It prints PASS, FAIL or SKIP per check, masks keys to their last 4 characters
+and exits 1 on any FAIL. Capture and refund need a buyer, so test those in the browser.
+
+The click-by-click demo is in [`docs/PAYPAL-DEMO.md`](docs/PAYPAL-DEMO.md), and
 deploy steps are in [`docs/deploy.md`](docs/deploy.md).
 
 ## Trying it as a judge

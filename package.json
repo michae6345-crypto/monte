@@ -9,7 +9,8 @@
     "lint": "eslint",
     "check": "next typegen && tsc --noEmit && eslint && next build",
     "test": "node --import ./scripts/_alias.mjs scripts/test.ts",
-    "smoke": "node --import ./scripts/_alias.mjs scripts/smoke.ts"
+    "smoke": "node --import ./scripts/_alias.mjs scripts/smoke.ts",
+    "sandbox:check": "node --env-file-if-exists=.env.local --import ./scripts/_alias.mjs scripts/sandbox-check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
