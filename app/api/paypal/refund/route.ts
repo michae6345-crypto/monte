@@ -9,9 +9,12 @@
 // the amount of the purchase `txnId` by `refunded`, and the engine recounts the cap from that.
 // `requestId` is sent as PayPal-Request-Id, so a retry with the same id can't refund twice; the
 // retry answers `replayed: true` and does not roll the cap back a second time.
+// Only the browser that paid may refund: 403 {"error":"not_your_capture"} unless captureId is in
+// its signed `monte_captures` cookie (set by capture-order; lib/paypal/owner.ts).
 
 import { serviceDb, requestUser } from "@/lib/db/client";
 import { PayPalError, failure, getCapture, jsonBody, notConfigured, paypalConfigured, paypalFailure, refundCapture } from "@/lib/paypal/client";
+import { ownsCapture } from "@/lib/paypal/owner";
 import { persistRefund } from "@/lib/paypal/persist";
 import { capturedTxn, decodeOrderRef } from "@/lib/paypal/plan";
 import { claimRefund, refundValue, releaseRefund, rollbackRefund, type Rollback } from "@/lib/paypal/refund";
@@ -39,6 +42,7 @@ export async function POST(req: Request) {
   if (requestId !== undefined && (typeof requestId !== "string" || !REQUEST_ID.test(requestId))) {
     return failure(400, "bad_request", { message: "requestId must be 8 to 64 letters, digits or dashes" });
   }
+  if (!ownsCapture(req, captureId)) return failure(403, "not_your_capture");
   const asked = body.amount === undefined ? null : refundValue(body.amount);
   if (body.amount !== undefined && !asked) return failure(400, "bad_request", { message: "amount must be a positive dollar amount, to the cent" });
 

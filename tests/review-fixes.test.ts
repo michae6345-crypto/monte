@@ -7,6 +7,7 @@ import type { Txn } from "@/lib/engine";
 import { JORDAN } from "@/lib/data/personas";
 import { DEMO_TAP_DATE, encodeOrderRef, planCheckout } from "@/lib/paypal/plan";
 import { claimRefund, releaseRefund, rollbackRefund } from "@/lib/paypal/refund";
+import { OWNER_COOKIE, signCaptures } from "@/lib/paypal/owner";
 import { POST as refundRoute } from "@/app/api/paypal/refund/route";
 import { POST as linkTokenRoute } from "@/app/api/plaid/link-token/route";
 import { sandboxOnly } from "@/lib/data/plaid-server";
@@ -47,7 +48,8 @@ function setPayPalKeys() {
 }
 
 const ref = () => encodeOrderRef(planCheckout(JORDAN.wallet, { merchant: "Trader Joe's", category: "groceries", amount: 84, date: DEMO_TAP_DATE }, []));
-const refundRequest = (body: unknown) => new Request("http://localhost/api/paypal/refund", { method: "POST", body: JSON.stringify(body) });
+const refundRequest = (body: unknown) =>
+  new Request("http://localhost/api/paypal/refund", { method: "POST", headers: { cookie: `${OWNER_COOKIE}=${signCaptures(["CAPTURE9"])}` }, body: JSON.stringify(body) });
 const paypal = (refundId: string, customId = ref()) => (url: string, init: RequestInit): Reply =>
   init.method === "GET"
     ? { body: { id: "CAPTURE9", status: "COMPLETED", custom_id: customId, amount: { currency_code: "USD", value: "84.00" } } }
