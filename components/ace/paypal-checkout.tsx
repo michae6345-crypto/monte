@@ -18,6 +18,11 @@ const EXAMPLE = "I'm spending $84 on groceries at Trader Joe's.";
 const RETURN_EXAMPLE = "return the Trader Joe's purchase.";
 // A second store in another category, so the first two tries show the pick changing with the purchase.
 const DINING_EXAMPLE = "I'm paying $23.40 for dinner at Sweetgreen.";
+
+/** Claude sometimes marks the card name with **…**; show it bold instead of raw asterisks. */
+function withBold(text: string) {
+  return text.split(/\*\*(.+?)\*\*/g).map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part));
+}
 // Venmo and Pay Later buttons. Off unless NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING=1 at build time, so the
 // PayPal button loads exactly as before when it's off.
 const EXTRA_FUNDING = process.env.NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING === "1";
@@ -679,7 +684,7 @@ function Agent({
       <div className="mt-4 space-y-2 text-sm leading-relaxed" aria-live="polite">
         {turns.slice(-2).map((t, k) => (
           <p key={k} className={t.role === "user" ? "text-ace-dim" : ""}>
-            {t.text}
+            {t.role === "assistant" ? withBold(t.text) : t.text}
           </p>
         ))}
         <EngineCheck turn={turns[turns.length - 1]} />
