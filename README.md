@@ -41,7 +41,7 @@ Everything below was added during the submission period:
 - Plaid recurring charges in Leaks, from the bank's own recurring detection when a sandbox bank is linked.
 - The agent handles returns too. "Return the Trader Joe's purchase" gets a refund proposal priced by the engine, and nothing is refunded until you press Confirm.
 - Itemized orders. PayPal's review page shows what is being bought and which card Monte picked, and `/api/paypal/order/{id}` reads back PayPal's record of the order, captures and refunds.
-- Webhooks. `/api/paypal/webhook` checks every event with PayPal before trusting it, so a refund made in the PayPal dashboard still reaches Monte.
+- Webhooks. `/api/paypal/webhook` checks every event with PayPal before trusting it, so a refund made in the PayPal dashboard is seen and logged with the rewards it reverses. Saving that to a signed-in account is not wired up yet.
 - A PayPal activity page at `/paypal`: checkouts, the card Monte played, rewards, refunds and imported PayPal history, with totals.
 - Venmo and Pay Later buttons, off by default behind `NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING=1` until we test them in the sandbox.
 
@@ -217,7 +217,7 @@ You need Node 24.
 npm install
 cp .env.example .env.local   # optional, see below
 npm run dev                  # http://localhost:3000
-npm test                     # 149 tests, Node's built-in runner
+npm test                     # 162 tests, Node's built-in runner
 ```
 
 The app runs with no keys on the demo people. Keys turn on the live parts:
