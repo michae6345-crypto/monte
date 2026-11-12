@@ -1,14 +1,21 @@
 // POST /api/paypal/agent -> the checkout agent's answer to one typed purchase.
 //
-// Body: { messages: [{ role, text }], wallet, history, date, valuation? }
-// Returns: { reply, plan, order, replyChecked }
+// Body: { messages: [{ role, text }], wallet, history, date, valuation?, captures?: [{ captureId, merchant, amount }] }
+// Returns: { reply, plan, order, proposal, replyChecked }
+//
+// `captures` are this session's PayPal purchases, newest first. With them the agent can propose
+// a refund: `proposal` is { captureId, merchant, amount, full, cardId, card, category, capBack,
+// rewardsReversed }. Nothing is refunded here; the browser confirms by POSTing captureId and
+// amount to /api/paypal/refund. Card, store and captured amount come from PayPal's record.
 //
 // 503 {"error":"paypal_not_configured"} without PayPal keys, 503 {"error":"agent_not_configured"}
 // without an Anthropic key. It can create an order but can't charge one.
 
 import Anthropic from "@anthropic-ai/sdk";
-import { runCheckoutAgent, type ChatTurn } from "@/lib/paypal/agent";
-import { createOrderForPlan, failure, jsonBody, notConfigured, paypalConfigured } from "@/lib/paypal/client";
+import { runCheckoutAgent, type ChatTurn, type LookupCapture, type SessionCapture } from "@/lib/paypal/agent";
+import { createOrderForPlan, failure, getCapture, jsonBody, notConfigured, paypalConfigured } from "@/lib/paypal/client";
+import { capturedTxn, decodeOrderRef } from "@/lib/paypal/plan";
+import { refundValue } from "@/lib/paypal/refund";
 import { isBad, parseContext, safeText } from "@/lib/paypal/validate";
 
 // The agent's own deadline stays inside this (lib/paypal/agent.ts).
@@ -43,6 +50,31 @@ function parseChat(raw: unknown): ChatTurn[] | null {
   return chat as ChatTurn[];
 }
 
+const CAPTURE_ID = /^[A-Za-z0-9]{5,64}$/;
+const REFUNDABLE = new Set(["COMPLETED", "PARTIALLY_REFUNDED"]);
+
+/** Up to 10 of this session's captures. Absent is fine; anything malformed is a bad request. */
+function parseCaptures(raw: unknown): SessionCapture[] | null {
+  if (raw === undefined) return [];
+  if (!Array.isArray(raw) || raw.length > 10) return null;
+  const out: SessionCapture[] = [];
+  for (const c of raw as { captureId?: unknown; merchant?: unknown; amount?: unknown }[]) {
+    const merchant = safeText(c?.merchant, 48);
+    const amount = refundValue(c?.amount);
+    if (typeof c?.captureId !== "string" || !CAPTURE_ID.test(c.captureId) || !merchant || !amount) return null;
+    out.push({ captureId: c.captureId, merchant, amount });
+  }
+  return out;
+}
+
+/** PayPal's own record of the capture, so the card and amount never come from the browser. */
+const lookupCapture: LookupCapture = async (captureId) => {
+  const capture = await getCapture(captureId);
+  const ref = decodeOrderRef(capture.customId);
+  if (!REFUNDABLE.has(capture.status) || !capture.value || !ref) return null;
+  return capturedTxn(ref, captureId, capture.value);
+};
+
 export async function POST(req: Request) {
   if (!paypalConfigured()) return notConfigured();
   if (!process.env.ANTHROPIC_API_KEY) return failure(503, "agent_not_configured");
@@ -53,9 +85,11 @@ export async function POST(req: Request) {
   if (!chat) return failure(400, "bad_request", { message: "messages must be 1 to 8 short turns, ending on the person's" });
   const context = parseContext(body);
   if (isBad(context)) return failure(400, "bad_request", { message: context.error });
+  const captures = parseCaptures(body.captures);
+  if (!captures) return failure(400, "bad_request", { message: "captures must be up to 10 of { captureId, merchant, amount }" });
 
   try {
-    const result = await runCheckoutAgent({ chat, context, createOrder: createOrderForPlan });
+    const result = await runCheckoutAgent({ chat, context, createOrder: createOrderForPlan, captures, lookupCapture });
     return Response.json(result, { headers: { "cache-control": "no-store" } });
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) return failure(429, "agent_busy");
