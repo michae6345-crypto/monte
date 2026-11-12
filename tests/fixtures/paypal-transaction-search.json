@@ -1,0 +1,140 @@
+{
+  "_note": "Synthetic PayPal Transaction Search (GET /v1/reporting/transactions?fields=all) responses, split into two pages of one window. Sandbox-style ids; no real people or accounts.",
+  "pages": [
+    {
+      "transaction_details": [
+        {
+          "transaction_info": {
+            "paypal_account_id": "SBXBUYER0001",
+            "transaction_id": "5TY05013RG002845M",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-03-04T18:22:10+0000",
+            "transaction_updated_date": "2026-03-04T18:22:10+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-42.10" },
+            "transaction_status": "S",
+            "transaction_subject": "Amazon.com order",
+            "instrument_type": "CREDIT_CARD",
+            "instrument_sub_type": "VISA",
+            "protection_eligibility": "01"
+          },
+          "payer_info": { "account_id": "SBXBUYER0001", "email_address": "buyer@example.com", "address_status": "Y", "payer_status": "Y", "payer_name": { "given_name": "Sandbox", "surname": "Buyer", "alternate_full_name": "Sandbox Buyer" }, "country_code": "US" },
+          "payee_info": { "business_name": "Amazon.com", "email_address": "merchant-amazon@example.com" },
+          "cart_info": { "item_details": [{ "item_code": "B0C1", "item_name": "USB-C charging cable, 2 pack", "item_quantity": "1", "item_unit_price": { "currency_code": "USD", "value": "42.10" } }] },
+          "shipping_info": { "name": "Sandbox Buyer" }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "8KD43217XF447751A",
+            "transaction_event_code": "T0002",
+            "transaction_initiation_date": "2026-03-07T09:00:02+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-15.49" },
+            "transaction_status": "S",
+            "transaction_subject": "Netflix Standard plan",
+            "instrument_type": "CREDIT_CARD"
+          },
+          "payee_info": { "business_name": "Netflix" }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "1AB23456CD789012E",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-03-09T01:41:55+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-28.75" },
+            "fee_amount": { "currency_code": "USD", "value": "0.00" },
+            "transaction_status": "S",
+            "instrument_type": "CREDIT_CARD"
+          },
+          "payee_info": { "business_name": "DoorDash" }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "9RF11122AB333444C",
+            "transaction_event_code": "T1107",
+            "transaction_initiation_date": "2026-03-12T16:05:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "42.10" },
+            "transaction_status": "S",
+            "transaction_subject": "Refund: Amazon.com order"
+          },
+          "payee_info": { "business_name": "Amazon.com" }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "3FE55566GH777888J",
+            "transaction_event_code": "T0400",
+            "transaction_initiation_date": "2026-03-14T12:00:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-200.00" },
+            "transaction_status": "S",
+            "transaction_subject": "Transfer to bank"
+          }
+        }
+      ],
+      "account_number": "SBXBUYER0001",
+      "start_date": "2026-03-01T00:00:00Z",
+      "end_date": "2026-03-31T23:59:59Z",
+      "last_refreshed_datetime": "2026-11-12T15:59:59Z",
+      "page": 1,
+      "total_items": 10,
+      "total_pages": 2
+    },
+    {
+      "transaction_details": [
+        {
+          "transaction_info": {
+            "transaction_id": "4GH66677JK888999L",
+            "transaction_event_code": "T0106",
+            "transaction_initiation_date": "2026-03-15T10:00:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-0.99" },
+            "transaction_status": "S",
+            "transaction_subject": "Fee"
+          }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "6JK77788LM999000N",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-03-18T20:14:31+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "50.00" },
+            "transaction_status": "S",
+            "transaction_subject": "Payment received"
+          },
+          "payer_info": { "payer_name": { "alternate_full_name": "A Friend" } }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "7LM88899NP000111Q",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-03-21T14:30:00+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-19.99" },
+            "transaction_status": "P"
+          },
+          "payee_info": { "business_name": "Etsy" }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "2NP99900QR111222S",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-03-24T08:00:00+0000",
+            "transaction_amount": { "currency_code": "EUR", "value": "-30.00" },
+            "transaction_status": "S"
+          },
+          "payee_info": { "business_name": "Berlin Bakery GmbH" }
+        },
+        {
+          "transaction_info": {
+            "transaction_id": "0QR11122ST333444U",
+            "transaction_event_code": "T0006",
+            "transaction_initiation_date": "2026-03-28T19:45:12+0000",
+            "transaction_amount": { "currency_code": "USD", "value": "-63.12" },
+            "transaction_status": "S",
+            "instrument_type": "CREDIT_CARD"
+          },
+          "payee_info": { "business_name": "Target" },
+          "cart_info": { "item_details": [{ "item_name": "Household goods" }] }
+        }
+      ],
+      "page": 2,
+      "total_items": 10,
+      "total_pages": 2
+    }
+  ]
+}
