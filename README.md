@@ -44,6 +44,7 @@ Everything below was added during the submission period:
 - Webhooks. `/api/paypal/webhook` checks every event with PayPal before trusting it, so a refund made in the PayPal dashboard is seen and logged with the rewards it reverses. Saving that to a signed-in account is not wired up yet.
 - A PayPal activity page at `/paypal`: checkouts, the card Monte played, rewards, refunds and imported PayPal history, with totals.
 - Venmo and Pay Later buttons, off by default behind `NEXT_PUBLIC_PAYPAL_EXTRA_FUNDING=1` until we test them in the sandbox.
+- A CSV download of the activity table (`lib/paypal/csv.ts`), with merchant names from PayPal defused so a spreadsheet can't run them as formulas.
 
 PayPal APIs we call (all in `lib/paypal/`):
 
@@ -76,6 +77,7 @@ random generator is seeded. The model never computes a dollar amount:
 - `create_paypal_order` takes no arguments, so the order can only be for the engine's amount.
 - Every number in Claude's reply has to appear in a tool result or in what you typed, and the reply has to name the engine's card. If it doesn't, the app shows a sentence built from the engine's numbers instead.
 - Refund rollback and the Pay Later comparison are plain code with no model call.
+- Under every answer that prices a purchase or a refund, the agent panel says which of the two happened: "Checked" when Claude's wording passed, or that the engine's own summary replaced it.
 
 The engine's result is always shown next to Claude's words. More detail is in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
@@ -232,7 +234,11 @@ The app runs with no keys on the demo people. Keys turn on the live parts:
 
 Without PayPal keys, every `/api/paypal/*` route returns `503 paypal_not_configured` and the
 Tap view shows the ranking with no button. `curl localhost:3000/api/health` shows what is
-connected.
+connected (PayPal, the webhook, the agent, Plaid, whether the Venmo and Pay Later buttons are
+on) and, on Vercel, the short commit sha that is live. It never shows a key.
+
+Every response carries `nosniff`, a strict referrer policy and `frame-ancestors 'self'`, so no
+other site can frame the Pay or Confirm buttons (`next.config.ts`).
 
 **Check your sandbox keys.** `npm run sandbox:check` reads `.env.local` and makes real sandbox
 calls through the app's own code (PayPal order and Transaction Search, Plaid link and sync, one
