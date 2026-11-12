@@ -1,8 +1,9 @@
-// Server-side Plaid reads: /transactions/sync paginated to the end, plus credit
+// Server-side Plaid reads: /transactions/sync paginated to the end, recurring streams, plus credit
 // liabilities. Mapping to our types happens in lib/data/plaid.ts; this file only fetches.
 
 import type { PlaidApi, Transaction } from "plaid";
 import type { PlaidAccount, PlaidCreditLiability, PlaidTransaction } from "@/lib/data/plaid";
+import type { PlaidRecurringResponse } from "@/lib/data/plaid-recurring";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -71,4 +72,20 @@ export async function fetchCreditLiabilities(
 ): Promise<{ accounts: PlaidAccount[]; credit: PlaidCreditLiability[] }> {
   const res = await client.liabilitiesGet({ access_token: accessToken });
   return { accounts: res.data.accounts ?? [], credit: res.data.liabilities?.credit ?? [] };
+}
+
+/** /transactions/recurring/get for the linked item, plus the item's accounts so each
+ *  stream can be tied to a card. Mapping is lib/data/plaid-recurring.ts. */
+export async function fetchRecurringStreams(
+  client: PlaidApi,
+  accessToken: string,
+): Promise<{ accounts: PlaidAccount[]; recurring: PlaidRecurringResponse }> {
+  const [rec, acc] = await Promise.all([
+    client.transactionsRecurringGet({ access_token: accessToken }),
+    client.accountsGet({ access_token: accessToken }),
+  ]);
+  return {
+    accounts: acc.data.accounts ?? [],
+    recurring: { inflow_streams: rec.data.inflow_streams ?? [], outflow_streams: rec.data.outflow_streams ?? [] },
+  };
 }
